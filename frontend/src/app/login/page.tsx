@@ -11,6 +11,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   // 🔔 쿼리 파라미터 기반 알림
   useEffect(() => {
@@ -22,9 +23,13 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+    setError('');
+
 
     if (!email || !password) {
       setError('이메일과 비밀번호를 모두 입력해주세요.');
+      setIsLoading(false);
       return;
     }
 
@@ -32,8 +37,11 @@ export default function LoginPage() {
       const data = await login({ email, password });
       localStorage.setItem('accessToken', data.accessToken);
       router.push('/');
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : '로그인에 실패했습니다.';
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false)
     }
   };
 
@@ -62,8 +70,12 @@ export default function LoginPage() {
           required
         />
         {error && <p className="text-red-500 mb-2">{error}</p>}
-        <button type="submit" className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">
-          로그인
+        <button 
+          type="submit" 
+          disabled={isLoading}
+          className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
+        >
+          {isLoading ? '로그인 중...' : '로그인'}
         </button>
       </form>
 
