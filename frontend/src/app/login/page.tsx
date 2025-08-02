@@ -1,15 +1,24 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { login } from '@/lib/api';
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+
+  // 🔔 쿼리 파라미터 기반 알림
+  useEffect(() => {
+    const errorParam = searchParams.get('error');
+    if (errorParam === 'unauthorized') {
+      setError('로그인이 필요합니다.');
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,19 +30,20 @@ export default function LoginPage() {
 
     try {
       const data = await login({ email, password });
-
-      // 예: accessToken을 localStorage에 저장
       localStorage.setItem('accessToken', data.accessToken);
-      
-      router.push('/'); // 로그인 성공 후 홈으로 이동
+      router.push('/');
     } catch (err: any) {
       setError(err.message);
     }
   };
 
+  const goToRegister = () => {
+    router.push('/register');
+  };
+
   return (
-    <div className="max-w-md mx-auto mt-20 p-4 border rounded">
-      <h1 className="text-2xl font-bold mb-4">로그인</h1>
+    <div className="max-w-md mx-auto mt-20 p-4 border rounded shadow">
+      <h1 className="text-2xl font-bold mb-4 text-center">로그인</h1>
       <form onSubmit={handleSubmit}>
         <input
           type="email"
@@ -52,10 +62,17 @@ export default function LoginPage() {
           required
         />
         {error && <p className="text-red-500 mb-2">{error}</p>}
-        <button type="submit" className="w-full bg-blue-500 text-white py-2 rounded">
+        <button type="submit" className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">
           로그인
         </button>
       </form>
+
+      <div className="text-center mt-4">
+        <p className="text-sm">계정이 없으신가요?</p>
+        <button onClick={goToRegister} className="mt-2 underline text-blue-600 hover:text-blue-800 text-sm">
+          회원가입 하러 가기
+        </button>
+      </div>
     </div>
   );
 }
