@@ -4,11 +4,11 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Preset, PresetListResponse } from '@/types/preset';
-import { fetchPresets } from '@/lib/api';
-import PresetCard from '../components/PresetCard';
-import CreatePresetButton from '../components/CreatePresetButton';
-import LoadingSpinner from '../components/LoadingSpinner';
-import ErrorMessage from '../components/ErrorMessage';
+import { fetchPresets } from '@/api/presetApi';
+import PresetCard from '@/components/domain/preset/PresetCard';
+import CreatePresetButton from '@/components/domain/preset/CreatePresetButton';
+import LoadingSpinner from '@/components/global/LoadingSpinner';
+import ErrorMessage from '@/components/global/ErrorMessage';
 
 // 데모 데이터
 const DEMO_PRESETS: Preset[] = [

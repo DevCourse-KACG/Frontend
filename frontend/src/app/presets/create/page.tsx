@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Preset, Category, PresetItem, PresetWriteReqDto, PresetItemWriteReqDto } from '@/types/preset';
-import { createPreset } from '@/lib/api';
-import LoadingSpinner from '../../components/LoadingSpinner';
+import { createPreset } from '@/api/presetApi';
+import LoadingSpinner from '@/components/global/LoadingSpinner';
 
 const CATEGORIES: Category[] = ['PREPARATION', 'RESERVATION', 'PRE_WORK', 'ETC'];
 
@@ -22,23 +22,63 @@ export default function CreatePresetPage() {
   
   const [presetName, setPresetName] = useState('');
   const [items, setItems] = useState<Array<{id: number, content: string, category: Category}>>([]);
+  const [editingItemId, setEditingItemId] = useState<number | null>(null);
+  const [editingContent, setEditingContent] = useState('');
+  const [editingCategory, setEditingCategory] = useState<Category>('PREPARATION');
+  const [isAddingItem, setIsAddingItem] = useState(false);
   const [newItemName, setNewItemName] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<Category>('PREPARATION');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleAddItem = () => {
-    if (!newItemName.trim()) return;
+  const handleAddItem = useCallback(() => {
+    const trimmedName = newItemName.trim();
+    if (!trimmedName || isAddingItem) return;
+    
+    setIsAddingItem(true);
     
     const newItem = {
-      id: Date.now(),
-      content: newItemName.trim(),
+      id: Date.now() + Math.random(),
+      content: trimmedName,
       category: selectedCategory,
     };
     
-    setItems([...items, newItem]);
-    setNewItemName('');
-    setSelectedCategory('PREPARATION');
+    setItems(prevItems => [...prevItems, newItem]);
+    
+    setTimeout(() => {
+      setNewItemName('');
+      setSelectedCategory('PREPARATION');
+      setIsAddingItem(false);
+    }, 0);
+  }, [newItemName, selectedCategory, isAddingItem]);
+
+  const handleEditItem = (itemId: number) => {
+    const item = items.find(item => item.id === itemId);
+    if (item) {
+      setEditingItemId(itemId);
+      setEditingContent(item.content);
+      setEditingCategory(item.category);
+    }
+  };
+
+  const handleSaveEdit = () => {
+    if (!editingContent.trim()) return;
+    
+    setItems(items.map(item => 
+      item.id === editingItemId 
+        ? { ...item, content: editingContent.trim(), category: editingCategory }
+        : item
+    ));
+    
+    setEditingItemId(null);
+    setEditingContent('');
+    setEditingCategory('PREPARATION');
+  };
+
+  const handleCancelEdit = () => {
+    setEditingItemId(null);
+    setEditingContent('');
+    setEditingCategory('PREPARATION');
   };
 
   const handleRemoveItem = (itemId: number) => {
@@ -197,6 +237,15 @@ export default function CreatePresetPage() {
                       type="text"
                       value={newItemName}
                       onChange={(e) => setNewItemName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          if (newItemName.trim()) {
+                            handleAddItem();
+                          }
+                        }
+                      }}
                       placeholder="새 아이템 이름을 입력하세요"
                       className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                     />
@@ -217,21 +266,102 @@ export default function CreatePresetPage() {
             {items.length > 0 ? (
               <div className="space-y-2">
                 {items.map((item) => (
-                  <div key={item.id} className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-100">
-                    <div className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
-                      {CATEGORY_DISPLAY_NAMES[item.category as Category]}
-                    </div>
-                    <span className="flex-1 text-gray-800">{item.content}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveItem(item.id)}
-                      className="text-red-400 hover:text-red-600 transition-colors p-1"
-                      title="삭제"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
+                  <div key={item.id} className="p-3 bg-white rounded-lg border border-gray-100">
+                    {editingItemId === item.id ? (
+                      /* 편집 모드 */
+                      <div className="space-y-3">
+                        {/* 카테고리 선택 */}
+                        <div className="flex gap-2">
+                          {CATEGORIES.map((category) => (
+                            <button
+                              key={category}
+                              type="button"
+                              onClick={() => setEditingCategory(category)}
+                              className={`px-2 py-1 rounded-lg text-xs font-medium transition-colors ${
+                                editingCategory === category
+                                  ? 'bg-blue-500 text-white'
+                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                              }`}
+                            >
+                              {CATEGORY_DISPLAY_NAMES[category]}
+                            </button>
+                          ))}
+                        </div>
+                        
+                        {/* 내용 입력 */}
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={editingContent}
+                            onChange={(e) => setEditingContent(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                if (editingContent.trim()) {
+                                  handleSaveEdit();
+                                }
+                              } else if (e.key === 'Escape') {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleCancelEdit();
+                              }
+                            }}
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                            autoFocus
+                          />
+                          <button
+                            type="button"
+                            onClick={handleSaveEdit}
+                            disabled={!editingContent.trim()}
+                            className="px-3 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                            title="저장"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleCancelEdit}
+                            className="px-3 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                            title="취소"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      /* 표시 모드 */
+                      <div className="flex items-center gap-3">
+                        <div className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                          {CATEGORY_DISPLAY_NAMES[item.category as Category]}
+                        </div>
+                        <span className="flex-1 text-gray-800">{item.content}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleEditItem(item.id)}
+                          className="text-blue-400 hover:text-blue-600 transition-colors p-1"
+                          title="수정"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveItem(item.id)}
+                          className="text-red-400 hover:text-red-600 transition-colors p-1"
+                          title="삭제"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

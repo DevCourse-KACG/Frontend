@@ -4,11 +4,11 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Preset, Category } from '@/types/preset';
-import { fetchPresetDetail, updatePreset, deletePreset } from '@/lib/api';
-import PresetItem from '../../components/PresetItem';
-import EditablePresetItem from '../../components/EditablePresetItem';
-import LoadingSpinner from '../../components/LoadingSpinner';
-import ErrorMessage from '../../components/ErrorMessage';
+import { fetchPresetDetail, updatePreset, deletePreset } from '@/api/presetApi';
+import PresetItem from '@/components/domain/preset/PresetItem';
+import EditablePresetItem from '@/components/domain/preset/EditablePresetItem';
+import LoadingSpinner from '@/components/global/LoadingSpinner';
+import ErrorMessage from '@/components/global/ErrorMessage';
 import { DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable';
 
