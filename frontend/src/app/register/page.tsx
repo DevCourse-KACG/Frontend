@@ -27,6 +27,20 @@ export default function SignUpPage() {
       return;
     }
 
+    
+    // 이메일 형식 검증
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError("올바른 이메일 형식을 입력해주세요.");
+      return;
+    }
+
+    // 비밀번호 강도 검증
+    if (password.length < 8) {
+      setError("비밀번호는 최소 8자 이상이어야 합니다.");
+      return;
+    }
+
     if (!email || !password || !nickname) {
       setError("이메일, 비밀번호, 닉네임은 필수 입력 항목입니다.");
       return;
@@ -35,7 +49,7 @@ export default function SignUpPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:8080/api/v1/members/auth/register", {
+      const res = await fetch("${process.env.NEXT_PUBLIC_API_URL}/api/v1/members/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -97,7 +111,7 @@ export default function SignUpPage() {
               onChange={e => setPassword(e.target.value)}
               className="w-full border border-gray-300 rounded px-3 py-2"
               required
-              minLength={6}
+              minLength={8}
               autoComplete="new-password"
             />
           </div>
@@ -112,7 +126,7 @@ export default function SignUpPage() {
               onChange={e => setPasswordConfirm(e.target.value)}
               className="w-full border border-gray-300 rounded px-3 py-2"
               required
-              minLength={6}
+              minLength={8}
               autoComplete="new-password"
             />
           </div>
