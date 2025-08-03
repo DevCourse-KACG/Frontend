@@ -20,4 +20,4 @@ export async function login({ email, password }: { email: string; password: stri
       }
 
   return response.json(); // 예: { accessToken: "...", refreshToken: "..." }
-}
+} 
