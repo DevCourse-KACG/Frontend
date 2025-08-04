@@ -1,6 +1,7 @@
 import React from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { COLORS } from '@/constants/colors';
+import SettingButton from './settingButton';
 
 const menuItems = [
     { label: '정보', path: (clubId: string) => `/clubs/${clubId}` },
@@ -9,7 +10,11 @@ const menuItems = [
     { label: '체크리스트', path: (clubId: string) => `/clubs/${clubId}/checkLists` },
 ];
 
-const ClubInfoSideMenu: React.FC = () => {
+interface ClubInfoSideMenuProps {
+    isHost: boolean;
+}
+
+const ClubInfoSideMenu: React.FC<ClubInfoSideMenuProps> = ({ isHost }) => {
     const params = useParams();
     const clubId = params.clubId as string;
 
@@ -20,8 +25,13 @@ const ClubInfoSideMenu: React.FC = () => {
     return (
         <nav
             style={{
-                height: '100%'
-
+                height: '100%',
+                borderRadius: '12px',
+                backgroundColor: COLORS.beige,
+                boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
             }}
         >
             <ul style={{
@@ -30,10 +40,6 @@ const ClubInfoSideMenu: React.FC = () => {
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '12px',
-                borderRadius: '12px',
-                backgroundColor: COLORS.beige,
-                boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                height: '100%',
                 overflowY: 'auto'
 
             }}>
@@ -69,6 +75,11 @@ const ClubInfoSideMenu: React.FC = () => {
                     </li>
                 ))}
             </ul>
+            {isHost && (
+                <footer style={{ padding: '16px', textAlign: 'center', alignSelf: 'flex-start' }}>
+                    <SettingButton clubId={clubId} />
+                </footer>
+            )}
         </nav>
     );
 };
