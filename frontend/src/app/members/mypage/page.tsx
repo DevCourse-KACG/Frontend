@@ -131,7 +131,7 @@ function MyPage() {
             </div>
             
             <button
-              onClick={() => router.push('/edit-profile')}
+              onClick={() => router.push('/members/edit-profile')}
               className="absolute bottom-6 right-6 text-sm px-3 py-1.5 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors font-semibold"
             >
               수정
