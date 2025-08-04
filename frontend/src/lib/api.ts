@@ -1,4 +1,3 @@
-// lib/api.ts
 
 export async function login({ email, password }: { email: string; password: string }) {
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
@@ -22,4 +21,3 @@ export async function login({ email, password }: { email: string; password: stri
       }
 
   return response.json(); // 예: { accessToken: "...", refreshToken: "..." }
-}
