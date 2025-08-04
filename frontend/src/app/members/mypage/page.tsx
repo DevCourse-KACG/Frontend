@@ -94,7 +94,7 @@ function MyPage() {
       <div className="flex flex-col items-center justify-center h-screen text-red-500">
         <p className="text-xl">에러 발생: {error}</p>
         <button
-          onClick={() => router.push('/login')}
+          onClick={() => router.push('/members/login')}
           className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
         >
           로그인 페이지로
