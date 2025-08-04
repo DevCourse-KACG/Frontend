@@ -27,7 +27,7 @@ export default function SignUpPage() {
       return;
     }
 
-    
+
     // 이메일 형식 검증
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
@@ -161,9 +161,8 @@ export default function SignUpPage() {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full py-2 rounded text-white transition ${
-              loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
-            }`}
+            className={`w-full py-2 rounded text-white transition ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+              }`}
           >
             {loading ? '가입 중...' : '가입하기'}
           </button>
