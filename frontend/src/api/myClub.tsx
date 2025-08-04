@@ -18,7 +18,10 @@ export const getMyInfoInClub = async (clubId: string): Promise<MyInfoInClub> => 
     const data = await response.json();
 
     if (!response.ok) {
-        throw new Error(data.message || '내 정보를 가져오는 데 실패했습니다.');
+        if (!('code' in data) || !('message' in data)) {
+            throw new Error('내 정보를 가져오는 데 실패했습니다.');
+        }
+        throw new Error(data.code + " : " + (data.message || '내 정보를 가져오는 데 실패했습니다.'));
     }
 
     return data.data;

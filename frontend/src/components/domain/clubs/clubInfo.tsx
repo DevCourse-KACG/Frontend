@@ -33,8 +33,8 @@ const ClubInfo: React.FC<ClubInfoProps> = ({ club }) => {
                 {/* Right: Meta Info */}
                 <aside style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8, minWidth: 220 }}>
                     <InfoCard title="지역" content={club.mainSpot} color={COLORS.yellow} contentColor={COLORS.brown} />
-                    <InfoCard title="총인원" content={`${club.maximumCapacity}명`} color={COLORS.beige} contentColor={COLORS.brown} />
-                    <InfoCard title="카테고리" content={club.category} color={COLORS.beige} contentColor={COLORS.brown} />
+                    <InfoCard title="총인원" content={`${club.maximumCapacity}명`} color={COLORS.yellow} contentColor={COLORS.brown} />
+                    <InfoCard title="카테고리" content={club.category} color={COLORS.yellow} contentColor={COLORS.brown} />
                     <InfoCard
                         title="시작일"
                         content={club.startDate ? club.startDate.replace(/-/g, '.') : '미정'}
