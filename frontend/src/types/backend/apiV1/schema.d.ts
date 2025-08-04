@@ -736,13 +736,13 @@ export interface components {
             /** @description 일정 장소 */
             spot: string;
         };
-        RsDataScheduleDto: {
+        RsDataScheduleDetailDto: {
             /** Format: int32 */
             code?: number;
             message?: string;
-            data?: components["schemas"]["ScheduleDto"];
+            data?: components["schemas"]["ScheduleDetailDto"];
         };
-        ScheduleDto: {
+        ScheduleDetailDto: {
             /**
              * Format: int64
              * @description 일정 ID
@@ -874,6 +874,35 @@ export interface components {
             code?: number;
             message?: string;
             data?: components["schemas"]["CheckListDto"];
+        };
+        ScheduleDto: {
+            /**
+             * Format: int64
+             * @description 일정 ID
+             */
+            id?: number;
+            /** @description 일정 제목 */
+            title?: string;
+            /**
+             * Format: date-time
+             * @description 일정 시작일
+             */
+            startDate?: string;
+            /**
+             * Format: date-time
+             * @description 일정 종료일
+             */
+            endDate?: string;
+            /**
+             * Format: int64
+             * @description 모임 ID
+             */
+            clubId?: number;
+            /**
+             * Format: int64
+             * @description 체크리스트 ID
+             */
+            checkListId?: number | null;
         };
         ScheduleCreateReqBody: {
             /**
@@ -1081,6 +1110,43 @@ export interface components {
             endDate?: string;
             isPublic?: boolean;
         };
+        RsDataListScheduleWithClubDto: {
+            /** Format: int32 */
+            code?: number;
+            message?: string;
+            data?: components["schemas"]["ScheduleWithClubDto"][];
+        };
+        ScheduleWithClubDto: {
+            /**
+             * Format: int64
+             * @description 일정 ID
+             */
+            id?: number;
+            /** @description 일정 제목 */
+            title?: string;
+            /**
+             * Format: date-time
+             * @description 일정 시작일
+             */
+            startDate?: string;
+            /**
+             * Format: date-time
+             * @description 일정 종료일
+             */
+            endDate?: string;
+            /**
+             * Format: int64
+             * @description 모임 ID
+             */
+            clubId?: number;
+            /** @description 모임명 */
+            clubName?: string;
+            /**
+             * Format: int64
+             * @description 체크리스트 ID
+             */
+            checkListId?: number | null;
+        };
         RsDataListScheduleDto: {
             /** Format: int32 */
             code?: number;
@@ -1218,10 +1284,10 @@ export interface components {
             data?: components["schemas"]["ClubMemberResponse"];
         };
         PageSimpleClubInfoResponse: {
-            /** Format: int32 */
-            totalPages?: number;
             /** Format: int64 */
             totalElements?: number;
+            /** Format: int32 */
+            totalPages?: number;
             /** Format: int32 */
             size?: number;
             content?: components["schemas"]["SimpleClubInfoResponse"][];
@@ -1239,12 +1305,12 @@ export interface components {
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
+            unpaged?: boolean;
             paged?: boolean;
             /** Format: int32 */
             pageSize?: number;
             /** Format: int32 */
             pageNumber?: number;
-            unpaged?: boolean;
         };
         RsDataPageSimpleClubInfoResponse: {
             /** Format: int32 */
@@ -1268,8 +1334,8 @@ export interface components {
         };
         SortObject: {
             empty?: boolean;
-            sorted?: boolean;
             unsorted?: boolean;
+            sorted?: boolean;
         };
         RsDataSimpleClubInfoResponse: {
             /** Format: int32 */
@@ -1346,7 +1412,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json;charset=UTF-8": components["schemas"]["RsDataScheduleDto"];
+                    "application/json;charset=UTF-8": components["schemas"]["RsDataScheduleDetailDto"];
                 };
             };
             /** @description Bad Request */
@@ -1381,7 +1447,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json;charset=UTF-8": components["schemas"]["RsDataScheduleDto"];
+                    "application/json;charset=UTF-8": components["schemas"]["RsDataScheduleDetailDto"];
                 };
             };
             /** @description Bad Request */
@@ -1770,7 +1836,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json;charset=UTF-8": components["schemas"]["RsDataScheduleDto"];
+                    "application/json;charset=UTF-8": components["schemas"]["RsDataScheduleDetailDto"];
                 };
             };
             /** @description Bad Request */
@@ -2677,7 +2743,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json;charset=UTF-8": components["schemas"]["RsDataListScheduleDto"];
+                    "application/json;charset=UTF-8": components["schemas"]["RsDataListScheduleWithClubDto"];
                 };
             };
             /** @description Bad Request */

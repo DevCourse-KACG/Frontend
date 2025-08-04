@@ -15,7 +15,15 @@
     "next": "15.4.5",
     "react": "^19.1.1",
     "react-do": "^1.1.6",
-    "react-dom": "^19.1.1"
+    "react-dom": "^19.1.1",
+    "react-router-dom": "^7.7.1",
+    "react-hot-toast": "^2.5.2",
+    "@fullcalendar/core": "^6.1.18",
+    "@fullcalendar/daygrid": "^6.1.18",
+    "@fullcalendar/interaction": "^6.1.18",
+    "@fullcalendar/list": "^6.1.18",
+    "@fullcalendar/timegrid": "^6.1.18",
+    "@fullcalendar/react": "^6.1.18"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
