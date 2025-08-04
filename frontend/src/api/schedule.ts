@@ -1,0 +1,99 @@
+import type { components } from "@/types/backend/apiV1/schema";
+
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL!;
+if (!BASE_URL) {
+  throw new Error("NEXT_PUBLIC_API_BASE_URL이 정의되어 있어야 합니다.");
+}
+
+// 공통 처리용 함수
+async function handleResponse<T>(res: Response): Promise<T> {
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.message || "요청 처리 중 오류가 발생했습니다.");
+  }
+
+  return data;
+}
+
+// 모임 일정 목록 조회
+export async function getClubSchedules(
+  clubId: number,
+  query?: { startDate?: string; endDate?: string }
+): Promise<components["schemas"]["RsDataListScheduleDto"]> {
+  let url = `${BASE_URL}/api/v1/schedules/clubs/${clubId}`;
+  // 쿼리 스트링 처리 (required = false)
+  if (query) {
+    const params = new URLSearchParams();
+    if (query.startDate) params.append("startDate", query.startDate);
+    if (query.endDate) params.append("endDate", query.endDate);
+    const queryString = params.toString();
+    if (queryString) {
+      url += `?${queryString}`;
+    }
+  }
+  const res = await fetch(url, {
+    method: "GET",
+  });
+  return handleResponse<components["schemas"]["RsDataListScheduleDto"]>(res);
+}
+
+
+// 일정 조회
+export async function getSchedule(
+  scheduleId: number
+): Promise<components["schemas"]["RsDataScheduleDto"]> {
+  const res = await fetch(`${BASE_URL}/api/v1/schedules/${scheduleId}`);
+  return handleResponse(res);
+}
+
+// 일정 생성
+export async function createSchedule(
+  body: components["schemas"]["ScheduleCreateReqBody"]
+): Promise<components["schemas"]["RsDataScheduleDto"]> {
+  const res = await fetch(`${BASE_URL}/api/v1/schedules`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  return handleResponse(res);
+}
+
+// 일정 수정
+export async function modifySchedule(
+  scheduleId: number,
+  body: components["schemas"]["ScheduleUpdateReqBody"]
+): Promise<components["schemas"]["RsDataScheduleDto"]> {
+  const res = await fetch(`${BASE_URL}/api/v1/schedules/${scheduleId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  return handleResponse(res);
+}
+
+// 일정 삭제
+export async function deleteSchedule(
+  scheduleId: number
+): Promise<components["schemas"]["RsDataVoid"]> {
+  const res = await fetch(`${BASE_URL}/api/v1/schedules/${scheduleId}`, {
+    method: "DELETE",
+  });
+  return handleResponse(res);
+}
+
+// 나의 일정 목록 조회
+export async function getMySchedules(
+  query?: { startDate?: string; endDate?: string }
+): Promise<components["schemas"]["RsDataListScheduleDto"]> {
+  let url = `${BASE_URL}/api/v1/schedules/me`;
+  if (query) {
+    const params = new URLSearchParams();
+    if (query.startDate) params.append("startDate", query.startDate);
+    if (query.endDate) params.append("endDate", query.endDate);
+    url += `?${params.toString()}`;
+  }
+
+  const res = await fetch(url);
+  return handleResponse(res);
+}

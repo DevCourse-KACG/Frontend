@@ -10,8 +10,8 @@ import interactionPlugin from '@fullcalendar/interaction';
 import { EventContentArg } from '@fullcalendar/core';
 import toast from 'react-hot-toast';
 
-import { API_BASE_URL } from '@/global/backend/client';
-import { ScheduleListResponse, ScheduleDto } from '@/app/schedule/types/schedule-types';
+import type { components } from "@/types/backend/apiV1/schema";
+import { getClubSchedules } from "@/api/schedule";
 import '@/app/schedule/utils/fullcalendar.css';
 
 // YYYY-mm-dd 포맷
@@ -19,22 +19,24 @@ export function formatDateString(dateStr: string): string {
   return dateStr.split('T')[0];
 }
 
-// API에서 받은 ScheduleDto를 FullCalendar Event 객체로 변환하는 함수
-const convertSchedulesToEvents = (schedules: ScheduleDto[]) => {
+// ScheduleDto를 FullCalendar Event 객체로 변환
+const convertSchedulesToEvents = (
+  schedules: components["schemas"]["ScheduleDto"][]
+) => {
   return schedules.map(schedule => ({
-    id: schedule.id,
-    title: schedule.title,
-    start: schedule.startDate,
+    id: schedule.id !== undefined ? String(schedule.id) : undefined,
+    title: schedule.title!,
+    start: schedule.startDate!,
     end: schedule.endDate,
-    allDay: schedule.startDate.length <= 10 && schedule.endDate.length <= 10
+    allDay: schedule.startDate!.length <= 10 && schedule.endDate!.length <= 10,
   }));
 };
 
 export default function ScheduleListPage() {
   // 파라미터 처리 - 모임 아이디
-  const parm = useParams();
-  const clubId = parm.clubId;
-  //const clubId = 1;
+  //const parm = useParams();
+  //const clubId = parm.clubId;
+  const clubId = 1;
 
   // 캘린더 처리
   const calendarRef = useRef<FullCalendar>(null);
@@ -57,24 +59,11 @@ export default function ScheduleListPage() {
     setError(null);
 
     try {
-      // 시작일, 종료일 쿼리 스트링 세팅
-      const params = new URLSearchParams();
-      if (startDate) params.append('startDate', startDate);
-      if (endDate) params.append('endDate', endDate);
-
       // 일정 목록 조회
-      const res = await fetch(
-        `${API_BASE_URL}/api/v1/schedules/clubs/${clubId}?${params.toString()}`,
-        { signal: controller.signal }
-      );
-      const data: ScheduleListResponse = await res.json();
-      
-      if (!res.ok) {
-        throw new Error(data.message || '일정 조회 중 오류가 발생했습니다.');
-      }
+      const data = await getClubSchedules(Number(clubId), { startDate, endDate });
 
       // 일정 목록 세팅
-      const events = convertSchedulesToEvents(data.data);
+      const events = convertSchedulesToEvents(data.data ?? []);
       if (calendarRef.current) {
         const calendarApi = calendarRef.current.getApi();
         calendarApi.removeAllEvents();
@@ -88,7 +77,7 @@ export default function ScheduleListPage() {
       setError(msg);
       toast.error(msg);
     }
-  }, []);
+  }, [clubId]);
 
   // 캘린더 날짜가 변경될 때마다(이전, 다음 버튼 등) 일정 목록 API 재호출
   const handleDatesSet = useCallback((arg: any) => {
