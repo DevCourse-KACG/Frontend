@@ -71,7 +71,7 @@ export default function ClubPage() {
 
     // 클럽 정보가 성공적으로 로드된 경우
     return (
-        <div className="max-w-2xl mx-auto p-4">
+        <div className="max-w-5xl mx-auto p-4">
             <h1 className="text-2xl font-bold mb-4">{clubId}번 모임 페이지</h1>
             {clubInfo ? <ClubInfo club={clubInfo} /> : <div className="text-center">클럽 정보를 불러오는 중입니다...</div>}
 
