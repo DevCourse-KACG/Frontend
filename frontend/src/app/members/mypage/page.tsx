@@ -2,12 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { fetchMe, fetchMyClubs, fetchMyFriends, fetchMyPresets } from '@/api/members'; // api.ts에서 함수를 import
+import { fetchMe, fetchMyClubs, fetchMyFriends, fetchMyPresets } from '@/api/members';
 
 interface UserData {
   nickname: string;
   email: string;
   bio: string;
+  profileImage: string | null;
 }
 
 interface Club {
@@ -53,7 +54,7 @@ function MyPage() {
         if (err instanceof Error) {
           setError(err.message);
           console.error('Fetch error:', err.message);
-          if (err.message.includes('401')) { // 401 에러 감지 시 로그인 페이지로 이동
+          if (err.message.includes('401')) {
             router.push('/login');
           }
         } else {
@@ -121,8 +122,12 @@ function MyPage() {
           </div>
 
           <div className="relative flex items-start space-x-6 p-6 border-t border-gray-200">
-            <div className="w-24 h-24 rounded-full bg-gray-300 flex-shrink-0">
-              {/* 여기에 실제 프로필 이미지를 넣을 수 있습니다. */}
+            <div className="w-24 h-24 rounded-full flex-shrink-0 overflow-hidden">
+              <img
+                src={userData.profileImage || "https://via.placeholder.com/96/cccccc?Text=No+Image"}
+                alt="프로필 이미지"
+                className="w-full h-full object-cover"
+              />
             </div>
             
             <div className="flex-1">
@@ -131,14 +136,13 @@ function MyPage() {
             </div>
             
             <button
-              onClick={() => router.push('/members/mypage/verify-password')}
+              onClick={() => router.push('/members/edit-profile')}
               className="absolute bottom-6 right-6 text-sm px-3 py-1.5 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors font-semibold"
             >
               수정
             </button>
           </div>
           
-          {/* 친구 목록 섹션 */}
           <div className="p-6 border rounded-lg shadow-sm">
             <div className="flex justify-between items-center mb-2">
               <h3 className="text-xl font-semibold">친구 목록</h3>
@@ -160,7 +164,6 @@ function MyPage() {
             )}
           </div>
 
-          {/* 가입한 모임 목록 섹션 */}
           <div className="p-6 border rounded-lg shadow-sm">
             <div className="flex justify-between items-center mb-2">
               <h3 className="text-xl font-semibold">가입한 모임 목록</h3>
@@ -193,7 +196,6 @@ function MyPage() {
             )}
           </div>
 
-          {/* 내가 만든 프리셋 목록 섹션 */}
           <div className="p-6 border rounded-lg shadow-sm">
             <div className="flex justify-between items-center mb-2">
               <h3 className="text-xl font-semibold">내가 만든 프리셋 목록</h3>
