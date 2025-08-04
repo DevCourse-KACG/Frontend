@@ -8,18 +8,19 @@ export async function login({ email, password }: { email: string; password: stri
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ email, password }),
+    credentials: 'include', // 쿠키를 포함하여 요청
   });
 
   if (!response.ok) {
-        let errorMessage = 'Login failed';
-        try {
-          const error = await response.json();
-          errorMessage = error.message || errorMessage;
-        } catch {
-          // JSON 파싱 실패 시 기본 메시지 사용
-        }
-        throw new Error(errorMessage);
-      }
+    let errorMessage = 'Login failed';
+    try {
+      const error = await response.json();
+      errorMessage = error.message || errorMessage;
+    } catch {
+      // JSON 파싱 실패 시 기본 메시지 사용
+    }
+    throw new Error(errorMessage);
+  }
 
   return response.json(); // 예: { accessToken: "...", refreshToken: "..." }
 }
