@@ -4,7 +4,6 @@ import { useState, useRef } from 'react';
 
 export interface ClubFormData {
     name: string;
-    image: File | null;
     bio: string;
     mainSpot: string;
     maximumCapacity: number;
@@ -18,9 +17,10 @@ export interface ClubFormData {
 }
 
 interface ClubDataFormProps {
-    onSubmit: (data: ClubFormData) => void;
+    onSubmit: (data: ClubFormData, image: File | null) => void;
     isLoading?: boolean;
     initialData?: Partial<ClubFormData>;
+    initialImage?: File | null;
 }
 
 const CATEGORIES = [
@@ -41,10 +41,9 @@ const EVENT_TYPES = [
     { value: 'LONG_TERM', label: '장기' }
 ] as const;
 
-export default function ClubDataForm({ onSubmit, isLoading = false, initialData }: ClubDataFormProps) {
+export default function ClubDataForm({ onSubmit, isLoading = false, initialData, initialImage }: ClubDataFormProps) {
     const [formData, setFormData] = useState<ClubFormData>({
         name: initialData?.name || '',
-        image: initialData?.image || null,
         bio: initialData?.bio || '',
         mainSpot: initialData?.mainSpot || '',
         maximumCapacity: initialData?.maximumCapacity || 10,
@@ -57,7 +56,9 @@ export default function ClubDataForm({ onSubmit, isLoading = false, initialData 
         isPublic: initialData?.isPublic ?? true
     });
 
+    const [image, setImage] = useState<File | null>(initialImage || null);
     const [errors, setErrors] = useState<Partial<Record<keyof ClubFormData, string>>>({});
+    const [imageError, setImageError] = useState<string>('');
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleInputChange = (field: keyof ClubFormData, value: any) => {
@@ -90,23 +91,18 @@ export default function ClubDataForm({ onSubmit, isLoading = false, initialData 
         if (file) {
             // 파일 크기 검증 (5MB 제한)
             if (file.size > 5 * 1024 * 1024) {
-                setErrors(prev => ({
-                    ...prev,
-                    image: '이미지 파일 크기는 5MB 이하여야 합니다.'
-                }));
+                setImageError('이미지 파일 크기는 5MB 이하여야 합니다.');
                 return;
             }
 
             // 파일 타입 검증
             if (!file.type.startsWith('image/')) {
-                setErrors(prev => ({
-                    ...prev,
-                    image: '이미지 파일만 업로드 가능합니다.'
-                }));
+                setImageError('이미지 파일만 업로드 가능합니다.');
                 return;
             }
 
-            handleInputChange('image', file);
+            setImage(file);
+            setImageError('');
         }
     };
 
@@ -155,14 +151,14 @@ export default function ClubDataForm({ onSubmit, isLoading = false, initialData 
         }
 
         setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
+        return Object.keys(newErrors).length === 0 && !imageError;
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
         if (validateForm()) {
-            onSubmit(formData);
+            onSubmit(formData, image);
         }
     };
 
@@ -200,10 +196,10 @@ export default function ClubDataForm({ onSubmit, isLoading = false, initialData 
                     onClick={handleImageClick}
                     className="w-full h-48 border-2 border-dashed border-gray-300 rounded-md flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 transition-colors"
                 >
-                    {formData.image ? (
+                    {image ? (
                         <div className="relative w-full h-full">
                             <img
-                                src={URL.createObjectURL(formData.image)}
+                                src={URL.createObjectURL(image)}
                                 alt="대표 이미지"
                                 className="w-full h-full object-cover rounded-md"
                             />
@@ -211,7 +207,8 @@ export default function ClubDataForm({ onSubmit, isLoading = false, initialData 
                                 type="button"
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    handleInputChange('image', null);
+                                    setImage(null);
+                                    setImageError('');
                                 }}
                                 className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600"
                             >
@@ -235,7 +232,7 @@ export default function ClubDataForm({ onSubmit, isLoading = false, initialData 
                     onChange={handleImageChange}
                     className="hidden"
                 />
-                {errors.image && <p className="mt-1 text-sm text-red-600">{errors.image}</p>}
+                {imageError && <p className="mt-1 text-sm text-red-600">{imageError}</p>}
             </div>
 
             {/* 모임 소개글 */}

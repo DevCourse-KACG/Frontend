@@ -4,8 +4,9 @@ import ClubDataForm, { ClubFormData } from '@/components/domain/clubs/clubDataFo
 
 export default function NewClubPage() {
 
-    const handleSubmit = (data: ClubFormData) => {
-        console.log(data);
+    const handleSubmit = (data: ClubFormData, image: File | null) => {
+        console.log('Form Data:', data);
+        console.log('Image:', image);
     };
 
     return (
