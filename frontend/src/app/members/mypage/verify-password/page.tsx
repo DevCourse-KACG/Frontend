@@ -38,13 +38,12 @@ export default function PasswordVerificationPage() {
     setApiLoading(true);
 
     try {
-      // 새로운 verifyPassword 함수를 사용하여 비밀번호 인증
       await verifyPassword({ email, password });
       
       console.log("비밀번호 인증 성공");
       
-      // 인증 성공 시 내 정보 수정 페이지로 이동
-      router.push('members/mypage/edit-profile'); 
+      // 절대 경로로 수정하여 올바르게 이동하도록 변경
+      router.push('/members/mypage/edit-profile'); 
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError("비밀번호가 올바르지 않습니다. 다시 시도해 주세요.");
