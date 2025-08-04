@@ -4,7 +4,6 @@ const API_BASE_URL = 'http://localhost:8080/api/v1';
 
 export async function fetchPresets(): Promise<PresetListResponse> {
   try {
-    console.log('Fetching presets list...');
     const response = await fetch(`${API_BASE_URL}/presets`, {
       method: 'GET',
       headers: {
@@ -12,7 +11,6 @@ export async function fetchPresets(): Promise<PresetListResponse> {
       },
       credentials: 'include',
     });
-    console.log('Presets list response status:', response.status);
 
     const data = await response.json();
 
@@ -28,7 +26,6 @@ export async function fetchPresets(): Promise<PresetListResponse> {
 
     return data;
   } catch (error) {
-    console.error('Failed to fetch presets:', error);
     throw error;
   }
 }
@@ -57,14 +54,12 @@ export async function fetchPresetDetail(presetId: string): Promise<Preset> {
 
     return result.data;
   } catch (error) {
-    console.error('Failed to fetch preset detail:', error);
     throw error;
   }
 }
 
 export async function createPreset(preset: PresetWriteReqDto): Promise<Preset> {
   try {
-    console.log('Creating preset with data:', preset);
     const response = await fetch(`${API_BASE_URL}/presets`, {
       method: 'POST',
       headers: {
@@ -75,13 +70,10 @@ export async function createPreset(preset: PresetWriteReqDto): Promise<Preset> {
     });
 
     const result = await response.json();
-    console.log('Create response status:', response.status);
-    console.log('Create response:', result);
 
     // 401 에러인 경우 (로그인 필요)
     if (response.status === 401) {
       const errorData = result as ApiErrorResponse;
-      console.log('Create 401 Error details:', errorData);
       throw new Error(`LOGIN_REQUIRED:${errorData.message}`);
     }
 
@@ -91,7 +83,6 @@ export async function createPreset(preset: PresetWriteReqDto): Promise<Preset> {
 
     return result.data;
   } catch (error) {
-    console.error('Failed to create preset:', error);
     throw error;
   }
 }
@@ -108,12 +99,6 @@ export async function updatePreset(presetId: string, preset: Preset): Promise<Pr
       })) || []
     };
 
-    console.log('Updating preset with DTO:', updateDto);
-    console.log('Current cookies:', document.cookie);
-    console.log('Request headers:', {
-      'Content-Type': 'application/json'
-    });
-    console.log('Credentials:', 'include');
 
     const response = await fetch(`${API_BASE_URL}/presets/${presetId}`, {
       method: 'PUT',
@@ -125,13 +110,10 @@ export async function updatePreset(presetId: string, preset: Preset): Promise<Pr
     });
 
     const result = await response.json();
-    console.log('Update response status:', response.status);
-    console.log('Update response:', result);
 
     // 401 에러인 경우 (로그인 필요)
     if (response.status === 401) {
       const errorData = result as ApiErrorResponse;
-      console.log('401 Error details:', errorData);
       throw new Error(`LOGIN_REQUIRED:${errorData.message}`);
     }
 
@@ -141,7 +123,6 @@ export async function updatePreset(presetId: string, preset: Preset): Promise<Pr
 
     return result.data;
   } catch (error) {
-    console.error('Failed to update preset:', error);
     throw error;
   }
 }
@@ -167,7 +148,6 @@ export async function deletePreset(presetId: string): Promise<void> {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
   } catch (error) {
-    console.error('Failed to delete preset:', error);
     throw error;
   }
 }

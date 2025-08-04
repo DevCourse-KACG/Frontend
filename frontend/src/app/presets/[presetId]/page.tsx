@@ -82,7 +82,6 @@ export default function PresetDetailPage() {
       setError(null);
       setIsLoginRequired(false);
       const data = await fetchPresetDetail(presetId);
-      console.log('Loaded preset data:', data);
       setPreset(data);
       setEditPresetName(data.name || '');
     } catch (err) {
@@ -91,7 +90,6 @@ export default function PresetDetailPage() {
       // 401 에러인 경우 (로그인 필요)
       if (errorMessage.startsWith('LOGIN_REQUIRED:')) {
         setIsLoginRequired(true);
-        setError('로그인이 필요합니다. 현재는 데모 화면을 보여드립니다.');
         // 해당 ID의 데모 데이터 설정
         const demoPreset = DEMO_PRESETS[presetId];
         if (demoPreset) {
@@ -103,7 +101,6 @@ export default function PresetDetailPage() {
       } else {
         setError('프리셋을 불러오는 중 오류가 발생했습니다.');
       }
-      console.error('Failed to load preset detail:', err);
     } finally {
       setLoading(false);
     }
@@ -168,13 +165,8 @@ export default function PresetDetailPage() {
       alert('프리셋이 성공적으로 수정되었습니다.');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.';
-      console.error('Failed to update preset:', err);
       
-      if (errorMessage.startsWith('LOGIN_REQUIRED:')) {
-        alert('로그인이 필요합니다. 프리셋 수정은 로그인 후 가능합니다.');
-      } else {
-        alert('프리셋 수정 중 오류가 발생했습니다.');
-      }
+      alert('프리셋 수정 중 오류가 발생했습니다.');
     } finally {
       setSaving(false);
     }
@@ -200,13 +192,8 @@ export default function PresetDetailPage() {
         router.push('/presets');
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.';
-        console.error('Failed to delete preset:', err);
         
-        if (errorMessage.startsWith('LOGIN_REQUIRED:')) {
-          alert('로그인이 필요합니다. 프리셋 삭제는 로그인 후 가능합니다.');
-        } else {
-          alert('프리셋 삭제 중 오류가 발생했습니다.');
-        }
+        alert('프리셋 삭제 중 오류가 발생했습니다.');
       }
     }
   };
@@ -382,20 +369,6 @@ export default function PresetDetailPage() {
           )}
         </div>
 
-        {/* 로그인 필요 알림 */}
-        {isLoginRequired && (
-          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="flex items-center gap-2 text-blue-800">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span className="font-medium">데모 모드</span>
-            </div>
-            <p className="text-blue-700 text-sm mt-1">
-              로그인이 필요하지만 현재는 데모 화면을 보여드립니다.
-            </p>
-          </div>
-        )}
 
         {/* 프리셋 아이템 목록 */}
         <div className="mb-6">

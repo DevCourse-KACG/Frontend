@@ -117,12 +117,7 @@ export default function CreatePresetPage() {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.';
       
-      if (errorMessage.startsWith('LOGIN_REQUIRED:')) {
-        setError('로그인이 필요합니다. 데모 모드에서는 생성할 수 없습니다.');
-      } else {
-        setError('프리셋 생성 중 오류가 발생했습니다.');
-      }
-      console.error('Failed to create preset:', err);
+      setError('프리셋 생성 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }

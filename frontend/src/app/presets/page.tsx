@@ -75,7 +75,6 @@ export default function PresetsPage() {
         setError('프리셋을 불러오는 중 오류가 발생했습니다.');
         setPresets([]);
       }
-      console.error('Failed to load presets:', err);
     } finally {
       setLoading(false);
     }
@@ -124,27 +123,7 @@ export default function PresetsPage() {
           <p className="text-gray-600">자주 사용하는 준비물과 예약 목록을 관리하세요</p>
         </div>
 
-        {/* 로그인 필요 알림 */}
-        {isLoginRequired && (
-          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="flex items-center gap-2 text-blue-800">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span className="font-medium">데모 모드</span>
-            </div>
-            <p className="text-blue-700 text-sm mt-1">
-              로그인이 필요하지만 현재는 데모 화면을 보여드립니다.
-            </p>
-          </div>
-        )}
 
-        {/* 에러 메시지 */}
-        {error && !isLoginRequired && (
-          <div className="mb-6">
-            <ErrorMessage message={error} onRetry={loadPresets} />
-          </div>
-        )}
 
         {/* 생성 버튼 */}
         <div className="mb-8">
