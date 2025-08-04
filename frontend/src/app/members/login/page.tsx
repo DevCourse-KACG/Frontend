@@ -1,90 +1,163 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { login } from '@/api/members';
+import * as React from "react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { signUp } from '@/api/members'; // api.ts에서 함수를 import
 
-export default function LoginPage() {
+export default function SignUpPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [passwordConfirm, setPasswordConfirm] = useState("");
+  const [nickname, setNickname] = useState("");
+  const [bio, setBio] = useState("");
 
-  // 🔔 쿼리 파라미터 기반 알림
-  useEffect(() => {
-    const errorParam = searchParams.get('error');
-    if (errorParam === 'unauthorized') {
-      setError('로그인이 필요합니다.');
-    }
-  }, [searchParams]);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setIsLoading(true);
-    setError('');
+    setError("");
+    setSuccess("");
 
-
-    if (!email || !password) {
-      setError('이메일과 비밀번호를 모두 입력해주세요.');
-      setIsLoading(false);
+    if (password !== passwordConfirm) {
+      setError("비밀번호와 비밀번호 확인이 일치하지 않습니다.");
       return;
     }
 
-    try {
-      const data = await login({ email, password });
-      localStorage.setItem('accessToken', data.accessToken);
-      router.push('/');
-    } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : '로그인에 실패했습니다.';
-      setError(errorMessage);
-    } finally {
-      setIsLoading(false)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError("올바른 이메일 형식을 입력해주세요.");
+      return;
     }
-  };
 
-  const goToRegister = () => {
-    router.push('/register');
-  };
+    if (password.length < 8) {
+      setError("비밀번호는 최소 8자 이상이어야 합니다.");
+      return;
+    }
+
+    if (!email || !password || !nickname) {
+      setError("이메일, 비밀번호, 닉네임은 필수 입력 항목입니다.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      await signUp({
+        email: email,
+        password: password,
+        nickname: nickname,
+        bio: bio,
+      });
+
+      setSuccess("회원가입에 성공했습니다!");
+      // 회원가입 성공 시 메인 페이지로 이동
+      router.push("/");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("서버와 통신 중 오류가 발생했습니다.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
-    <div className="max-w-md mx-auto mt-20 p-4 border rounded shadow">
-      <h1 className="text-2xl font-bold mb-4 text-center">로그인</h1>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="email"
-          placeholder="이메일"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          className="w-full p-2 mb-2 border rounded"
-          required
-        />
-        <input
-          type="password"
-          placeholder="비밀번호"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-          className="w-full p-2 mb-2 border rounded"
-          required
-        />
-        {error && <p className="text-red-500 mb-2">{error}</p>}
-        <button 
-          type="submit" 
-          disabled={isLoading}
-          className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
-        >
-          {isLoading ? '로그인 중...' : '로그인'}
-        </button>
-      </form>
+    <main className="flex items-center justify-center min-h-screen p-6 bg-gray-50">
+      <div className="w-full max-w-md bg-white rounded-md shadow-md p-6">
+        <h1 className="text-2xl font-bold mb-6">회원가입</h1>
 
-      <div className="text-center mt-4">
-        <p className="text-sm">계정이 없으신가요?</p>
-        <button onClick={goToRegister} className="mt-2 underline text-blue-600 hover:text-blue-800 text-sm">
-          회원가입 하러 가기
-        </button>
+        {error && <p className="mb-4 text-red-600">{error}</p>}
+        {success && <p className="mb-4 text-green-600">{success}</p>}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="email" className="block font-medium mb-1">이메일</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              className="w-full border border-gray-300 rounded px-3 py-2"
+              required
+              autoComplete="email"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="password" className="block font-medium mb-1">비밀번호</label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              className="w-full border border-gray-300 rounded px-3 py-2"
+              required
+              minLength={8}
+              autoComplete="new-password"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="passwordConfirm" className="block font-medium mb-1">비밀번호 확인</label>
+            <input
+              id="passwordConfirm"
+              name="passwordConfirm"
+              type="password"
+              value={passwordConfirm}
+              onChange={e => setPasswordConfirm(e.target.value)}
+              className="w-full border border-gray-300 rounded px-3 py-2"
+              required
+              minLength={8}
+              autoComplete="new-password"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="nickname" className="block font-medium mb-1">닉네임</label>
+            <input
+              id="nickname"
+              name="nickname"
+              type="text"
+              value={nickname}
+              onChange={e => setNickname(e.target.value)}
+              className="w-full border border-gray-300 rounded px-3 py-2"
+              required
+              autoComplete="nickname"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="bio" className="block font-medium mb-1">자기소개</label>
+            <textarea
+              id="bio"
+              name="bio"
+              value={bio}
+              onChange={e => setBio(e.target.value)}
+              className="w-full border border-gray-300 rounded px-3 py-2"
+              rows={3}
+              autoComplete="off"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className={`w-full py-2 rounded text-white transition ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+            }`}
+          >
+            {loading ? '가입 중...' : '가입하기'}
+          </button>
+        </form>
       </div>
-    </div>
+    </main>
   );
 }

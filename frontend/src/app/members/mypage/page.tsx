@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-
-const API_BASE_URL = 'http://localhost:8080/api/v1';
+import { fetchMe, fetchMyClubs, fetchMyFriends, fetchMyPresets } from '@/api/members'; // api.ts에서 함수를 import
 
 interface UserData {
   nickname: string;
@@ -11,11 +10,10 @@ interface UserData {
   bio: string;
 }
 
-// API 응답에 맞춰 인터페이스 수정
 interface Club {
   clubId: number;
   clubName: string;
-  myRole: 'HOST' | 'MANAGER' | 'PARTICIPANT'; // 역할 정보 추가
+  myRole: 'HOST' | 'MANAGER' | 'PARTICIPANT';
 }
 
 interface Friend {
@@ -40,43 +38,24 @@ function MyPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [meResponse, clubsResponse, friendsResponse, presetsResponse] = await Promise.all([
-          fetch(`${API_BASE_URL}/members/me`, { credentials: 'include' }),
-          fetch(`${API_BASE_URL}/my-clubs`, { credentials: 'include' }),
-          fetch(`${API_BASE_URL}/members/me/friends`, { credentials: 'include' }),
-          fetch(`${API_BASE_URL}/presets`, { credentials: 'include' })
+        const [meData, clubsData, friendsData, presetsData] = await Promise.all([
+          fetchMe(),
+          fetchMyClubs(),
+          fetchMyFriends(),
+          fetchMyPresets(),
         ]);
 
-        if (!meResponse.ok) {
-          if (meResponse.status === 401) {
-            console.error('인증되지 않았습니다. 로그인 페이지로 이동합니다.');
-            router.push('/login');
-            return;
-          }
-          throw new Error('회원 정보를 불러오는데 실패했습니다.');
-        }
-
-        const meData = await meResponse.json();
-        setUserData(meData.data);
-
-        if (clubsResponse.ok) {
-          const clubsData = await clubsResponse.json();
-          setClubs(clubsData.data.clubs);
-        }
-
-        if (friendsResponse.ok) {
-          const friendsData = await friendsResponse.json();
-          setFriends(friendsData.data);
-        }
-
-        if (presetsResponse.ok) {
-          const presetsData = await presetsResponse.json();
-          setPresets(presetsData.data);
-        }
+        setUserData(meData);
+        setClubs(clubsData);
+        setFriends(friendsData);
+        setPresets(presetsData);
       } catch (err: unknown) {
         if (err instanceof Error) {
           setError(err.message);
           console.error('Fetch error:', err.message);
+          if (err.message.includes('401')) { // 401 에러 감지 시 로그인 페이지로 이동
+            router.push('/login');
+          }
         } else {
           setError('알 수 없는 오류가 발생했습니다.');
           console.error('Fetch error:', err);
@@ -89,7 +68,6 @@ function MyPage() {
     fetchData();
   }, [router]);
 
-  // 역할에 따라 뱃지 색상을 다르게 설정하는 헬퍼 함수
   const getRoleBadgeClass = (role: 'HOST' | 'MANAGER' | 'PARTICIPANT') => {
     switch (role) {
       case 'HOST':
@@ -198,7 +176,7 @@ function MyPage() {
                 {clubs.map(club => (
                   <div
                     key={club.clubId}
-                    onClick={() => router.push(`/clubs/${club.clubId}`)} // 클릭 시 페이지 이동
+                    onClick={() => router.push(`/clubs/${club.clubId}`)}
                     className="flex justify-between items-center bg-gray-50 p-4 rounded-lg shadow-sm hover:bg-gray-100 transition-colors cursor-pointer"
                   >
                     <span className="text-lg font-medium text-gray-800">{club.clubName}</span>
@@ -231,10 +209,9 @@ function MyPage() {
                 {presets.map(preset => (
                   <div
                     key={preset.id}
-                    onClick={() => router.push(`/presets/${preset.id}`)} // 클릭 시 페이지 이동
+                    onClick={() => router.push(`/presets/${preset.id}`)}
                     className="flex items-center bg-gray-50 p-4 rounded-lg shadow-sm hover:bg-gray-100 transition-colors cursor-pointer"
                   >
-                    {/* 프리셋을 상징하는 SVG 아이콘 */}
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="20"
