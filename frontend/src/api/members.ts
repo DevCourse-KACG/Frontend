@@ -66,3 +66,22 @@ export async function fetchMyPresets() {
   const response = await fetcher('/api/v1/presets');
   return response.data; // 응답 구조에 맞게 data 필드 반환
 }
+
+export async function verifyPassword({ email, password }: { email: string; password: string }) {
+  const payload = { email, password };
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/members/auth/verify-password`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  });
+  
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.message || '비밀번호 인증 실패');
+  }
+  
+  return res.json();
+}
