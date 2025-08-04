@@ -42,7 +42,7 @@ export async function getClubSchedules(
 // 일정 조회
 export async function getSchedule(
   scheduleId: number
-): Promise<components["schemas"]["RsDataScheduleDto"]> {
+): Promise<components["schemas"]["RsDataScheduleDetailDto"]> {
   const res = await fetch(`${BASE_URL}/api/v1/schedules/${scheduleId}`);
   return handleResponse(res);
 }
@@ -50,7 +50,7 @@ export async function getSchedule(
 // 일정 생성
 export async function createSchedule(
   body: components["schemas"]["ScheduleCreateReqBody"]
-): Promise<components["schemas"]["RsDataScheduleDto"]> {
+): Promise<components["schemas"]["RsDataScheduleDetailDto"]> {
   const res = await fetch(`${BASE_URL}/api/v1/schedules`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -63,7 +63,7 @@ export async function createSchedule(
 export async function modifySchedule(
   scheduleId: number,
   body: components["schemas"]["ScheduleUpdateReqBody"]
-): Promise<components["schemas"]["RsDataScheduleDto"]> {
+): Promise<components["schemas"]["RsDataScheduleDetailDto"]> {
   const res = await fetch(`${BASE_URL}/api/v1/schedules/${scheduleId}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },

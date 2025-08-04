@@ -1,12 +1,14 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import toast from 'react-hot-toast';
 
 import type { components } from "@/types/backend/apiV1/schema";
 import { getClubSchedules } from "@/api/schedule";
-import { formatDateString } from '@/lib/formatDate';
+import { extractDateFromISO } from '@/lib/formatDate';
+import { EventInput } from '@fullcalendar/core';
+import FullCalendar from '@fullcalendar/react';
 import Calendar from '@/components/domain/schedule/Calender';
 
 import '@/lib/fullcalendar.css';
@@ -18,8 +20,8 @@ export default function ScheduleListPage() {
   const clubId = 1;
 
   // 캘린더 처리
-  const calendarRef = useRef<any>(null);
-  const [events, setEvents] = useState<any[]>([]); 
+  const calendarRef = useRef<FullCalendar>(null);
+  const [events, setEvents] = useState<EventInput[]>([]); 
 
   // API 호출 취소를 위한 AbortController
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -31,15 +33,22 @@ export default function ScheduleListPage() {
   ) => {
     return schedules.map(schedule => ({
       id: schedule.id !== undefined ? String(schedule.id) : undefined,
-      title: schedule.title!,
-      start: schedule.startDate!,
+      title: schedule.title || '제목 없음',
+      start: schedule.startDate || new Date().toISOString(),
       end: schedule.endDate,
-      allDay: schedule.startDate!.length <= 10 && schedule.endDate!.length <= 10,
+      allDay: (schedule.startDate?.length || 0) <= 10 && (schedule.endDate?.length || 0) <= 10,
     }));
   };
   
+  // 컴포넌트 사라질 때 요청 취소
+  useEffect(() => {
+    return () => {
+      abortControllerRef.current?.abort();
+    };
+  }, []);
+
   const fetchSchedules = useCallback(async (startDate?: string, endDate?: string) => {
-    if (!clubId || isNaN(Number(clubId))) {
+    if (!clubId) {
       setError('유효하지 않은 모임입니다.');
       return;
     }
@@ -52,7 +61,7 @@ export default function ScheduleListPage() {
 
     try {
       // 일정 목록 조회
-      const data = await getClubSchedules(Number(clubId), { startDate, endDate });
+      const data = await getClubSchedules(Number(clubId), { startDate, endDate }, controller.signal);
       // 일정 목록 세팅
       const events = convertSchedulesToEvents(data.data ?? []);
 
@@ -76,8 +85,8 @@ export default function ScheduleListPage() {
 
   // 캘린더 날짜가 변경될 때마다(이전, 다음 버튼 등) 일정 목록 API 재호출
   const handleDatesSet = useCallback((arg: any) => {
-    const startDate = formatDateString(arg.startStr);
-    const endDate = formatDateString(arg.endStr);
+    const startDate = extractDateFromISO(arg.startStr);
+    const endDate = extractDateFromISO(arg.endStr);
     fetchSchedules(startDate, endDate);
   }, [fetchSchedules]);
 
