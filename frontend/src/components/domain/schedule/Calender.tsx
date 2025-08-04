@@ -4,14 +4,19 @@ import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
-import { EventContentArg } from '@fullcalendar/core';
+import { EventContentArg, EventClickArg , DateSelectArg } from '@fullcalendar/core';
 
 interface CalendarProps {
   events: any[];
   handleDatesSet: (arg: any) => void;
+  handleEventClick: (clickInfo: EventClickArg) => void; 
 }
 
-export default function Calendar({ events, handleDatesSet }: CalendarProps) {
+export default function Calendar({ 
+  events, 
+  handleDatesSet,
+  handleEventClick
+}: CalendarProps) {
   // 이벤트 내용 렌더링 함수
   const renderEventContent = (eventInfo: EventContentArg) => (
     <>
@@ -38,6 +43,7 @@ export default function Calendar({ events, handleDatesSet }: CalendarProps) {
       locale='ko'
       height='auto'
       events={events}
+      eventClick={handleEventClick}
     />
   );
 }
