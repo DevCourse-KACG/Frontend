@@ -44,7 +44,6 @@ export default function CreatePresetPage() {
     };
     
     setItems(prevItems => [...prevItems, newItem]);
-    
     setTimeout(() => {
       setNewItemName('');
       setSelectedCategory('PREPARATION');
