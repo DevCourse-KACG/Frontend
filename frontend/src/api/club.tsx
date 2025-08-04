@@ -48,3 +48,18 @@ export const createClub = async (
 
     return responseData.data;
 };
+
+export const getClubInfo = async (clubId: string): Promise<components['schemas']['ClubInfoResponse']> => {
+    const response = await fetch(`${API_URL}/api/v1/clubs/${clubId}`, {
+        method: 'GET',
+        credentials: 'include', // 쿠키를 포함하여 요청
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || '모임 정보를 가져오는 데 실패했습니다.');
+    }
+
+    const data: components['schemas']['ClubInfoResponse'] = await response.json();
+    return data;
+}
