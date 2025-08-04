@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 export interface ClubFormData {
     name: string;
@@ -59,7 +59,17 @@ export default function ClubDataForm({ onSubmit, isLoading = false, initialData,
     const [image, setImage] = useState<File | null>(initialImage || null);
     const [errors, setErrors] = useState<Partial<Record<keyof ClubFormData, string>>>({});
     const [imageError, setImageError] = useState<string>('');
+    const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // 이미지 변경 시 URL 정리
+    useEffect(() => {
+        return () => {
+            if (imagePreviewUrl) {
+                URL.revokeObjectURL(imagePreviewUrl);
+            }
+        };
+    }, [imagePreviewUrl]);
 
     const handleInputChange = (field: keyof ClubFormData, value: any) => {
         setFormData(prev => ({
@@ -102,6 +112,11 @@ export default function ClubDataForm({ onSubmit, isLoading = false, initialData,
             }
 
             setImage(file);
+
+            if (imagePreviewUrl)
+                URL.revokeObjectURL(imagePreviewUrl);
+            setImagePreviewUrl(URL.createObjectURL(file));
+
             setImageError('');
         }
     };
@@ -199,7 +214,7 @@ export default function ClubDataForm({ onSubmit, isLoading = false, initialData,
                     {image ? (
                         <div className="relative w-full h-full">
                             <img
-                                src={URL.createObjectURL(image)}
+                                src={imagePreviewUrl || URL.createObjectURL(image)}
                                 alt="대표 이미지"
                                 className="w-full h-full object-cover rounded-md"
                             />
