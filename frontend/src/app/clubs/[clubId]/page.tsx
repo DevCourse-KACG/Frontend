@@ -21,10 +21,11 @@ export default function ClubPage() {
     // 에러 메시지를 UI로 매핑
     const getErrorMessage = (error: string | null) => {
         switch (error) {
-            case '해당 ID의 클럽을 찾을 수 없습니다.':
+            case '404 : 해당 ID의 클럽을 찾을 수 없습니다.':
+            case '404 : 클럽이 존재하지 않습니다.':
                 return '해당 모임을 찾을 수 없습니다.';
-            case '비공개 클럽 정보는 클럽 멤버만 조회할 수 있습니다.':
-            case '클럽 멤버 정보가 존재하지 않습니다.':
+            case '403 : 비공개 클럽 정보는 클럽 멤버만 조회할 수 있습니다.':
+            case '404 : 클럽 멤버 정보가 존재하지 않습니다.':
                 return '접근 권한이 없습니다.';
             default:
                 return error ? `오류가 발생했습니다: ${error}` : null;
