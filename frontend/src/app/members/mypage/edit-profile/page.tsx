@@ -1,17 +1,11 @@
 'use client';
 
-import * as React from "react";
-import { useState, useEffect, useCallback } from "react";
-import Image from "next/image"; // Image 컴포넌트를 사용하여 최적화
-
-// Next.js 라우터는 모의 객체로 대체하여 코드 실행 가능성을 높입니다.
-const useRouter = () => ({
-  push: (path: string) => console.log(`Navigating to: ${path}`),
-  back: () => console.log('Navigating back'),
-});
+import * as React from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import Image from 'next/image'; // Image 컴포넌트를 사용하여 최적화
+import { useRouter } from 'next/navigation';
 
 // ======================= API 함수 정의 =======================
-// 제공해주신 마이페이지 코드의 API 구조를 기반으로 업데이트했습니다.
 const API_BASE_URL = 'http://localhost:8080/api/v1';
 
 // 사용자 정보 응답 데이터 타입
@@ -34,11 +28,9 @@ interface UpdateProfileResponse {
 
 /**
  * 현재 로그인한 사용자의 정보를 가져오는 함수입니다.
- * 실제 백엔드 API 호출 코드를 이 함수 내부에 작성해 주세요.
  * @returns {Promise<MeData>} 사용자 정보를 담은 객체를 반환합니다.
  */
 const fetchMe = async (): Promise<MeData> => {
-  // TODO: 필요한 인증 헤더를 추가하세요.
   const response = await fetch(`${API_BASE_URL}/members/me`, { credentials: 'include' });
   
   if (!response.ok) {
@@ -54,23 +46,59 @@ const fetchMe = async (): Promise<MeData> => {
 
 /**
  * 사용자 프로필 정보를 업데이트하는 함수입니다.
- * FormData를 사용하여 닉네임, 자기소개, 프로필 이미지를 전송합니다.
- * @param {FormData} formData 닉네임, 자기소개, 이미지 파일을 포함한 FormData 객체
+ * 항상 FormData를 사용하여 닉네임, 자기소개, 프로필 이미지를 전송합니다.
+ * @param {object} params 업데이트할 정보.
+ * @param {string} params.nickname 닉네임
+ * @param {string | null} params.bio 자기소개
+ * @param {string | undefined} params.newPassword 새 비밀번호
+ * @param {File | null} params.profileImageFile 프로필 이미지 파일.
  * @returns {Promise<UpdateProfileResponse>} 업데이트 결과를 담은 객체를 반환합니다.
  */
-const updateProfile = async (formData: FormData): Promise<UpdateProfileResponse> => {
-  // TODO: 프로필 업데이트를 위한 정확한 API 엔드포인트와 필요한 인증 헤더를 추가하세요.
-  // 이 예시는 단순화된 POST 요청입니다.
+const updateProfile = async ({ 
+  nickname, 
+  bio, 
+  newPassword, 
+  profileImageFile 
+}: { 
+  nickname: string; 
+  bio: string | null; 
+  newPassword?: string; 
+  profileImageFile: File | null; 
+}): Promise<UpdateProfileResponse> => {
+  // 백엔드 API가 multipart/form-data만 허용하므로, 이미지가 없더라도 FormData를 사용합니다.
+  const formData = new FormData();
+  
+  const profileData = {
+    nickname,
+    bio,
+    ...(newPassword && { password: newPassword }),
+  };
+
+  // JSON 데이터를 Blob으로 변환하여 'data' 파트로 추가
+  formData.append('data', new Blob([JSON.stringify(profileData)], { type: 'application/json' }));
+  
+  // 프로필 이미지가 존재하면 'profileImage' 파트로 추가
+  if (profileImageFile) {
+    formData.append('profileImage', profileImageFile);
+  }
+
+  console.log('API 호출: FormData로 프로필 업데이트');
   const response = await fetch(`${API_BASE_URL}/members/me`, {
-    method: 'PATCH', // 또는 PUT
+    method: 'PUT',
     body: formData,
     credentials: 'include',
-    // FormData를 사용할 때는 'Content-Type': 'multipart/form-data' 헤더를 수동으로 설정하지 마세요.
-    // 브라우저가 자동으로 올바르게 설정합니다.
   });
   
   if (!response.ok) {
-    const errorData = await response.json();
+    let errorData = null;
+    try {
+      errorData = await response.json();
+    } catch (e) {
+      const errorText = await response.text();
+      console.error('API Error Response (Text):', errorText);
+      throw new Error(errorText || '프로필 업데이트에 실패했습니다.');
+    }
+    console.error('API Error Response (JSON):', errorData); 
     throw new Error(errorData.message || '프로필 업데이트에 실패했습니다.');
   }
 
@@ -155,29 +183,16 @@ export default function EditProfilePage() {
       return;
     }
     
-    // FormData를 사용하여 텍스트 데이터와 파일을 함께 전송
-    const formData = new FormData();
-    
-    // 프로필 데이터를 JSON 객체로 준비
-    const profileData = {
-      nickname: userInfo.nickname,
-      bio: userInfo.bio,
-      ...(newPassword && { password: newPassword }),
-    };
-    
     console.log('API 호출 시작: 회원 정보 수정...');
-    console.log('전송될 데이터:', profileData);
     
-    formData.append('data', JSON.stringify(profileData));
-
-    if (profileImageFile) {
-      formData.append('profileImage', profileImageFile);
-      console.log('전송될 이미지 파일:', profileImageFile.name);
-    }
-
     try {
       // 실제 API 호출
-      await updateProfile(formData);
+      await updateProfile({
+        nickname: userInfo.nickname,
+        bio: userInfo.bio,
+        newPassword,
+        profileImageFile,
+      });
       setSuccess("회원 정보가 성공적으로 수정되었습니다.");
       console.log('API 호출 성공: 회원 정보 수정');
       
@@ -187,6 +202,10 @@ export default function EditProfilePage() {
       // 비밀번호 입력 필드 초기화
       setNewPassword('');
       setNewPasswordConfirm('');
+      setProfileImageFile(null);
+      
+      // 마이페이지로 이동합니다.
+      router.push('/members/mypage');
 
     } catch (err: unknown) {
       console.error('API 호출 실패: 회원 정보 수정', err);
