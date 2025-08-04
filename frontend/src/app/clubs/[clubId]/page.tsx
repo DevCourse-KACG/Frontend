@@ -10,12 +10,14 @@ import ClubInfo from '@/components/domain/clubs/clubInfo';
 import ClubInfoSideMenu from '@/components/domain/clubs/clubInfoSideMenu';
 
 type ClubInfoResponse = components['schemas']['ClubInfoResponse'];
+type MyInfoInClubResponse = components['schemas']['MyInfoInClub'];
 
 export default function ClubPage() {
     const params = useParams();
     const clubId = params.clubId as string;
     const [isLoading, setIsLoading] = useState(true);
     const [clubInfo, setClubInfo] = useState<ClubInfoResponse | null>(null);
+    const [myInfo, setMyInfo] = useState<MyInfoInClubResponse | null>(null);
     const [error, setError] = useState<string | null>(null);
 
     // 에러 메시지를 UI로 매핑
@@ -37,7 +39,7 @@ export default function ClubPage() {
         const fetchData = async () => {
             try {
                 // 순차 호출 (병렬도 가능)
-                await getMyInfoInClub(clubId);
+                const myInfo = await getMyInfoInClub(clubId);
                 const data = await getClubInfo(clubId);
 
                 if (!data?.data) {
@@ -45,6 +47,7 @@ export default function ClubPage() {
                 }
 
                 setClubInfo(data.data);
+                setMyInfo(myInfo);
             } catch (err) {
                 setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
             } finally {
@@ -70,7 +73,7 @@ export default function ClubPage() {
             <h1 className="text-2xl font-bold mb-4">{clubId}번 모임 페이지</h1>
             <section className="flex">
                 <aside className="w-1/5 pr-4">
-                    <ClubInfoSideMenu />
+                    <ClubInfoSideMenu isHost={myInfo?.role === 'HOST'} />
                 </aside>
                 <section className="w-4/5">
                     {clubInfo ? <ClubInfo club={clubInfo} /> : <div className="text-center">클럽 정보를 불러오는 중입니다...</div>}

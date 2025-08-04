@@ -67,7 +67,7 @@ const ClubInfo: React.FC<ClubInfoProps> = ({ club }) => {
             </main>
             <div style={{ height: 16 }} />
             <section>
-                <InfoCard title="소개" content={club.bio} color="#FFFFFF" contentColor="#000000" />
+                <InfoCard title="소개" content={club.bio} />
             </section>
         </section>
     );
