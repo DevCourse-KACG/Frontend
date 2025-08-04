@@ -25,7 +25,7 @@ const ClubInfo: React.FC<ClubInfoProps> = ({ club }) => {
                         <img
                             src={club.imageUrl && club.imageUrl.trim() !== "" ? club.imageUrl : "/default-club-image.png"}
                             alt={club.name}
-                            style={{ width: '100%', borderRadius: 8, objectFit: 'cover', background: COLORS.yellow, maxHeight: 500, height: 'auto' }}
+                            style={{ width: '100%', borderRadius: 8, objectFit: 'scale-down', background: '#ffffff', maxHeight: 500, height: 'auto' }}
                         />
                     </figure>
                 </section>
