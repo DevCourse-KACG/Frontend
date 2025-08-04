@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import { components } from "@/types/backend/apiV1/schema";
 import LoadingSpinner from '@/components/global/LoadingSpinner';
 import { getClubInfo } from '@/api/club';
-import { get } from 'http';
+import ClubInfo from '@/components/domain/clubs/clubInfo';
 
 type ClubInfoResponse = components['schemas']['ClubInfoResponse'];
 
@@ -22,7 +22,14 @@ export default function ClubPage() {
             setIsLoading(true);
             try {
                 const data = await getClubInfo(clubId);
-                setClubInfo(data);
+
+                if (!data || !data.data) {
+                    throw new Error('해당 ID의 클럽을 찾을 수 없습니다.');
+                }
+
+                setClubInfo(data.data);
+
+                console.log('클럽 정보:', data);
             } catch (err) {
                 if (err instanceof Error) {
                     console.error('모임 정보를 가져오는 데 실패했습니다:', err.message);
@@ -57,14 +64,17 @@ export default function ClubPage() {
         return <div className="text-center py-12">접근 권한이 없습니다.</div>;
     }
 
-
     // 가드 클로즈 : 알 수 없는 에러 발생
+    if (error) {
+        return <div className="text-center py-12">오류가 발생했습니다: {error}</div>;
+    }
 
-
+    // 클럽 정보가 성공적으로 로드된 경우
     return (
         <div className="max-w-2xl mx-auto p-4">
             <h1 className="text-2xl font-bold mb-4">{clubId}번 모임 페이지</h1>
-            {/* ClubDataForm 컴포넌트는 여기에 추가될 예정입니다. */}
+            {clubInfo ? <ClubInfo club={clubInfo} /> : <div className="text-center">클럽 정보를 불러오는 중입니다...</div>}
+
         </div>
     );
 }
