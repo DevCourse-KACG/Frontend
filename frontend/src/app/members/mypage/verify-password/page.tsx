@@ -44,7 +44,7 @@ export default function PasswordVerificationPage() {
       console.log("비밀번호 인증 성공");
       
       // 인증 성공 시 내 정보 수정 페이지로 이동
-      router.push('/edit-profile'); 
+      router.push('members/mypage/edit-profile'); 
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError("비밀번호가 올바르지 않습니다. 다시 시도해 주세요.");
