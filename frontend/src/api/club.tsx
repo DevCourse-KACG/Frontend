@@ -49,6 +49,11 @@ export const createClub = async (
     return responseData.data;
 };
 
+/**
+ * 모임 정보 조회
+ * @param clubId 모임 ID
+ * @returns 
+ */
 export const getClubInfo = async (clubId: string): Promise<components['schemas']['RsDataClubInfoResponse']> => {
     const response = await fetch(`${API_URL}/api/v1/clubs/${clubId}`, {
         method: 'GET',
