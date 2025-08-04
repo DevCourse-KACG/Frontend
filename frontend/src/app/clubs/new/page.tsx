@@ -7,6 +7,16 @@ export default function NewClubPage() {
     const handleSubmit = (data: ClubFormData, image: File | null) => {
         console.log('Form Data:', data);
         console.log('Image:', image);
+
+        //dada를 schema 형태로 변환
+
+        // api 호출
+
+        // 성공 시 모임 상세 페이지로 이동
+
+        // 실패 시 에러 메시지 표시
+
+
     };
 
     return (
