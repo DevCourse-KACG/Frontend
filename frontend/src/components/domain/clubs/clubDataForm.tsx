@@ -7,7 +7,7 @@ export interface ClubFormData {
     bio: string;
     mainSpot: string;
     maximumCapacity: number;
-    category: string;
+    category: typeof CATEGORIES[number]['value'];
     eventType: "ONE_TIME" | "SHORT_TERM" | "LONG_TERM";
     activityPeriod: {
         startDate: string;
@@ -24,16 +24,16 @@ interface ClubDataFormProps {
 }
 
 const CATEGORIES = [
-    '공부(STUDY)',
-    '취미(HOBBY)',
-    '운동(SPORTS)',
-    '여행(TRAVEL)',
-    '문화(CULTURE)',
-    '음식(FOOD)',
-    '파티(PARTY)',
-    '업무(WORK)',
-    '기타(OTHER)'
-];
+    { value: 'STUDY', label: '공부' },
+    { value: 'HOBBY', label: '취미' },
+    { value: 'SPORTS', label: '운동' },
+    { value: 'TRAVEL', label: '여행' },
+    { value: 'CULTURE', label: '문화' },
+    { value: 'FOOD', label: '음식' },
+    { value: 'PARTY', label: '파티' },
+    { value: 'WORK', label: '업무' },
+    { value: 'OTHER', label: '기타' }
+] as const;
 
 const EVENT_TYPES = [
     { value: 'ONE_TIME', label: '일회성' },
@@ -47,7 +47,7 @@ export default function ClubDataForm({ onSubmit, isLoading = false, initialData,
         bio: initialData?.bio || '',
         mainSpot: initialData?.mainSpot || '',
         maximumCapacity: initialData?.maximumCapacity || 10,
-        category: initialData?.category || '',
+        category: initialData?.category || 'STUDY',
         eventType: initialData?.eventType || 'ONE_TIME',
         activityPeriod: initialData?.activityPeriod || {
             startDate: '',
@@ -301,8 +301,8 @@ export default function ClubDataForm({ onSubmit, isLoading = false, initialData,
                 >
                     <option value="">카테고리를 선택하세요</option>
                     {CATEGORIES.map((category) => (
-                        <option key={category} value={category}>
-                            {category}
+                        <option key={category.value} value={category.value}>
+                            {category.label}
                         </option>
                     ))}
                 </select>

@@ -1,6 +1,6 @@
 import { components } from "@/types/backend/apiV1/schema";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://localhost:8080';
 
 type CreateClubRequest = components['schemas']['CreateClubRequest'];
 type ClubResponse = components['schemas']['ClubResponse'];
@@ -37,6 +37,7 @@ export const createClub = async (
         // FormData를 body로 사용할 때는 'Content-Type' 헤더를 직접 설정하지 않습니다.
         // 브라우저가 자동으로 'multipart/form-data'와 함께 올바른 boundary를 설정해줍니다.
         body: formData,
+        credentials: 'include', // 쿠키를 포함하여 요청
     });
 
     const responseData = await response.json();

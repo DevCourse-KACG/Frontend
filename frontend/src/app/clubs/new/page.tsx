@@ -1,22 +1,47 @@
 'use client';
 
 import ClubDataForm, { ClubFormData } from '@/components/domain/clubs/clubDataForm';
+import { createClub } from '@/api/club';
+import { components } from "@/types/backend/apiV1/schema";
+import { useRouter } from 'next/navigation';
+
+type CreateClubRequest = components['schemas']['CreateClubRequest'];
+type ClubResponse = components['schemas']['ClubResponse'];
 
 export default function NewClubPage() {
+    const router = useRouter();
 
-    const handleSubmit = (data: ClubFormData, image: File | null) => {
+    const handleSubmit = async (data: ClubFormData, image: File | null) => {
         console.log('Form Data:', data);
         console.log('Image:', image);
 
-        //dada를 schema 형태로 변환
+        //dada를 schema 형태로 변환 (멤버 없음)
+        const createClubRequest: CreateClubRequest = {
+            name: data.name,
+            bio: data.bio,
+            category: data.category,
+            mainSpot: data.mainSpot,
+            maximumCapacity: data.maximumCapacity,
+            eventType: data.eventType,
+            startDate: data.activityPeriod.startDate,
+            endDate: data.activityPeriod.endDate,
+            isPublic: data.isPublic,
+            clubMembers: []
+        }
+
 
         // api 호출
+        try {
+            const clubResponse: ClubResponse = await createClub(createClubRequest, image);
 
-        // 성공 시 모임 상세 페이지로 이동
-
-        // 실패 시 에러 메시지 표시
-
-
+            // 성공 시 모임 상세 페이지로 이동
+            router.push(`/clubs/${clubResponse.clubId}`);
+        }
+        catch {
+            // 실패 시 에러 메시지 표시
+            console.error('모임 생성에 실패했습니다.');
+            alert('모임 생성에 실패했습니다. 다시 시도해주세요.');
+        }
     };
 
     return (
