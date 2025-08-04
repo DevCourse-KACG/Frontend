@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -121,13 +121,29 @@ function MyPage() {
             </p>
           </div>
 
+          {/* 프로필 이미지 섹션 수정 */}
           <div className="relative flex items-start space-x-6 p-6 border-t border-gray-200">
-            <div className="w-24 h-24 rounded-full flex-shrink-0 overflow-hidden">
-              <img
-                src={userData.profileImage || "https://via.placeholder.com/96/cccccc?Text=No+Image"}
-                alt="프로필 이미지"
-                className="w-full h-full object-cover"
-              />
+            <div className="w-24 h-24 rounded-full flex-shrink-0 overflow-hidden bg-gray-200 flex items-center justify-center">
+              {userData.profileImage ? (
+                <img
+                  src={userData.profileImage}
+                  alt="프로필 이미지"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  className="w-16 h-16 text-gray-500"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.75.75H4.501a.75.75 0 01-.75-.75z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              )}
             </div>
             
             <div className="flex-1">
@@ -142,6 +158,7 @@ function MyPage() {
               수정
             </button>
           </div>
+          {/* 프로필 이미지 섹션 수정 끝 */}
           
           <div className="p-6 border rounded-lg shadow-sm">
             <div className="flex justify-between items-center mb-2">
@@ -250,3 +267,4 @@ function MyPage() {
 }
 
 export default MyPage;
+
