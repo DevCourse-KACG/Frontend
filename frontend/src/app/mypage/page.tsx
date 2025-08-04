@@ -11,9 +11,11 @@ interface UserData {
   bio: string;
 }
 
+// API 응답에 맞춰 인터페이스 수정
 interface Club {
-  id: number;
-  name: string;
+  clubId: number;
+  clubName: string;
+  myRole: 'HOST' | 'MANAGER' | 'PARTICIPANT'; // 역할 정보 추가
 }
 
 interface Friend {
@@ -59,7 +61,7 @@ function MyPage() {
 
         if (clubsResponse.ok) {
           const clubsData = await clubsResponse.json();
-          setClubs(clubsData.data);
+          setClubs(clubsData.data.clubs);
         }
 
         if (friendsResponse.ok) {
@@ -86,6 +88,20 @@ function MyPage() {
 
     fetchData();
   }, [router]);
+
+  // 역할에 따라 뱃지 색상을 다르게 설정하는 헬퍼 함수
+  const getRoleBadgeClass = (role: 'HOST' | 'MANAGER' | 'PARTICIPANT') => {
+    switch (role) {
+      case 'HOST':
+        return 'bg-red-100 text-red-800';
+      case 'MANAGER':
+        return 'bg-blue-100 text-blue-800';
+      case 'PARTICIPANT':
+        return 'bg-gray-100 text-gray-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
 
   if (loading) {
     return (
@@ -136,7 +152,6 @@ function MyPage() {
               <p className="text-gray-600 mt-2">{userData.bio}</p>
             </div>
             
-            {/* 수정 버튼을 자기소개 박스 오른쪽 하단에 배치 */}
             <button
               onClick={() => router.push('/edit-profile')}
               className="absolute bottom-6 right-6 text-sm px-3 py-1.5 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors font-semibold"
@@ -144,12 +159,18 @@ function MyPage() {
               수정
             </button>
           </div>
-
-          <div
-            onClick={() => router.push('/friends-manage')}
-            className="p-6 border rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-          >
-            <h3 className="text-xl font-semibold mb-2">친구 목록</h3>
+          
+          {/* 친구 목록 섹션 */}
+          <div className="p-6 border rounded-lg shadow-sm">
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="text-xl font-semibold">친구 목록</h3>
+              <button 
+                onClick={() => router.push('/friends-manage')}
+                className="text-sm px-3 py-1.5 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors font-semibold"
+              >
+                전체보기
+              </button>
+            </div>
             {friends && friends.length > 0 ? (
               <ul className="list-disc list-inside space-y-1">
                 {friends.map(friend => (
@@ -161,33 +182,78 @@ function MyPage() {
             )}
           </div>
 
-          <div
-            onClick={() => router.push('/clubs-manage')}
-            className="p-6 border rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-          >
-            <h3 className="text-xl font-semibold mb-2">가입한 모임 목록</h3>
+          {/* 가입한 모임 목록 섹션 */}
+          <div className="p-6 border rounded-lg shadow-sm">
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="text-xl font-semibold">가입한 모임 목록</h3>
+              <button
+                onClick={() => router.push('/clubs-manage')}
+                className="text-sm px-3 py-1.5 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors font-semibold"
+              >
+                전체보기
+              </button>
+            </div>
             {clubs && clubs.length > 0 ? (
-              <ul className="list-disc list-inside space-y-1">
+              <div className="space-y-2">
                 {clubs.map(club => (
-                  <li key={club.id}>{club.name}</li>
+                  <div
+                    key={club.clubId}
+                    onClick={() => router.push(`/clubs/${club.clubId}`)} // 클릭 시 페이지 이동
+                    className="flex justify-between items-center bg-gray-50 p-4 rounded-lg shadow-sm hover:bg-gray-100 transition-colors cursor-pointer"
+                  >
+                    <span className="text-lg font-medium text-gray-800">{club.clubName}</span>
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-semibold ${getRoleBadgeClass(club.myRole)}`}
+                    >
+                      {club.myRole === 'HOST' ? '모임장' : club.myRole === 'MANAGER' ? '매니저' : '참여자'}
+                    </span>
+                  </div>
                 ))}
-              </ul>
+              </div>
             ) : (
               <p className="text-gray-500">현재 가입한 모임이 없습니다.</p>
             )}
           </div>
 
-          <div
-            onClick={() => router.push('/presets-manage')}
-            className="p-6 border rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-          >
-            <h3 className="text-xl font-semibold mb-2">내가 만든 프리셋 목록</h3>
+          {/* 내가 만든 프리셋 목록 섹션 */}
+          <div className="p-6 border rounded-lg shadow-sm">
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="text-xl font-semibold">내가 만든 프리셋 목록</h3>
+              <button
+                onClick={() => router.push('/presets-manage')}
+                className="text-sm px-3 py-1.5 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors font-semibold"
+              >
+                전체보기
+              </button>
+            </div>
             {presets && presets.length > 0 ? (
-              <ul className="list-disc list-inside space-y-1">
+              <div className="space-y-2">
                 {presets.map(preset => (
-                  <li key={preset.id}>{preset.name}</li>
+                  <div
+                    key={preset.id}
+                    onClick={() => router.push(`/presets/${preset.id}`)} // 클릭 시 페이지 이동
+                    className="flex items-center bg-gray-50 p-4 rounded-lg shadow-sm hover:bg-gray-100 transition-colors cursor-pointer"
+                  >
+                    {/* 프리셋을 상징하는 SVG 아이콘 */}
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="text-gray-500 mr-3"
+                    >
+                      <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.08a2 2 0 0 1 1 1.73v.55a2 2 0 0 1-1 1.73l-.15.08a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.73v-.55a2 2 0 0 1 1-1.73l.15-.08a2 2 0 0 0 .73-2.73l-.22-.39a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    <span className="text-lg font-medium text-gray-800">{preset.name}</span>
+                  </div>
                 ))}
-              </ul>
+              </div>
             ) : (
               <p className="text-gray-500">현재 만든 프리셋이 없습니다.</p>
             )}
