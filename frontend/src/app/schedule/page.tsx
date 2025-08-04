@@ -72,13 +72,8 @@ export default function ScheduleListPage() {
       // 일정 목록 세팅
       const events = convertSchedulesToEvents(data.data ?? []);
 
-      // 캘린더 이벤트 처리
+      // 캘린더 이벤트 저장
       setEvents(events);
-      if (calendarRef.current) {
-        const calendarApi = calendarRef.current.getApi();
-        calendarApi.removeAllEvents();
-        calendarApi.addEventSource(events);
-      }
     } catch (e) {
       // 요청 취소는 무시
       if (e instanceof DOMException && e.name === 'AbortError') return;
@@ -113,25 +108,27 @@ export default function ScheduleListPage() {
   };
 
   // 모달 닫기
-  const handleCloseModal = () => {
+  const handleCloseModal = (shouldRefresh: boolean) => {
     setShowModal(false);
     setSelectedDateInfo(null);
     setSelectedScheduleId(null);
     setModalType(null);
-    // 일정 생성/삭제 후 캘린더를 최신화
-    fetchSchedules(); 
-  };
-
-  // 생성 모달에서 확인 버튼 클릭 시
-  const handleCreateEvent = (title: string) => {
-    if (title && selectedDateInfo) {
-      const calendarApi = calendarRef.current?.getApi();
-      if (calendarApi) {
-        calendarApi.unselect();
-        // 생성 모달
-      }
+  
+    if (shouldRefresh) {
+      refreshCalendar();
     }
-    handleCloseModal();
+  };
+  
+  // 일정 생성/삭제 후 캘린더를 최신화
+  const refreshCalendar = async () => {
+    if (calendarRef.current) {
+      const calendarApi = calendarRef.current.getApi();
+      const view = calendarApi.view;
+      const startDate = extractDateFromISO(view.activeStart.toISOString());
+      const endDate = extractDateFromISO(view.activeEnd.toISOString());
+      // 일정 목록 재조회
+      await fetchSchedules(startDate, endDate);
+    }
   };
 
   return (
@@ -139,6 +136,7 @@ export default function ScheduleListPage() {
       {/* Main Calendar */}
       <div className='flex-1 p-4 lg:p-6'>
         <Calendar 
+          ref={calendarRef}
           events={events} 
           handleDatesSet={handleDatesSet} 
           handleEventClick={handleEventClick}

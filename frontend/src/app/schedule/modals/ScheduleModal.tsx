@@ -10,7 +10,7 @@ import type { ScheduleDetailDto } from '@/types/schedule';
 interface ScheduleModalProps {
   showModal: boolean;
   selectedScheduleId: number | null;
-  onClose: () => void;
+  onClose: (shouldRefresh: boolean) => void;
 }
 
 export default function ScheduleModal ({
@@ -72,7 +72,7 @@ export default function ScheduleModal ({
 
       // 삭제 알림 후 모달 닫기
       toast.success(data.message || '일정이 삭제되었습니다.');
-      onClose();
+      onClose(true);
     } catch (e) {
       const msg = e instanceof Error ? e.message : '삭제 중 오류 발생';
       toast.error(msg);
@@ -80,6 +80,12 @@ export default function ScheduleModal ({
       setIsDeleting(false);
     }
   };
+
+  // 재조회 없이 닫기
+  const handleCloseClick = () => {
+    onClose(false);
+  };
+
   if (!showModal) return null;
 
   return (
@@ -133,7 +139,7 @@ export default function ScheduleModal ({
                 {isDeleting ? '삭제 중...' : '삭제'}
               </button>
               <button
-                onClick={onClose}
+                onClick={handleCloseClick}
                 disabled={isDeleting}
                 className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
               >

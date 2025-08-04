@@ -1,5 +1,7 @@
 'use client';
 
+import React, { forwardRef } from 'react';
+
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -12,11 +14,12 @@ interface CalendarProps {
   handleEventClick: (clickInfo: EventClickArg) => void; 
 }
 
-export default function Calendar({ 
+const Calendar = forwardRef<FullCalendar, CalendarProps>(({
   events, 
   handleDatesSet,
   handleEventClick
-}: CalendarProps) {
+}, ref) => {
+
   // 이벤트 내용 렌더링 함수
   const renderEventContent = (eventInfo: EventContentArg) => (
     <>
@@ -27,6 +30,7 @@ export default function Calendar({
 
   return (
     <FullCalendar
+      ref={ref}
       plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
       headerToolbar={{
         left: 'prev,next today',
@@ -46,4 +50,6 @@ export default function Calendar({
       eventClick={handleEventClick}
     />
   );
-}
+});
+
+export default Calendar;
