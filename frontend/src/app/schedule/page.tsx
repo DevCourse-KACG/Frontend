@@ -2,35 +2,14 @@
 
 import { useParams } from 'next/navigation';
 import React, { useState, useCallback, useRef } from 'react';
-
-import FullCalendar from '@fullcalendar/react';
-import dayGridPlugin from '@fullcalendar/daygrid';
-import timeGridPlugin from '@fullcalendar/timegrid';
-import interactionPlugin from '@fullcalendar/interaction';
-import { EventContentArg } from '@fullcalendar/core';
 import toast from 'react-hot-toast';
 
 import type { components } from "@/types/backend/apiV1/schema";
 import { getClubSchedules } from "@/api/schedule";
-import '@/app/schedule/utils/fullcalendar.css';
+import { formatDateString } from '@/lib/formatDate';
+import Calendar from '@/components/domain/schedule/Calender';
 
-// YYYY-mm-dd 포맷
-export function formatDateString(dateStr: string): string {
-  return dateStr.split('T')[0];
-}
-
-// ScheduleDto를 FullCalendar Event 객체로 변환
-const convertSchedulesToEvents = (
-  schedules: components["schemas"]["ScheduleDto"][]
-) => {
-  return schedules.map(schedule => ({
-    id: schedule.id !== undefined ? String(schedule.id) : undefined,
-    title: schedule.title!,
-    start: schedule.startDate!,
-    end: schedule.endDate,
-    allDay: schedule.startDate!.length <= 10 && schedule.endDate!.length <= 10,
-  }));
-};
+import '@/lib/fullcalendar.css';
 
 export default function ScheduleListPage() {
   // 파라미터 처리 - 모임 아이디
@@ -39,13 +18,26 @@ export default function ScheduleListPage() {
   const clubId = 1;
 
   // 캘린더 처리
-  const calendarRef = useRef<FullCalendar>(null);
+  const calendarRef = useRef<any>(null);
+  const [events, setEvents] = useState<any[]>([]); 
 
   // API 호출 취소를 위한 AbortController
   const abortControllerRef = useRef<AbortController | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // 일정 목록 조회
+  // ScheduleDto를 FullCalendar Event 객체로 변환
+  const convertSchedulesToEvents = (
+    schedules: components["schemas"]["ScheduleDto"][]
+  ) => {
+    return schedules.map(schedule => ({
+      id: schedule.id !== undefined ? String(schedule.id) : undefined,
+      title: schedule.title!,
+      start: schedule.startDate!,
+      end: schedule.endDate,
+      allDay: schedule.startDate!.length <= 10 && schedule.endDate!.length <= 10,
+    }));
+  };
+  
   const fetchSchedules = useCallback(async (startDate?: string, endDate?: string) => {
     if (!clubId || isNaN(Number(clubId))) {
       setError('유효하지 않은 모임입니다.');
@@ -61,9 +53,12 @@ export default function ScheduleListPage() {
     try {
       // 일정 목록 조회
       const data = await getClubSchedules(Number(clubId), { startDate, endDate });
-
       // 일정 목록 세팅
       const events = convertSchedulesToEvents(data.data ?? []);
+
+      setEvents(events);
+
+      // 캘린더 이벤트 처리
       if (calendarRef.current) {
         const calendarApi = calendarRef.current.getApi();
         calendarApi.removeAllEvents();
@@ -86,38 +81,11 @@ export default function ScheduleListPage() {
     fetchSchedules(startDate, endDate);
   }, [fetchSchedules]);
 
-  // 이벤트 내용 렌더링 함수
-  const renderEventContent = (eventInfo: EventContentArg) => {
-    return (
-      <>
-        <b>{eventInfo.timeText}</b>
-        <i>{eventInfo.event.title}</i>
-      </>
-    );
-  };
-
   return (
     <div className='flex flex-col lg:flex-row min-h-screen bg-gray-100 font-sans'>
       {/* Main Calendar */}
       <div className='flex-1 p-4 lg:p-6'>
-        <FullCalendar
-          ref={calendarRef}
-          plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-          headerToolbar={{
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,timeGridWeek'
-          }}
-          initialView='dayGridMonth'
-          editable={true}
-          selectable={true}
-          selectMirror={true}
-          dayMaxEvents={true}
-          datesSet={handleDatesSet}
-          eventContent={renderEventContent}
-          locale='ko'
-          height='auto'
-        />
+        <Calendar events={events} handleDatesSet={handleDatesSet} />
       </div>
     </div>
   );
