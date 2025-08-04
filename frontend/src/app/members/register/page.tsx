@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { signUp } from '@/api/members'; // api.ts에서 함수를 import
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -27,15 +28,12 @@ export default function SignUpPage() {
       return;
     }
 
-
-    // 이메일 형식 검증
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       setError("올바른 이메일 형식을 입력해주세요.");
       return;
     }
 
-    // 비밀번호 강도 검증
     if (password.length < 8) {
       setError("비밀번호는 최소 8자 이상이어야 합니다.");
       return;
@@ -49,31 +47,23 @@ export default function SignUpPage() {
     setLoading(true);
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/members/auth/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: email,
-          password: password,
-          nickname: nickname,
-          bio: bio,
-        }),
+      await signUp({
+        email: email,
+        password: password,
+        nickname: nickname,
+        bio: bio,
       });
 
-      if (!res.ok) {
-        const errorData = await res.json();
-        setError(errorData.message || "회원가입에 실패했습니다.");
-        setLoading(false);
-        return;
-      }
-
       setSuccess("회원가입에 성공했습니다!");
-      setLoading(false);
-
       // 회원가입 성공 시 메인 페이지로 이동
       router.push("/");
-    } catch (err) {
-      setError("서버와 통신 중 오류가 발생했습니다.");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("서버와 통신 중 오류가 발생했습니다.");
+      }
+    } finally {
       setLoading(false);
     }
   }
@@ -162,7 +152,7 @@ export default function SignUpPage() {
             type="submit"
             disabled={loading}
             className={`w-full py-2 rounded text-white transition ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
-              }`}
+            }`}
           >
             {loading ? '가입 중...' : '가입하기'}
           </button>
