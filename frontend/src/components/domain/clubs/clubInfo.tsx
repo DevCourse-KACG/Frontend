@@ -4,7 +4,6 @@ import React from 'react';
 import { components } from "@/types/backend/apiV1/schema";
 import InfoCard from '@/components/global/InfoCard';
 import { COLORS } from '@/constants/colors';
-
 type ClubInfoResponse = components['schemas']['ClubInfoResponse'];
 
 interface ClubInfoProps {
@@ -24,9 +23,9 @@ const ClubInfo: React.FC<ClubInfoProps> = ({ club }) => {
                 <section style={{ display: 'flex', alignItems: 'flex-start', gap: 16, flex: 1, flexDirection: 'column' }}>
                     <figure style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%' }}>
                         <img
-                            src={club.imageUrl}
+                            src={club.imageUrl && club.imageUrl.trim() !== "" ? club.imageUrl : "/default-club-image.png"}
                             alt={club.name}
-                            style={{ width: '100%', borderRadius: 8, objectFit: 'cover', background: COLORS.yellow }}
+                            style={{ width: '100%', borderRadius: 8, objectFit: 'cover', background: COLORS.yellow, maxHeight: 500, height: 'auto' }}
                         />
                     </figure>
                 </section>
