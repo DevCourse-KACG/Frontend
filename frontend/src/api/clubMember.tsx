@@ -74,8 +74,8 @@ export const deleteMember = async (clubId: string, memberId: number) => {
     }
 };
 
-// 클럽에 멤버 추가
-export const addMembers = async (clubId: string, emails: string[]) => {
+// 클럽에 멤버 초대
+export const inviteMembers = async (clubId: string, emails: string[]) => {
     // emails 배열을 ClubMemberRegisterInfo 배열로 변환 (role은 'PARTICIPANT'로 고정)
     const members: ClubMemberRegisterInfo[] = emails.map(email => ({
         email,
