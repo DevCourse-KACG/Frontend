@@ -11,12 +11,14 @@ interface ScheduleModalProps {
   showModal: boolean;
   selectedScheduleId: number | null;
   onClose: (shouldRefresh: boolean, action?: 'modify' | 'goToCheckList' | 'createCheckList', targetId?: number) => void;
+  isReadOnly?: boolean;
 }
 
 export default function ScheduleModal ({
   showModal,
   selectedScheduleId,
-  onClose
+  onClose,
+  isReadOnly
 }: ScheduleModalProps ) {
   const [schedule, setSchedule] = useState<ScheduleDetailDto | null | undefined>(null);
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
@@ -157,21 +159,25 @@ export default function ScheduleModal ({
 
               {/* 우측 버튼 그룹 */}
               <div className="flex space-x-2">
-                <button
-                  type="button"
-                  onClick={handleModifyClick}
-                  disabled={isDeleting}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors disabled:opacity-50"
-                >
-                  수정
-                </button>
-                <button
-                  onClick={handleDelete}
-                  disabled={isDeleting}
-                  className="px-4 py-2 bg-red-400 text-white rounded-md hover:bg-red-700 transition-colors disabled:opacity-50"
-                >
-                  {isDeleting ? '삭제 중...' : '삭제'}
-                </button>
+                {!isReadOnly && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={handleModifyClick}
+                      disabled={isDeleting}
+                      className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors disabled:opacity-50"
+                    >
+                      수정
+                    </button>
+                    <button
+                      onClick={handleDelete}
+                      disabled={isDeleting}
+                      className="px-4 py-2 bg-red-400 text-white rounded-md hover:bg-red-700 transition-colors disabled:opacity-50"
+                    >
+                      {isDeleting ? '삭제 중...' : '삭제'}
+                    </button>
+                  </>
+                )}
                 <button
                   onClick={handleCloseClick}
                   disabled={isDeleting}
