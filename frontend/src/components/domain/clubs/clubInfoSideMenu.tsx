@@ -76,8 +76,29 @@ const ClubInfoSideMenu: React.FC<ClubInfoSideMenuProps> = ({ isHost }) => {
                 ))}
             </ul>
             {isHost && (
-                <footer style={{ padding: '16px', textAlign: 'center', alignSelf: 'flex-start' }}>
+                <footer style={{ padding: '16px', textAlign: 'center', alignSelf: 'flex-start', display: 'flex', justifyContent: 'space-between', width: '100%' }}>
                     <SettingButton clubId={clubId} />
+                    <button
+                        style={{
+                            background: '#e74c3c',
+                            color: COLORS.white,
+                            border: 'none',
+                            borderRadius: '8px',
+                            padding: '10px 20px',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+                            transition: 'background 0.2s, color 0.2s',
+                        }}
+                        onMouseEnter={e => {
+                            e.currentTarget.style.background = '#c0392b';
+                        }}
+                        onMouseLeave={e => {
+                            e.currentTarget.style.background = '#e74c3c';
+                        }}
+                    >
+                        탈퇴
+                    </button>
                 </footer>
             )}
         </nav>
