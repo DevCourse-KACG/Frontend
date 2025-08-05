@@ -44,7 +44,7 @@ export default function Modal({ isOpen, onClose, children }: ModalProps) {
                 >
                     <motion.div
                         ref={modalRef}
-                        className="bg-white rounded-lg shadow-lg w-[500px] p-6 relative"
+                        className="bg-white rounded-lg shadow-lg p-6 relative h-full max-h-[90vh] overflow-y-auto"
                         initial={{ scale: 0.9, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0.9, opacity: 0 }}

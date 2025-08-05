@@ -13,9 +13,11 @@ import { EventType, EventTypeKorean } from '@/types/EventType';
 import ClubSearchBar from '@/components/domain/clubs/clubSearchBar';
 import PagingUnit from '@/components/global/PagingUnit';
 import Modal from '@/components/global/Modal';
+import ClubIntroInfo from '@/components/domain/clubs/clubIntroInfo';
 
 
 type SimpleClubInfoWithoutLeader = components['schemas']['SimpleClubInfoWithoutLeader'];
+type ClubInfoResponse = components['schemas']['ClubInfoResponse'];
 
 export default function ClubListPage() {
     const [clubs, setClubs] = useState<SimpleClubInfoWithoutLeader[]>([]);
@@ -141,10 +143,26 @@ export default function ClubListPage() {
             <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
                 {selectedClub && (
                     <div>
-                        <h2 className="text-xl font-bold mb-2">{selectedClub.name}</h2>
-                        <p>{selectedClub.bio}</p>
-                        <p className="mt-4 text-sm text-gray-500">
-                            지역: {selectedClub.mainSpot ?? '-'}
+                        <p className="mt-4 text-sm text-gray-500" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                            <ClubIntroInfo club={selectedClub as ClubInfoResponse} />
+                            <button
+                                onClick={() => { }}
+                                style={{
+                                    padding: '0.7rem 1.5rem',
+                                    background: 'linear-gradient(90deg, #6366f1 0%, #60a5fa 100%)',
+                                    color: '#fff',
+                                    border: 'none',
+                                    borderRadius: '0.5rem',
+                                    fontWeight: 600,
+                                    fontSize: '1rem',
+                                    cursor: 'pointer',
+                                    transition: 'background 0.2s',
+                                    width: 'fit-content',
+                                    alignSelf: 'flex-end'
+                                }}
+                            >
+                                가입 신청
+                            </button>
                         </p>
                     </div>
                 )}
