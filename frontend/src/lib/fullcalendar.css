@@ -13,9 +13,9 @@
   }
   
   /* FullCalendar 일정 배경 색상 변경 */
-  .fc .fc-event {
+  /* .fc .fc-event {
     @apply !bg-indigo-500;
-  }
+  } */
   
   /* 마우스 오버 시 일정 스타일 변경 */
   .fc .fc-event:hover {

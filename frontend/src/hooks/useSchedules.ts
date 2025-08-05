@@ -9,6 +9,7 @@ import { EventInput } from '@fullcalendar/core';
 type ScheduleDto = components["schemas"]["ScheduleDto"];
 type ScheduleWithClubDto = components["schemas"]["ScheduleWithClubDto"];
 type UnionScheduleDto = ScheduleDto & Partial<ScheduleWithClubDto>;
+import { SCHEDULE_COLORS, COLOR_INDIGO } from '@/constants/colors';
 
 // fetch params
 type FetchParams = {
@@ -25,6 +26,11 @@ export const useSchedules = <T extends UnionScheduleDto>(
   const [error, setError] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
+  // 모임마다 다른 색상의 bar
+  const generateColor = (id: number) => {
+    return SCHEDULE_COLORS[id % SCHEDULE_COLORS.length];
+  };
+
   // ScheduleDto/ScheduleWithClubDto를 FullCalendar Event 객체로 변환
   const convertSchedulesToEvents = (schedules: T[]) => {
     return schedules.map(schedule => {
@@ -32,13 +38,18 @@ export const useSchedules = <T extends UnionScheduleDto>(
       const hasClubInfo = (schedule as ScheduleWithClubDto).clubName !== undefined;
       const titlePrefix = hasClubInfo && (schedule as ScheduleWithClubDto).clubName ? `[${(schedule as ScheduleWithClubDto).clubName}] ` : '';
 
+      const color = hasClubInfo && (schedule as ScheduleWithClubDto).clubId 
+        ? generateColor((schedule as ScheduleWithClubDto).clubId!) 
+        : COLOR_INDIGO;
+      
       // 일정 정보 세팅
       return {
         id: schedule.id !== undefined ? String(schedule.id) : undefined,
         title: titlePrefix + (schedule.title || '제목 없음'),
         start: schedule.startDate || new Date().toISOString(),
         end: schedule.endDate,
-        allDay: (schedule.startDate?.length || 0) <= 10 && (schedule.endDate?.length || 0) <= 10
+        allDay: (schedule.startDate?.length || 0) <= 10 && (schedule.endDate?.length || 0) <= 10,
+        color
       };
     });
   };
