@@ -1,13 +1,13 @@
 'use client';
 
 import ClubDataForm, { ClubFormData } from '@/components/domain/clubs/clubDataForm';
-import { updateClub } from '@/api/club';
+import { updateClub, getClubInfo } from '@/api/club';
 import { components } from "@/types/backend/apiV1/schema";
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import LoadingSpinner from '@/components/global/LoadingSpinner';
 import { useEffect } from 'react';
-import { getClubInfo } from '@/api/club';
+import { getMyInfoInClub } from '@/api/myClub';
 import { useParams } from 'next/navigation';
 import { ClubCategory, ClubCategoryKorean } from '@/types/ClubCategory';
 import { EventType, EventTypeKorean } from '@/types/EventType';
@@ -17,7 +17,7 @@ type ClubResponse = components['schemas']['ClubResponse'];
 type RsDataClubInfoResponse = components['schemas']['RsDataClubInfoResponse'];
 
 export default function ModifyClubInfoPage() {
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
 
     const [initData, setInitData] = useState<Partial<ClubFormData>>({})
@@ -30,7 +30,25 @@ export default function ModifyClubInfoPage() {
         const fetchClubData = async () => {
             setIsLoading(true);
             try {
-                const club: RsDataClubInfoResponse = await getClubInfo(clubId);
+                const [club, myInfo] = await Promise.all([
+                    getClubInfo(clubId),
+                    getMyInfoInClub(clubId)
+                ]);
+
+                // 클럽 정보가 없거나 비활성화 상태인 경우
+                if (!club?.data || !club.data.state) {
+                    alert("잘못된 접근입니다.");
+                    router.push("/");
+                    return;
+                }
+
+                // 호스트 권한이 없는 경우
+                if (myInfo.role !== 'HOST') {
+                    alert("호스트만 모임을 수정할 수 있습니다.");
+                    router.push(`/clubs/${clubId}`);
+                    return;
+                }
+
                 const initial: Partial<ClubFormData> = {
                     name: club.data?.name,
                     bio: club.data?.bio,
@@ -51,10 +69,11 @@ export default function ModifyClubInfoPage() {
                     console.log("이미지 URL:", club.data.imageUrl);
                     setInitImageUrl(club.data.imageUrl);
                 }
-            } catch (error) {
-                alert('모임 정보를 불러오지 못했습니다.');
-            } finally {
+
                 setIsLoading(false);
+            } catch (error) {
+                alert('잘못된 접근입니다.');
+                router.push(`/`);
             }
         };
 

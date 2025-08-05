@@ -1,13 +1,55 @@
 'use client';
 
-import React from "react";
+import React, { use } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { deleteClub } from '@/api/club'; // 실제 삭제 API 호출 함수
+import { deleteClub, getClubInfo } from '@/api/club'; // 실제 삭제 API 호출 함수
+import { getMyInfoInClub } from "@/api/myClub";
+import { useEffect, useState } from "react";
+import LoadingSpinner from "@/components/global/LoadingSpinner";
 
 const DeleteClubPage = () => {
     const router = useRouter();
     const params = useParams();
     const clubId = params?.clubId as string;
+
+    const [isLoading, setIsLoading] = useState(true);
+
+
+
+    useEffect(() => {
+        const fetchData = async () => {
+            setIsLoading(true);
+            try {
+                const [data, myInfo] = await Promise.all([
+                    getClubInfo(clubId),
+                    getMyInfoInClub(clubId)
+                ]);
+
+                if (!data?.data) {
+                    alert("잘못된 접근입니다.");
+                    router.push("/");
+                }
+
+                if (data.data?.state === false) {
+                    alert("잘못된 접근입니다.");
+                    router.push("/");
+                }
+
+                // 호스트 권한 조회
+                if (myInfo.role !== 'HOST') {
+                    alert("호스트만 모임을 삭제할 수 있습니다.");
+                    router.push(`/clubs/${clubId}`);
+                }
+
+                setIsLoading(false);
+            } catch (error) {
+                alert("잘못된 접근입니다.");
+                router.push("/");
+            }
+        };
+
+        fetchData();
+    }, [clubId, router]);
 
     const handleDelete = async () => {
         try {
@@ -23,6 +65,10 @@ const DeleteClubPage = () => {
     const handleCancel = () => {
         router.back();
     };
+
+    if (isLoading) {
+        return <LoadingSpinner />;
+    }
 
     return (
         <div style={{ maxWidth: 400, margin: "80px auto", textAlign: "center" }}>
