@@ -83,6 +83,8 @@ const FriendsList: React.FC = () => {
 
   // 친구 요청 거절
   const handleRejectFriend = async (friendId: number) => {
+    if (!confirm('정말 이 친구를 거절하시겠습니까?')) return;
+
     try {
       const data = await rejectFriend(friendId);
       toast.success(data.message || "친구가 거절되었습니다.");
@@ -94,6 +96,8 @@ const FriendsList: React.FC = () => {
 
   // 친구 삭제
   const handleDeleteFriend = async (friendId: number) => {
+    if (!confirm('정말 이 친구를 삭제하시겠습니까?')) return;
+
     try {
       const data = await deleteFriend(friendId);
       toast.success(data.message || "친구가 삭제되었습니다.");
