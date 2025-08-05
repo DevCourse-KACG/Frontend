@@ -119,7 +119,7 @@ export default function GuestRegisterPage() {
             />
           </div>
           <div>
-            <label className="block text-left text-gray-700 font-semibold mb-2" htmlFor="password">임시 비밀번호</label>
+            <label className="block text-left text-gray-700 font-semibold mb-2" htmlFor="password">비밀번호</label>
             <input
               id="password"
               type="password"
@@ -129,7 +129,6 @@ export default function GuestRegisterPage() {
               placeholder="비밀번호를 입력하세요"
               required
             />
-            <p className="text-left text-sm text-gray-500 mt-1">임시 비밀번호는 나중에 변경할 수 있습니다.</p>
           </div>
           
           <button
