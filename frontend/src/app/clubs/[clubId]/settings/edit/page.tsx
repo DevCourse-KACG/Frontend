@@ -1,7 +1,7 @@
 'use client';
 
 import ClubDataForm, { ClubFormData } from '@/components/domain/clubs/clubDataForm';
-import { createClub } from '@/api/club';
+import { updateClub } from '@/api/club';
 import { components } from "@/types/backend/apiV1/schema";
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -12,7 +12,7 @@ import { useParams } from 'next/navigation';
 import { ClubCategory, ClubCategoryKorean } from '@/types/ClubCategory';
 import { EventType, EventTypeKorean } from '@/types/EventType';
 
-type CreateClubRequest = components['schemas']['CreateClubRequest'];
+type UpdateClubRequest = components['schemas']['UpdateClubRequest'];
 type ClubResponse = components['schemas']['ClubResponse'];
 type RsDataClubInfoResponse = components['schemas']['RsDataClubInfoResponse'];
 
@@ -63,7 +63,7 @@ export default function ModifyClubInfoPage() {
 
     const handleSubmit = async (data: ClubFormData, image: File | null) => {
         //data를 schema 형태로 변환 (멤버 없음)
-        const createClubRequest: CreateClubRequest = {
+        const createClubRequest: UpdateClubRequest = {
             name: data.name,
             bio: data.bio,
             category: data.category,
@@ -72,22 +72,24 @@ export default function ModifyClubInfoPage() {
             eventType: data.eventType,
             startDate: data.activityPeriod.startDate,
             endDate: data.activityPeriod.endDate,
-            isPublic: data.isPublic,
-            clubMembers: []
+            isPublic: data.isPublic
         }
 
 
         // api 호출
         try {
-            const clubResponse: ClubResponse = await createClub(createClubRequest, image);
+            const clubResponse: ClubResponse = await updateClub(clubId, createClubRequest, image);
 
             // 성공 시 모임 상세 페이지로 이동
-            router.push(`/clubs/${clubResponse.clubId}`);
+            router.replace(`/clubs/${clubResponse.clubId}`);
+            router.refresh();
+            //router.push(`/clubs/${clubResponse.clubId}`);
+
         }
         catch (error: any) {
             // 실패 시 에러 메시지 표시
-            console.error('모임 생성 실패:', error);
-            const errorMessage = error.message || '모임 생성에 실패했습니다. 다시 시도해주세요.';
+            console.error('모임 수정 실패:', error);
+            const errorMessage = error.message || '모임 수정에 실패했습니다. 다시 시도해주세요.';
             alert(errorMessage);
         } finally {
             setIsLoading(false);

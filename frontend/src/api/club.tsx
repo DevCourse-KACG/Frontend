@@ -3,6 +3,7 @@ import { components } from "@/types/backend/apiV1/schema";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://localhost:8080';
 
 type CreateClubRequest = components['schemas']['CreateClubRequest'];
+type UpdateClubRequest = components['schemas']['UpdateClubRequest'];
 type ClubResponse = components['schemas']['ClubResponse'];
 type RsDataPageSimpleClubInfoWithoutLeader = components['schemas']['RsDataPageSimpleClubInfoWithoutLeader'];
 
@@ -82,6 +83,58 @@ export const getClubInfo = async (clubId: string): Promise<components['schemas']
     const data: components['schemas']['RsDataClubInfoResponse'] = await response.json();
     return data;
 }
+
+/**
+ * 모임 정보 수정
+ * @param clubId 모임 ID
+ * @param data 수정할 모임 데이터
+ * @param imageFile 수정할 이미지 파일 (선택적)
+ * @returns 수정된 모임 정보
+ */
+export const updateClub = async (
+    clubId: string,
+    data: UpdateClubRequest,
+    imageFile: File | null = null,
+): Promise<ClubResponse> => {
+    const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB 제한
+
+    // 0. 이미지 크기 검사
+    if (imageFile && imageFile.size > MAX_IMAGE_SIZE) {
+        throw new Error('이미지 파일 크기는 5MB를 초과할 수 없습니다.');
+    }
+
+    // 1. FormData 객체 생성
+    const formData = new FormData();
+
+    // 2. JSON 데이터를 Blob으로 변환하여 FormData에 추가
+    formData.append(
+        'data',
+        new Blob([JSON.stringify(data)], { type: 'application/json' }),
+    );
+
+    // 3. 이미지 파일이 있으면 FormData에 추가
+    if (imageFile) {
+        formData.append('image', imageFile);
+    }
+
+    // 4. fetch API로 요청 전송
+    const response = await fetch(`${API_URL}/api/v1/clubs/${clubId}`, {
+        method: 'PATCH',
+        body: formData,
+        credentials: 'include', // 쿠키를 포함하여 요청
+    });
+
+    const responseData = await response.json();
+
+    if (!response.ok) {
+        throw new Error(responseData.message || '모임 수정에 실패했습니다.');
+    }
+
+    return responseData.data;
+}
+
+
+
 
 /**
  * 공개 모임 목록 조회
