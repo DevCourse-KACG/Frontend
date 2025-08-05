@@ -1,4 +1,14 @@
-interface ClubData {
+// api/clubLink.ts
+
+// 백엔드 API 응답 구조에 맞게 RsData 인터페이스를 정의합니다.
+interface RsData<T> {
+    code: number;
+    message: string;
+    data: T | null;
+  }
+  
+  // 백엔드 응답에 맞게 ClubData 인터페이스를 정의합니다.
+  interface ClubData {
     clubId: number;
     name: string;
     category: string;
@@ -9,13 +19,6 @@ interface ClubData {
     endDate: string;
     leaderId: number;
     leaderName: string;
-  }
-  
-  // 백엔드 API 응답 구조에 맞게 RsData 인터페이스를 정의합니다.
-  interface RsData<T> {
-    code: number;
-    message: string;
-    data: T | null;
   }
   
   /**
@@ -48,24 +51,30 @@ interface ClubData {
    */
   export async function applyToClubByInvitationToken(inviteToken: string): Promise<string> {
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+    const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+  
+    if (!accessToken) {
+      throw new Error('로그인이 필요합니다.');
+    }
+  
     try {
       const response = await fetch(`${API_BASE_URL}/api/v1/clubs/invitations/${inviteToken}/apply`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          // Authorization 헤더에 accessToken을 직접 추가합니다.
+          'Authorization': `Bearer ${accessToken}`
         },
-        // 로그인 유저의 인증 정보를 포함하기 위해 credentials를 설정합니다.
-        credentials: 'include',
       });
   
       const result: RsData<null> = await response.json();
-  
+   
       if (!response.ok) {
         throw new Error(result.message);
       }
-  
+   
       return result.message;
-  
+   
     } catch (error) {
       if (error instanceof Error) {
         throw error;
