@@ -1,11 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import Image from 'next/image';
-import { getClubInfoByInvitationToken } from '@/api/clubLink'; // 변경된 파일에서 API 함수를 import
+import { getClubInfoByInvitationToken, applyToClubByInvitationToken } from '@/api/clubLink';
+import { guestLogin } from '@/api/members';
 
-// 백엔드 응답에 맞게 ClubData 인터페이스를 수정합니다.
 interface ClubData {
   clubId: number;
   name: string;
@@ -19,119 +18,198 @@ interface ClubData {
   leaderName: string;
 }
 
-export default function InvitePage() {
+// 인증 모달 컴포넌트
+function AuthModal({ onClose, onLogin, onGuestLogin }: { onClose: () => void, onLogin: () => void, onGuestLogin: () => void }) {
+  return (
+    <div className="fixed inset-0 overflow-y-auto h-full w-full flex items-center justify-center z-50">
+      <div className="bg-white p-8 rounded-lg shadow-xl max-w-sm w-full mx-4 text-center transform transition-all scale-100 opacity-100">
+        <h2 className="text-2xl font-bold mb-4 text-gray-900">로그인이 필요합니다</h2>
+        <p className="text-gray-600 mb-6">모임에 가입하려면 로그인이 필요합니다. 기존 계정으로 로그인하거나, 게스트 계정을 생성하여 진행할 수 있습니다.</p>
+        <div className="space-y-4">
+          <button
+            onClick={onLogin}
+            className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg font-semibold shadow-md hover:bg-blue-700 transition-colors"
+          >
+            로그인하기
+          </button>
+          <button
+            onClick={onGuestLogin}
+            className="w-full px-4 py-3 bg-gray-200 text-gray-800 rounded-lg font-semibold shadow-md hover:bg-gray-300 transition-colors"
+          >
+            게스트로 진행하기
+          </button>
+          <button
+            onClick={onClose}
+            className="w-full px-4 py-3 text-gray-500 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
+          >
+            닫기
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function InvitationPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [clubData, setClubData] = useState<ClubData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isGuestUser, setIsGuestUser] = useState(false); // 비회원 상태 추가
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
   const token = searchParams.get('token');
+
+  const [clubInfo, setClubInfo] = useState<ClubData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isApplying, setIsApplying] = useState(false);
+  const [applyResult, setApplyResult] = useState<string | null>(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   useEffect(() => {
     if (!token) {
-      setError('유효하지 않은 초대 링크입니다.');
+      setError('초대 토큰이 유효하지 않습니다.');
       setIsLoading(false);
       return;
     }
 
-    const userAuthToken = localStorage.getItem('accessToken');
-    const userIsLoggedIn = !!userAuthToken;
-    setIsLoggedIn(userIsLoggedIn);
-
-    const loadData = async () => {
+    const fetchClubInfo = async () => {
       try {
-        const data = await getClubInfoByInvitationToken(token); // 분리된 함수 사용
-        setClubData(data);
-      } catch (err: unknown) {
+        const info = await getClubInfoByInvitationToken(token);
+        setClubInfo(info);
+      } catch (err) {
         if (err instanceof Error) {
           setError(err.message);
         } else {
-          setError('알 수 없는 오류가 발생했습니다.');
+          setError('클럽 정보를 가져오는 중 오류가 발생했습니다.');
         }
       } finally {
         setIsLoading(false);
-        // 로그인 여부에 따라 모달을 바로 띄우는 로직을 제거했습니다.
-        // if (!userIsLoggedIn) {
-        //   setShowLoginModal(true);
-        // }
       }
     };
-    
-    loadData();
-  }, [token, router]);
 
-  const handleJoinClick = () => {
-    if (isLoggedIn) {
-      // TODO: 모임 가입 API 호출 로직
-      alert('모임 가입을 신청합니다.');
-    } else if (isGuestUser) {
-      // TODO: 닉네임과 임시 비밀번호 입력 페이지로 이동하는 로직
-      alert('비회원 가입 신청을 위해 닉네임과 임시 비밀번호를 입력하는 페이지로 이동합니다.');
-    } else {
+    fetchClubInfo();
+  }, [token]);
+
+  const handleApplyToClub = async () => {
+    if (!token) {
+      setError('초대 토큰이 유효하지 않습니다.');
+      return;
+    }
+
+    // 로그인 상태 확인
+    const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+    if (!accessToken) {
       setShowLoginModal(true);
+      return;
+    }
+
+    setIsApplying(true);
+    setApplyResult(null);
+    try {
+      const message = await applyToClubByInvitationToken(token);
+      setApplyResult(message);
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('가입 신청 중 오류가 발생했습니다.');
+      }
+    } finally {
+      setIsApplying(false);
+    }
+  };
+  
+  const handleLogin = () => {
+    router.push('/login');
+  };
+
+  const handleGuestLogin = async () => {
+    // 게스트 로그인 API 호출
+    try {
+      const data = await guestLogin();
+      if (data && data.data && data.data.accessToken) {
+        localStorage.setItem('accessToken', data.data.accessToken);
+        setShowLoginModal(false);
+        // 토큰 발급 후 가입 신청 함수 다시 호출
+        await handleApplyToClub();
+      } else {
+        setError("게스트 로그인에 실패했습니다.");
+      }
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("게스트 로그인 중 오류가 발생했습니다.");
+      }
     }
   };
 
   if (isLoading) {
-    return <p>모임 정보를 불러오는 중...</p>;
-  }
-
-  if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen">
-        <p className="text-red-500">{error}</p>
-        <button onClick={() => router.push('/')} className="mt-4 px-4 py-2 bg-gray-200 rounded">홈으로</button>
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-xl font-semibold text-gray-700">클럽 정보를 불러오는 중...</p>
       </div>
     );
   }
 
-  if (!clubData) {
-    return <p>모임 정보를 찾을 수 없습니다.</p>;
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-4">
+        <p className="text-red-500 text-lg">{error}</p>
+        <button
+          onClick={() => router.push('/')}
+          className="mt-4 px-6 py-2 bg-gray-200 text-gray-800 rounded-lg shadow-md hover:bg-gray-300 transition-colors"
+        >
+          홈으로 돌아가기
+        </button>
+      </div>
+    );
   }
 
   return (
-    <div className="p-6">
-      <h1 className="text-3xl font-bold mb-2">{clubData.name}</h1>
-      <p>카테고리: {clubData.category}</p>
-      <p>리더: {clubData.leaderName}</p>
-      <p>모임 시작일: {clubData.startDate}</p>
-      <p>모임 종료일: {clubData.endDate}</p>
-      
-      <button onClick={handleJoinClick} className="mt-4 px-4 py-2 bg-black text-white rounded">
-        가입 신청
-      </button>
-
-      {showLoginModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center">
-          <div className="relative p-5 border w-96 shadow-lg rounded-md bg-white text-center">
-            <h3 className="text-xl font-bold mb-4">로그인이 필요합니다</h3>
-            <p className="mb-4">모임 가입 신청을 위해 로그인하시거나 비회원으로 진행해주세요.</p>
-            <div className="flex justify-around mt-4">
-              <button 
-                onClick={() => {
-                  setShowLoginModal(false);
-                  router.push(`/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`);
-                }}
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-              >
-                로그인하기
-              </button>
-              <button 
-                onClick={() => {
-                  setShowLoginModal(false);
-                  setIsGuestUser(true);
-                }}
-                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-              >
-                비회원으로 진행하기
-              </button>
-            </div>
+    <div className={`flex flex-col items-center justify-center min-h-screen bg-gray-50 p-4 ${showLoginModal ? 'overflow-hidden' : ''}`}>
+      {clubInfo && (
+        <div className={`w-full max-w-xl bg-white p-8 rounded-xl shadow-2xl text-center transition-all duration-300 ${showLoginModal ? 'blur-sm pointer-events-none' : ''}`}>
+          <h1 className="text-4xl font-extrabold text-gray-900 mb-6">{clubInfo.name}</h1>
+          <p className="text-lg text-gray-600 mb-8">
+            {clubInfo.leaderName}님이 초대하신 모임입니다.
+          </p>
+          <img
+            src={clubInfo.imageUrl}
+            alt={`${clubInfo.name} 이미지`}
+            className="w-full h-64 object-cover rounded-xl mb-6 shadow-md"
+          />
+          <div className="space-y-4 text-left">
+            <p className="text-gray-700">
+              <span className="font-semibold">카테고리:</span> {clubInfo.category}
+            </p>
+            <p className="text-gray-700">
+              <span className="font-semibold">장소:</span> {clubInfo.mainSpot}
+            </p>
+            <p className="text-gray-700">
+              <span className="font-semibold">이벤트 타입:</span> {clubInfo.eventType}
+            </p>
+            <p className="text-gray-700">
+              <span className="font-semibold">기간:</span> {clubInfo.startDate} ~ {clubInfo.endDate}
+            </p>
           </div>
+          {applyResult && (
+              <p className="mt-4 text-green-600 font-semibold">{applyResult}</p>
+          )}
+          <button
+            onClick={handleApplyToClub}
+            className={`w-full mt-8 px-8 py-4 text-white font-semibold text-lg rounded-full shadow-lg transition-all duration-300 transform ${
+                isApplying ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:scale-105 hover:bg-blue-700'
+            }`}
+            disabled={isApplying}
+          >
+            {isApplying ? '가입 신청 중...' : '가입 신청하기'}
+          </button>
         </div>
+      )}
+      {showLoginModal && (
+        <AuthModal
+          onClose={() => setShowLoginModal(false)}
+          onLogin={handleLogin}
+          onGuestLogin={handleGuestLogin}
+        />
       )}
     </div>
   );

@@ -2,13 +2,25 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8
 
 // API 호출 시 공통으로 사용할 fetcher 함수
 async function fetcher(url: string, options: RequestInit = {}) {
+  // localStorage에서 토큰을 가져옵니다.
+  const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+  
+  // Headers 객체를 사용하여 헤더를 안전하게 관리합니다.
+  const headers = new Headers(options.headers);
+
+  // 'Content-Type'이 없는 경우에만 추가합니다.
+  if (!headers.has('Content-Type')) {
+    headers.set('Content-Type', 'application/json');
+  }
+
+  // 토큰이 있는 경우 'Authorization' 헤더를 추가합니다.
+  if (accessToken) {
+    headers.set('Authorization', `Bearer ${accessToken}`);
+  }
+
   const response = await fetch(`${API_BASE_URL}${url}`, {
     ...options,
-    credentials: 'include', // 쿠키를 포함하여 요청
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
+    headers,
   });
 
   if (!response.ok) {
@@ -43,6 +55,13 @@ export async function login({ email, password }: { email: string; password: stri
   });
 }
 
+// 게스트 로그인 API
+export async function guestLogin() {
+  return fetcher('/api/v1/members/auth/guest-login', {
+    method: 'POST',
+  });
+}
+
 // 내 정보 불러오기
 export async function fetchMe() {
   const response = await fetcher('/api/v1/members/me');
@@ -68,9 +87,9 @@ export async function fetchMyPresets() {
 }
 
 export async function verifyPassword({ email, password }: { email: string; password: string }) {
-    const payload = { email, password };
-    return fetcher('/api/v1/members/auth/verify-password', {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    });
-  }
+  const payload = { email, password };
+  return fetcher('/api/v1/members/auth/verify-password', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
