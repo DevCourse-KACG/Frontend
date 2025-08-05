@@ -14,10 +14,7 @@ export default function NewClubPage() {
     const router = useRouter();
 
     const handleSubmit = async (data: ClubFormData, image: File | null) => {
-        console.log('Form Data:', data);
-        console.log('Image:', image);
-
-        //dada를 schema 형태로 변환 (멤버 없음)
+        //data를 schema 형태로 변환 (멤버 없음)
         const createClubRequest: CreateClubRequest = {
             name: data.name,
             bio: data.bio,

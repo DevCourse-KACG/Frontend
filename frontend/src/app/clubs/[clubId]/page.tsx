@@ -25,6 +25,7 @@ export default function ClubPage() {
         switch (error) {
             case '404 : 해당 ID의 클럽을 찾을 수 없습니다.':
             case '404 : 클럽이 존재하지 않습니다.':
+            case '404 : 해당 클럽은 비활성화 상태입니다.':
                 return '해당 모임을 찾을 수 없습니다.';
             case '403 : 비공개 클럽 정보는 클럽 멤버만 조회할 수 있습니다.':
             case '404 : 클럽 멤버 정보가 존재하지 않습니다.':
