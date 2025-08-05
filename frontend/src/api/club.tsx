@@ -48,3 +48,29 @@ export const createClub = async (
 
     return responseData.data;
 };
+
+/**
+ * 모임 정보 조회
+ * @param clubId 모임 ID
+ * @returns 
+ */
+export const getClubInfo = async (clubId: string): Promise<components['schemas']['RsDataClubInfoResponse']> => {
+    const response = await fetch(`${API_URL}/api/v1/clubs/${clubId}`, {
+        method: 'GET',
+        credentials: 'include', // 쿠키를 포함하여 요청
+    });
+
+
+    if (!response.ok) {
+        const errorData = await response.json();
+        if (!('code' in errorData) || !('message' in errorData)) {
+            throw new Error('모임 정보를 가져오는 데 실패했습니다.');
+        }
+        else {
+            throw new Error(errorData.code + " : " + (errorData.message || '모임 정보를 가져오는 데 실패했습니다.'));
+        }
+    }
+
+    const data: components['schemas']['RsDataClubInfoResponse'] = await response.json();
+    return data;
+}
