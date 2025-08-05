@@ -2,7 +2,7 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { COLORS } from '@/constants/colors';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 interface SettingButtonProps {
     clubId: string
@@ -11,6 +11,7 @@ interface SettingButtonProps {
 function SettingButton({ clubId }: SettingButtonProps) {
     const router = useRouter();
     const [open, setOpen] = useState(false);
+    const menuRef = useRef<HTMLDivElement>(null);
 
     const menuItems = [
         {
@@ -20,11 +21,29 @@ function SettingButton({ clubId }: SettingButtonProps) {
         {
             label: '모임 삭제',
             onClick: () => router.push(`/clubs/${clubId}/settings/delete`)
+        },
+        {
+            label: '초대 링크',
+            onClick: () => router.push(`/clubs/${clubId}/settings/invite`)
         }
     ];
 
+    // 메뉴 바깥 클릭 시 닫기
+    useEffect(() => {
+        if (!open) return;
+        const handleClickOutside = (event: MouseEvent) => {
+            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+                setOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [open]);
+
     return (
-        <div style={{ position: 'relative', marginTop: '16px', textAlign: 'center', display: 'inline-block' }}>
+        <div style={{ position: 'relative', marginTop: '16px', textAlign: 'center', display: 'inline-block' }} ref={menuRef}>
             <button
                 style={{
                     background: 'none',
@@ -32,8 +51,7 @@ function SettingButton({ clubId }: SettingButtonProps) {
                     padding: 0,
                     cursor: 'pointer',
                 }}
-                onMouseEnter={() => setOpen(true)}
-                onMouseLeave={() => setOpen(false)}
+                onClick={() => setOpen(prev => !prev)}
             >
                 <Image
                     src="/icons/setting-gear.png"
@@ -45,8 +63,6 @@ function SettingButton({ clubId }: SettingButtonProps) {
             </button>
             {open && (
                 <div
-                    onMouseEnter={() => setOpen(true)}
-                    onMouseLeave={() => setOpen(false)}
                     style={{
                         position: 'absolute',
                         bottom: '44px',
@@ -62,7 +78,10 @@ function SettingButton({ clubId }: SettingButtonProps) {
                     {menuItems.map(item => (
                         <div
                             key={item.label}
-                            onClick={item.onClick}
+                            onClick={() => {
+                                setOpen(false);
+                                item.onClick();
+                            }}
                             style={{
                                 color: COLORS.white,
                                 padding: '10px 20px',

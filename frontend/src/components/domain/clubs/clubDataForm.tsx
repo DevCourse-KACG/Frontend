@@ -1,14 +1,17 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { EventType, EventTypeKorean } from '@/types/EventType';
+import { ClubCategory, ClubCategoryKorean } from '@/types/ClubCategory';
+
 
 export interface ClubFormData {
     name: string;
     bio: string;
     mainSpot: string;
     maximumCapacity: number;
-    category: typeof CATEGORIES[number]['value'];
-    eventType: "ONE_TIME" | "SHORT_TERM" | "LONG_TERM";
+    category: ClubCategory;
+    eventType: EventType;
     activityPeriod: {
         startDate: string;
         endDate: string;
@@ -21,34 +24,18 @@ interface ClubDataFormProps {
     isLoading?: boolean;
     initialData?: Partial<ClubFormData>;
     initialImage?: File | null;
+    initialImageUrl?: string | null;
 }
 
-const CATEGORIES = [
-    { value: 'STUDY', label: '공부' },
-    { value: 'HOBBY', label: '취미' },
-    { value: 'SPORTS', label: '운동' },
-    { value: 'TRAVEL', label: '여행' },
-    { value: 'CULTURE', label: '문화' },
-    { value: 'FOOD', label: '음식' },
-    { value: 'PARTY', label: '파티' },
-    { value: 'WORK', label: '업무' },
-    { value: 'OTHER', label: '기타' }
-] as const;
 
-const EVENT_TYPES = [
-    { value: 'ONE_TIME', label: '일회성' },
-    { value: 'SHORT_TERM', label: '단기' },
-    { value: 'LONG_TERM', label: '장기' }
-] as const;
-
-export default function ClubDataForm({ onSubmit, isLoading = false, initialData, initialImage }: ClubDataFormProps) {
+export default function ClubDataForm({ onSubmit, isLoading = false, initialData, initialImage, initialImageUrl }: ClubDataFormProps) {
     const [formData, setFormData] = useState<ClubFormData>({
         name: initialData?.name || '',
         bio: initialData?.bio || '',
         mainSpot: initialData?.mainSpot || '',
         maximumCapacity: initialData?.maximumCapacity || 10,
-        category: initialData?.category || 'STUDY',
-        eventType: initialData?.eventType || 'ONE_TIME',
+        category: initialData?.category || ClubCategory.OTHER,
+        eventType: initialData?.eventType || EventType.ONE_TIME,
         activityPeriod: initialData?.activityPeriod || {
             startDate: '',
             endDate: ''
@@ -59,7 +46,9 @@ export default function ClubDataForm({ onSubmit, isLoading = false, initialData,
     const [image, setImage] = useState<File | null>(initialImage || null);
     const [errors, setErrors] = useState<Partial<Record<keyof ClubFormData, string>>>({});
     const [imageError, setImageError] = useState<string>('');
-    const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+    const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(
+        initialImageUrl || null
+    );
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // 이미지 변경 시 URL 정리
@@ -173,7 +162,20 @@ export default function ClubDataForm({ onSubmit, isLoading = false, initialData,
         e.preventDefault();
 
         if (validateForm()) {
-            onSubmit(formData, image);
+            let imageToSend: File | null | undefined;
+
+            if (image) {
+                // 새 이미지 선택됨 → 전송
+                imageToSend = image;
+            } else if (initialImageUrl) {
+                // 기존 이미지 유지 → null로 전송해서 서버에서 유지
+                imageToSend = null;
+            } else {
+                // 이미지 없음 → null로 전송
+                imageToSend = null;
+            }
+
+            onSubmit(formData, imageToSend);
         }
     };
 
@@ -211,10 +213,10 @@ export default function ClubDataForm({ onSubmit, isLoading = false, initialData,
                     onClick={handleImageClick}
                     className="w-full h-48 border-2 border-dashed border-gray-300 rounded-md flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 transition-colors"
                 >
-                    {image ? (
+                    {imagePreviewUrl ? (
                         <div className="relative w-full h-full">
                             <img
-                                src={imagePreviewUrl || URL.createObjectURL(image)}
+                                src={imagePreviewUrl}
                                 alt="대표 이미지"
                                 className="w-full h-full object-cover rounded-md"
                             />
@@ -223,6 +225,7 @@ export default function ClubDataForm({ onSubmit, isLoading = false, initialData,
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     setImage(null);
+                                    setImagePreviewUrl(null);
                                     setImageError('');
                                 }}
                                 className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600"
@@ -314,10 +317,9 @@ export default function ClubDataForm({ onSubmit, isLoading = false, initialData,
                     className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.category ? 'border-red-500' : 'border-gray-300'
                         }`}
                 >
-                    <option value="">카테고리를 선택하세요</option>
-                    {CATEGORIES.map((category) => (
-                        <option key={category.value} value={category.value}>
-                            {category.label}
+                    {Object.values(ClubCategory).map((category) => (
+                        <option key={category} value={category}>
+                            {ClubCategoryKorean[category] || category}
                         </option>
                     ))}
                 </select>
@@ -336,10 +338,9 @@ export default function ClubDataForm({ onSubmit, isLoading = false, initialData,
                     className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.eventType ? 'border-red-500' : 'border-gray-300'
                         }`}
                 >
-                    <option value="">이벤트 타입을 선택하세요</option>
-                    {EVENT_TYPES.map((eventType) => (
-                        <option key={eventType.value} value={eventType.value}>
-                            {eventType.label}
+                    {Object.values(EventType).map((eventType) => (
+                        <option key={eventType} value={eventType}>
+                            {EventTypeKorean[eventType] || eventType}
                         </option>
                     ))}
                 </select>
@@ -424,7 +425,7 @@ export default function ClubDataForm({ onSubmit, isLoading = false, initialData,
                     disabled={isLoading}
                     className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
                 >
-                    {isLoading ? '처리 중...' : '모임 생성'}
+                    {isLoading ? '처리 중...' : '확인'}
                 </button>
             </div>
         </form>

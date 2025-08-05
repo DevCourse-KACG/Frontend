@@ -25,6 +25,7 @@ export default function ClubPage() {
         switch (error) {
             case '404 : 해당 ID의 클럽을 찾을 수 없습니다.':
             case '404 : 클럽이 존재하지 않습니다.':
+            case '404 : 해당 클럽은 비활성화 상태입니다.':
                 return '해당 모임을 찾을 수 없습니다.';
             case '403 : 비공개 클럽 정보는 클럽 멤버만 조회할 수 있습니다.':
             case '404 : 클럽 멤버 정보가 존재하지 않습니다.':
@@ -52,6 +53,11 @@ export default function ClubPage() {
                     throw new Error('403 : 가입 신청 중인 모임입니다. 가입 승인이 필요합니다.');
                 }
 
+                // WITHDRAWN 상태인 경우, 접근 금지
+                if (myInfo.state === 'WITHDRAWN') {
+                    throw new Error('404 : 클럽 멤버 정보가 존재하지 않습니다.');
+                }
+
                 setClubInfo(data.data);
                 setMyInfo(myInfo);
             } catch (err) {
@@ -77,11 +83,11 @@ export default function ClubPage() {
     return (
         <div className="max-w-7xl mx-auto p-4">
             <h1 className="text-2xl font-bold mb-4">{clubId}번 모임 페이지</h1>
-            <section className="flex">
+            <section className="flex" style={{ height: 'calc(90vh - 64px)' }}>
                 <aside className="w-1/5 pr-4">
                     <ClubInfoSideMenu isHost={myInfo?.role === 'HOST'} />
                 </aside>
-                <section className="w-4/5">
+                <section className="w-4/5 overflow-y-auto " style={{ maxHeight: '100%', borderRadius: '8px' }}>
                     {clubInfo ? <ClubInfo club={clubInfo} /> : <div className="text-center">클럽 정보를 불러오는 중입니다...</div>}
                 </section>
             </section>
