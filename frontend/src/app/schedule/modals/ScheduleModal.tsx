@@ -10,7 +10,7 @@ import type { ScheduleDetailDto } from '@/types/schedule';
 interface ScheduleModalProps {
   showModal: boolean;
   selectedScheduleId: number | null;
-  onClose: (shouldRefresh: boolean) => void;
+  onClose: (shouldRefresh: boolean, action?: 'modify' | 'goToCheckList' | 'createCheckList', targetId?: number) => void;
 }
 
 export default function ScheduleModal ({
@@ -40,6 +40,8 @@ export default function ScheduleModal ({
       // 일정 세팅
       setSchedule(data.data);
     } catch (e: any) {
+      if (e instanceof DOMException && e.name === 'AbortError') return; 
+      
       const msg = e instanceof Error ? e.message : '일정 상세 불러오기 실패';
       setError(msg);
       toast.error(msg);
@@ -81,6 +83,20 @@ export default function ScheduleModal ({
     }
   };
 
+  // 수정 버튼 클릭 핸들러
+  const handleModifyClick = () => {
+    onClose(false, 'modify', selectedScheduleId || undefined); 
+  };
+
+  // 체크리스트로 이동/생성 버튼
+  const handleGoToChecklist = () => {
+    if (schedule?.checkListId) { // 체크리스트 상세 버튼
+      onClose(false, 'goToCheckList', schedule.checkListId); 
+    } else { // 체크리스트 생성 버튼
+      onClose(false, 'createCheckList', selectedScheduleId || undefined);
+    }
+  };
+
   // 재조회 없이 닫기
   const handleCloseClick = () => {
     onClose(false);
@@ -97,12 +113,10 @@ export default function ScheduleModal ({
         className="bg-white rounded-lg shadow-xl p-6"
         style={{
           width: '66vw',
-          height: '66vh',
-          maxWidth: '100vw',
-          maxHeight: '100vh',
+          height: 'auto', 
+          maxHeight: '90vh', 
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'center',
         }}
       >
         {selectedScheduleId && (
@@ -130,21 +144,42 @@ export default function ScheduleModal ({
               </>
             )}
 
-            <div className="flex justify-end space-x-2 mt-auto">
+            <div className="flex justify-between mt-4">
+              {/* 좌측 버튼 */}
               <button
-                onClick={handleDelete}
+                type="button"
+                onClick={handleGoToChecklist}
                 disabled={isDeleting}
-                className="px-4 py-2 bg-red-400 text-white rounded-md hover:bg-red-700 transition-colors disabled:opacity-50"
+                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors disabled:opacity-50"
               >
-                {isDeleting ? '삭제 중...' : '삭제'}
+                {schedule?.checkListId ? '체크리스트로 이동' : '체크리스트 생성'}
               </button>
-              <button
-                onClick={handleCloseClick}
-                disabled={isDeleting}
-                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
-              >
-                닫기
-              </button>
+
+              {/* 우측 버튼 그룹 */}
+              <div className="flex space-x-2">
+                <button
+                  type="button"
+                  onClick={handleModifyClick}
+                  disabled={isDeleting}
+                  className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors disabled:opacity-50"
+                >
+                  수정
+                </button>
+                <button
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  className="px-4 py-2 bg-red-400 text-white rounded-md hover:bg-red-700 transition-colors disabled:opacity-50"
+                >
+                  {isDeleting ? '삭제 중...' : '삭제'}
+                </button>
+                <button
+                  onClick={handleCloseClick}
+                  disabled={isDeleting}
+                  className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
+                >
+                  닫기
+                </button>
+              </div>
             </div>
           </>
         )}

@@ -47,12 +47,16 @@ export default function SignUpPage() {
     setLoading(true);
 
     try {
-      await signUp({
+      // 서버에서 보낸 응답 데이터를 data 변수에 저장
+      const data = await signUp({
         email: email,
         password: password,
         nickname: nickname,
         bio: bio,
       });
+
+      // 로그인 페이지처럼 성공 응답을 콘솔에 출력
+      console.log("회원가입 성공:", data);
 
       setSuccess("회원가입에 성공했습니다!");
       // 회원가입 성공 시 메인 페이지로 이동
