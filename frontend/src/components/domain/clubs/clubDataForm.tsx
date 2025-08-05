@@ -24,10 +24,11 @@ interface ClubDataFormProps {
     isLoading?: boolean;
     initialData?: Partial<ClubFormData>;
     initialImage?: File | null;
+    initialImageUrl?: string | null;
 }
 
 
-export default function ClubDataForm({ onSubmit, isLoading = false, initialData, initialImage }: ClubDataFormProps) {
+export default function ClubDataForm({ onSubmit, isLoading = false, initialData, initialImage, initialImageUrl }: ClubDataFormProps) {
     const [formData, setFormData] = useState<ClubFormData>({
         name: initialData?.name || '',
         bio: initialData?.bio || '',
@@ -45,7 +46,9 @@ export default function ClubDataForm({ onSubmit, isLoading = false, initialData,
     const [image, setImage] = useState<File | null>(initialImage || null);
     const [errors, setErrors] = useState<Partial<Record<keyof ClubFormData, string>>>({});
     const [imageError, setImageError] = useState<string>('');
-    const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+    const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(
+        initialImageUrl || null
+    );
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // 이미지 변경 시 URL 정리
@@ -159,7 +162,20 @@ export default function ClubDataForm({ onSubmit, isLoading = false, initialData,
         e.preventDefault();
 
         if (validateForm()) {
-            onSubmit(formData, image);
+            let imageToSend: File | null | undefined;
+
+            if (image) {
+                // 새 이미지 선택됨 → 전송
+                imageToSend = image;
+            } else if (initialImageUrl) {
+                // 기존 이미지 유지 → null로 전송해서 서버에서 유지
+                imageToSend = null;
+            } else {
+                // 이미지 없음 → null로 전송
+                imageToSend = null;
+            }
+
+            onSubmit(formData, imageToSend);
         }
     };
 
@@ -197,10 +213,10 @@ export default function ClubDataForm({ onSubmit, isLoading = false, initialData,
                     onClick={handleImageClick}
                     className="w-full h-48 border-2 border-dashed border-gray-300 rounded-md flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 transition-colors"
                 >
-                    {image ? (
+                    {imagePreviewUrl ? (
                         <div className="relative w-full h-full">
                             <img
-                                src={imagePreviewUrl || URL.createObjectURL(image)}
+                                src={imagePreviewUrl}
                                 alt="대표 이미지"
                                 className="w-full h-full object-cover rounded-md"
                             />
@@ -209,6 +225,7 @@ export default function ClubDataForm({ onSubmit, isLoading = false, initialData,
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     setImage(null);
+                                    setImagePreviewUrl(null);
                                     setImageError('');
                                 }}
                                 className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600"

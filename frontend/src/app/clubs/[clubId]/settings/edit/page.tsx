@@ -20,7 +20,8 @@ export default function ModifyClubInfoPage() {
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
 
-    const [initData, setInitData] = useState<Partial<ClubFormData>>({});
+    const [initData, setInitData] = useState<Partial<ClubFormData>>({})
+    const [initImageUrl, setInitImageUrl] = useState<string | null>(null);
     const params = useParams();
     const clubId = params?.clubId as string;
 
@@ -44,6 +45,12 @@ export default function ModifyClubInfoPage() {
                     isPublic: club.data?.isPublic || false,
                 };
                 setInitData(initial);
+
+                // 이미지 URL이 있다면 초기 이미지 URL로 설정
+                if (club.data?.imageUrl) {
+                    console.log("이미지 URL:", club.data.imageUrl);
+                    setInitImageUrl(club.data.imageUrl);
+                }
             } catch (error) {
                 alert('모임 정보를 불러오지 못했습니다.');
             } finally {
@@ -53,10 +60,6 @@ export default function ModifyClubInfoPage() {
 
         fetchClubData();
     }, [clubId]);
-
-
-
-
 
     const handleSubmit = async (data: ClubFormData, image: File | null) => {
         //data를 schema 형태로 변환 (멤버 없음)
@@ -103,7 +106,12 @@ export default function ModifyClubInfoPage() {
     return (
         <div className="max-w-2xl mx-auto p-4">
             <h1 className="text-2xl font-bold mb-4">모임 수정</h1>
-            <ClubDataForm onSubmit={handleSubmit} isLoading={isLoading} initialData={initData} />
+            <ClubDataForm
+                onSubmit={handleSubmit}
+                isLoading={isLoading}
+                initialData={initData}
+                initialImageUrl={initImageUrl}
+            />
         </div>
     );
 }
