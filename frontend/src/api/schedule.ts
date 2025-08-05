@@ -90,7 +90,8 @@ export async function deleteSchedule(
 
 // 나의 일정 목록 조회
 export async function getMySchedules(
-  query?: { startDate?: string; endDate?: string }
+  query?: { startDate?: string; endDate?: string },
+  signal?: AbortSignal
 ): Promise<components["schemas"]["RsDataListScheduleDto"]> {
   let url = `${BASE_URL}/api/v1/schedules/me`;
   if (query) {
@@ -100,6 +101,9 @@ export async function getMySchedules(
     url += `?${params.toString()}`;
   }
 
-  const res = await fetch(url);
-  return handleResponse(res);
+  const res = await fetch(url, {
+    method: "GET",
+    signal,
+  });
+  return handleResponse<components["schemas"]["RsDataListScheduleWithClubDto"]>(res);
 }

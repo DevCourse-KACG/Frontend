@@ -1,14 +1,14 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import toast from 'react-hot-toast';
 
-import { EventInput, EventClickArg, DateSelectArg } from '@fullcalendar/core';
+import { EventClickArg, DateSelectArg, DatesSetArg } from '@fullcalendar/core';
 import FullCalendar from '@fullcalendar/react';
 
-import type { components } from "@/types/backend/apiV1/schema";
 import { getClubSchedules } from "@/api/schedule";
+import { useSchedules } from '@/hooks/useSchedules';
 import { extractDateFromISO } from '@/lib/formatDate';
 import Calendar from '@/components/domain/schedule/Calender';
 import ScheduleModal from '@/app/schedule/modals/ScheduleModal';
@@ -24,7 +24,6 @@ export default function ScheduleListPage() {
 
   // 캘린더 처리
   const calendarRef = useRef<FullCalendar>(null);
-  const [events, setEvents] = useState<EventInput[]>([]); 
   const [selectedDateInfo, setSelectedDateInfo] = useState<DateSelectArg | null>(null);
   const [selectedScheduleId, setSelectedScheduleId] = useState<number | null>(null);
 
@@ -32,67 +31,28 @@ export default function ScheduleListPage() {
   const [showModal, setShowModal] = useState<boolean>(false);
   const [modalType, setModalType] = useState<'edit' | 'detail' | null>(null);
 
-  // API 호출 취소를 위한 AbortController
-  const abortControllerRef = useRef<AbortController | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  // 커스텀 훅 - 일정 dto, 모임의 일정 목록 조회 fetch 넘김
+  const { events, fetchSchedules } = useSchedules((params, signal) => 
+    getClubSchedules(clubId, params, signal)
+  );
 
-  // ScheduleDto를 FullCalendar Event 객체로 변환
-  const convertSchedulesToEvents = (
-    schedules: components["schemas"]["ScheduleDto"][]
-  ) => {
-    return schedules.map(schedule => ({
-      id: schedule.id !== undefined ? String(schedule.id) : undefined,
-      title: schedule.title || '제목 없음',
-      start: schedule.startDate || new Date().toISOString(),
-      end: schedule.endDate,
-      allDay: (schedule.startDate?.length || 0) <= 10 && (schedule.endDate?.length || 0) <= 10,
-      color: '#6366F1', // bg-indigo-500
-      textColor: '#FFFFFF'
-    }));
-  };
-  
-  // 컴포넌트 사라질 때 요청 취소
+  // 최초 조회
   useEffect(() => {
-    return () => {
-      abortControllerRef.current?.abort();
-    };
-  }, []);
-
-  const fetchSchedules = useCallback(async (startDate?: string, endDate?: string) => {
-    if (!clubId) {
-      setError('유효하지 않은 모임입니다.');
-      return;
+    // 캘린더 API를 통해 현재 뷰의 날짜 범위를 가져와서 데이터 조회
+    if (calendarRef.current) {
+      const calendarApi = calendarRef.current.getApi();
+      const view = calendarApi.view;
+      const startDate = extractDateFromISO(view.activeStart.toISOString());
+      const endDate = extractDateFromISO(view.activeEnd.toISOString());
+      fetchSchedules({ startDate, endDate });
     }
-    // 이전 요청 있으면 취소
-    abortControllerRef.current?.abort();
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
-
-    setError(null);
-
-    try {
-      // 일정 목록 조회
-      const data = await getClubSchedules(Number(clubId), { startDate, endDate }, controller.signal);
-      // 일정 목록 세팅
-      const events = convertSchedulesToEvents(data.data ?? []);
-
-      // 캘린더 이벤트 저장
-      setEvents(events);
-    } catch (e) {
-      // 요청 취소는 무시
-      if (e instanceof Error && e.message.includes('aborted')) return; 
-      // 에러 처리
-      const msg = e instanceof Error ? e.message : '일정 불러오기 실패';
-      setError(msg);
-      toast.error(msg);
-    }
-  }, [clubId]);
+  }, [fetchSchedules]);
 
   // 캘린더 날짜가 변경될 때마다(이전, 다음 버튼 등) 일정 목록 API 재호출
-  const handleDatesSet = useCallback((arg: any) => {
+  const handleDatesSet = useCallback((arg: DatesSetArg) => {
     const startDate = extractDateFromISO(arg.startStr);
     const endDate = extractDateFromISO(arg.endStr);
-    fetchSchedules(startDate, endDate);
+    fetchSchedules({ startDate, endDate });
   }, [fetchSchedules]);
 
   // Date UI(일) 클릭 시 일정 생성/수정정 모달
@@ -111,8 +71,24 @@ export default function ScheduleListPage() {
     setShowModal(true);
   };
 
+  // 일정 생성/삭제 후 캘린더를 최신화
+  const refreshCalendar = async () => {
+    if (calendarRef.current) {
+      const calendarApi = calendarRef.current.getApi();
+      const view = calendarApi.view;
+      const startDate = extractDateFromISO(view.activeStart.toISOString());
+      const endDate = extractDateFromISO(view.activeEnd.toISOString());
+      // 일정 목록 재조회
+      await fetchSchedules({ startDate, endDate });
+    }
+  };
+
   // 모달 닫기
-  const handleCloseModal = (shouldRefresh: boolean, action?: 'modify' | 'goToCheckList' | 'createCheckList', targetId?: number) => {
+  const handleCloseModal = useCallback((
+    shouldRefresh: boolean, 
+    action?: 'modify' | 'goToCheckList' | 'createCheckList', 
+    targetId?: number
+  ) => {
     setShowModal(false);
     setSelectedDateInfo(null);
     setModalType(null);
@@ -135,19 +111,7 @@ export default function ScheduleListPage() {
     if (shouldRefresh) {
       refreshCalendar();
     }
-  };
-  
-  // 일정 생성/삭제 후 캘린더를 최신화
-  const refreshCalendar = async () => {
-    if (calendarRef.current) {
-      const calendarApi = calendarRef.current.getApi();
-      const view = calendarApi.view;
-      const startDate = extractDateFromISO(view.activeStart.toISOString());
-      const endDate = extractDateFromISO(view.activeEnd.toISOString());
-      // 일정 목록 재조회
-      await fetchSchedules(startDate, endDate);
-    }
-  };
+  }, [refreshCalendar]);
 
   return (
     <div className='flex flex-col lg:flex-row min-h-screen bg-gray-100 font-sans'>

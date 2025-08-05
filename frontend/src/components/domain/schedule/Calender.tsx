@@ -12,7 +12,7 @@ interface CalendarProps {
   events: any[];
   handleDatesSet: (arg: any) => void;
   handleEventClick: (clickInfo: EventClickArg) => void; 
-  handleDateSelect: (selectInfo: DateSelectArg) => void;
+  handleDateSelect?: (selectInfo: DateSelectArg) => void;
 }
 
 const Calendar = forwardRef<FullCalendar, CalendarProps>(({
