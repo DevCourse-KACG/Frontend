@@ -1,14 +1,17 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { EventType, EventTypeKorean } from '@/types/EventType';
+import { ClubCategory, ClubCategoryKorean } from '@/types/ClubCategory';
+
 
 export interface ClubFormData {
     name: string;
     bio: string;
     mainSpot: string;
     maximumCapacity: number;
-    category: typeof CATEGORIES[number]['value'];
-    eventType: "ONE_TIME" | "SHORT_TERM" | "LONG_TERM";
+    category: ClubCategory;
+    eventType: EventType;
     activityPeriod: {
         startDate: string;
         endDate: string;
@@ -23,23 +26,6 @@ interface ClubDataFormProps {
     initialImage?: File | null;
 }
 
-const CATEGORIES = [
-    { value: 'STUDY', label: '공부' },
-    { value: 'HOBBY', label: '취미' },
-    { value: 'SPORTS', label: '운동' },
-    { value: 'TRAVEL', label: '여행' },
-    { value: 'CULTURE', label: '문화' },
-    { value: 'FOOD', label: '음식' },
-    { value: 'PARTY', label: '파티' },
-    { value: 'WORK', label: '업무' },
-    { value: 'OTHER', label: '기타' }
-] as const;
-
-const EVENT_TYPES = [
-    { value: 'ONE_TIME', label: '일회성' },
-    { value: 'SHORT_TERM', label: '단기' },
-    { value: 'LONG_TERM', label: '장기' }
-] as const;
 
 export default function ClubDataForm({ onSubmit, isLoading = false, initialData, initialImage }: ClubDataFormProps) {
     const [formData, setFormData] = useState<ClubFormData>({
@@ -47,8 +33,8 @@ export default function ClubDataForm({ onSubmit, isLoading = false, initialData,
         bio: initialData?.bio || '',
         mainSpot: initialData?.mainSpot || '',
         maximumCapacity: initialData?.maximumCapacity || 10,
-        category: initialData?.category || 'STUDY',
-        eventType: initialData?.eventType || 'ONE_TIME',
+        category: initialData?.category || ClubCategory.OTHER,
+        eventType: initialData?.eventType || EventType.ONE_TIME,
         activityPeriod: initialData?.activityPeriod || {
             startDate: '',
             endDate: ''
@@ -314,10 +300,9 @@ export default function ClubDataForm({ onSubmit, isLoading = false, initialData,
                     className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.category ? 'border-red-500' : 'border-gray-300'
                         }`}
                 >
-                    <option value="">카테고리를 선택하세요</option>
-                    {CATEGORIES.map((category) => (
-                        <option key={category.value} value={category.value}>
-                            {category.label}
+                    {Object.values(ClubCategory).map((category) => (
+                        <option key={category} value={category}>
+                            {ClubCategoryKorean[category] || category}
                         </option>
                     ))}
                 </select>
@@ -336,10 +321,9 @@ export default function ClubDataForm({ onSubmit, isLoading = false, initialData,
                     className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.eventType ? 'border-red-500' : 'border-gray-300'
                         }`}
                 >
-                    <option value="">이벤트 타입을 선택하세요</option>
-                    {EVENT_TYPES.map((eventType) => (
-                        <option key={eventType.value} value={eventType.value}>
-                            {eventType.label}
+                    {Object.values(EventType).map((eventType) => (
+                        <option key={eventType} value={eventType}>
+                            {EventTypeKorean[eventType] || eventType}
                         </option>
                     ))}
                 </select>

@@ -16,6 +16,13 @@ export const createClub = async (
     data: CreateClubRequest,
     imageFile: File | null,
 ): Promise<ClubResponse> => {
+    const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB 제한
+
+    // 0. 이미지 크기 검사
+    if (imageFile && imageFile.size > MAX_IMAGE_SIZE) {
+        throw new Error('이미지 파일 크기는 5MB를 초과할 수 없습니다.');
+    }
+
     // 1. FormData 객체 생성
     const formData = new FormData();
 
