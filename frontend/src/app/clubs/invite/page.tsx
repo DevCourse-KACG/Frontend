@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getClubInfoByInvitationToken, applyToClubByInvitationToken } from '@/api/clubLink';
-import { guestLogin } from '@/api/members';
+import { registerGuest } from '@/api/members';
 
 interface ClubData {
   clubId: number;
@@ -19,7 +19,7 @@ interface ClubData {
 }
 
 // 인증 모달 컴포넌트
-function AuthModal({ onClose, onLogin, onGuestLogin }: { onClose: () => void, onLogin: () => void, onGuestLogin: () => void }) {
+function AuthModal({ onClose, onLogin, onGuestProceed }: { onClose: () => void, onLogin: () => void, onGuestProceed: () => void }) {
   return (
     <div className="fixed inset-0 overflow-y-auto h-full w-full flex items-center justify-center z-50">
       <div className="bg-white p-8 rounded-lg shadow-xl max-w-sm w-full mx-4 text-center transform transition-all scale-100 opacity-100">
@@ -33,10 +33,10 @@ function AuthModal({ onClose, onLogin, onGuestLogin }: { onClose: () => void, on
             로그인하기
           </button>
           <button
-            onClick={onGuestLogin}
+            onClick={onGuestProceed}
             className="w-full px-4 py-3 bg-gray-200 text-gray-800 rounded-lg font-semibold shadow-md hover:bg-gray-300 transition-colors"
           >
-            게스트로 진행하기
+            비회원으로 진행하기
           </button>
           <button
             onClick={onClose}
@@ -120,25 +120,10 @@ export default function InvitationPage() {
     router.push('/members/login');
   };
 
-  const handleGuestLogin = async () => {
-    // 게스트 로그인 API 호출
-    try {
-      const data = await guestLogin();
-      if (data && data.data && data.data.accessToken) {
-        localStorage.setItem('accessToken', data.data.accessToken);
-        setShowLoginModal(false);
-        // 토큰 발급 후 가입 신청 함수 다시 호출
-        await handleApplyToClub();
-      } else {
-        setError("게스트 로그인에 실패했습니다.");
-      }
-    } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("게스트 로그인 중 오류가 발생했습니다.");
-      }
-    }
+  const handleGuestProceed = () => {
+    // 비회원 가입 페이지로 이동
+    router.push(`/members/guest-register?token=${token}`);
+    setShowLoginModal(false);
   };
 
   if (isLoading) {
@@ -208,7 +193,7 @@ export default function InvitationPage() {
         <AuthModal
           onClose={() => setShowLoginModal(false)}
           onLogin={handleLogin}
-          onGuestLogin={handleGuestLogin}
+          onGuestProceed={handleGuestProceed}
         />
       )}
     </div>

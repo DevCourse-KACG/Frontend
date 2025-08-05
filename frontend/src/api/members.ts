@@ -1,3 +1,16 @@
+// api/members.ts
+
+// 백엔드 응답에 맞게 인터페이스를 정의합니다.
+interface LoginResponse {
+  accessToken: string;
+  // 백엔드 응답에 따라 다른 필드가 있을 수 있습니다.
+}
+
+interface ApiResponse<T> {
+  data: T;
+  // 다른 필드들이 있을 수 있습니다.
+}
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
 
 // API 호출 시 공통으로 사용할 fetcher 함수
@@ -55,10 +68,16 @@ export async function login({ email, password }: { email: string; password: stri
   });
 }
 
-// 게스트 로그인 API
-export async function guestLogin() {
-  return fetcher('/api/v1/members/auth/guest-login', {
+/**
+ * 게스트 계정을 등록하는 API 함수
+ * @returns 액세스 토큰이 포함된 응답 데이터
+ */
+export async function registerGuest(): Promise<ApiResponse<LoginResponse>> {
+  // 백엔드 명세에 따라, DTO 없이 POST 요청을 보냅니다.
+  // URL을 '/api/v1/members/auth/guest-register'로 수정
+  return fetcher('/api/v1/members/auth/guest-register', {
     method: 'POST',
+    body: JSON.stringify({}),
   });
 }
 
