@@ -1,4 +1,5 @@
 import type { components } from "@/types/backend/apiV1/schema";
+import type { ScheduleDetailDto, RsDataScheduleDetailDto } from "@/types/schedule"; // 공용 타입
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL!;
 if (!BASE_URL) {
@@ -19,7 +20,8 @@ async function handleResponse<T>(res: Response): Promise<T> {
 // 모임 일정 목록 조회
 export async function getClubSchedules(
   clubId: number,
-  query?: { startDate?: string; endDate?: string }
+  query?: { startDate?: string; endDate?: string },
+  signal?: AbortSignal
 ): Promise<components["schemas"]["RsDataListScheduleDto"]> {
   let url = `${BASE_URL}/api/v1/schedules/clubs/${clubId}`;
   // 쿼리 스트링 처리 (required = false)
@@ -34,6 +36,7 @@ export async function getClubSchedules(
   }
   const res = await fetch(url, {
     method: "GET",
+    signal,
   });
   return handleResponse<components["schemas"]["RsDataListScheduleDto"]>(res);
 }
@@ -41,16 +44,19 @@ export async function getClubSchedules(
 
 // 일정 조회
 export async function getSchedule(
-  scheduleId: number
-): Promise<components["schemas"]["RsDataScheduleDetailDto"]> {
-  const res = await fetch(`${BASE_URL}/api/v1/schedules/${scheduleId}`);
+  scheduleId: number,
+  signal?: AbortSignal
+): Promise<RsDataScheduleDetailDto> {
+  const res = await fetch(`${BASE_URL}/api/v1/schedules/${scheduleId}`, {
+    signal,
+  });
   return handleResponse(res);
 }
 
 // 일정 생성
 export async function createSchedule(
   body: components["schemas"]["ScheduleCreateReqBody"]
-): Promise<components["schemas"]["RsDataScheduleDetailDto"]> {
+): Promise<RsDataScheduleDetailDto> {
   const res = await fetch(`${BASE_URL}/api/v1/schedules`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -63,7 +69,7 @@ export async function createSchedule(
 export async function modifySchedule(
   scheduleId: number,
   body: components["schemas"]["ScheduleUpdateReqBody"]
-): Promise<components["schemas"]["RsDataScheduleDetailDto"]> {
+): Promise<RsDataScheduleDetailDto> {
   const res = await fetch(`${BASE_URL}/api/v1/schedules/${scheduleId}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },

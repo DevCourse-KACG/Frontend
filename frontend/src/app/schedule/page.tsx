@@ -7,9 +7,10 @@ import toast from 'react-hot-toast';
 import type { components } from "@/types/backend/apiV1/schema";
 import { getClubSchedules } from "@/api/schedule";
 import { extractDateFromISO } from '@/lib/formatDate';
-import { EventInput } from '@fullcalendar/core';
+import { EventInput, EventClickArg, DateSelectArg } from '@fullcalendar/core';
 import FullCalendar from '@fullcalendar/react';
 import Calendar from '@/components/domain/schedule/Calender';
+import ScheduleModal from '@/app/schedule/modals/ScheduleModal';
 
 import '@/lib/fullcalendar.css';
 
@@ -22,6 +23,12 @@ export default function ScheduleListPage() {
   // 캘린더 처리
   const calendarRef = useRef<FullCalendar>(null);
   const [events, setEvents] = useState<EventInput[]>([]); 
+  const [selectedDateInfo, setSelectedDateInfo] = useState<DateSelectArg | null>(null);
+  const [selectedScheduleId, setSelectedScheduleId] = useState<number | null>(null);
+
+  // 모달 상태 관리
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const [modalType, setModalType] = useState<'create' | 'detail' | null>(null);
 
   // API 호출 취소를 위한 AbortController
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -65,14 +72,8 @@ export default function ScheduleListPage() {
       // 일정 목록 세팅
       const events = convertSchedulesToEvents(data.data ?? []);
 
+      // 캘린더 이벤트 저장
       setEvents(events);
-
-      // 캘린더 이벤트 처리
-      if (calendarRef.current) {
-        const calendarApi = calendarRef.current.getApi();
-        calendarApi.removeAllEvents();
-        calendarApi.addEventSource(events);
-      }
     } catch (e) {
       // 요청 취소는 무시
       if (e instanceof DOMException && e.name === 'AbortError') return;
@@ -90,11 +91,61 @@ export default function ScheduleListPage() {
     fetchSchedules(startDate, endDate);
   }, [fetchSchedules]);
 
+  // Date UI(일) 클릭 시 일정 생성 모달
+  const handleDateSelect = (selectInfo: DateSelectArg) => {
+    setModalType('create');
+    setSelectedDateInfo(selectInfo);
+    setSelectedScheduleId(null);
+    setShowModal(true);
+  };
+
+  // 일정 클릭 시 일정 상세 모달
+  const handleEventClick = (clickInfo: EventClickArg) => {
+    setModalType('detail');
+    setSelectedScheduleId(Number(clickInfo.event.id)); // ID만 저장
+    setSelectedDateInfo(null);
+    setShowModal(true);
+  };
+
+  // 모달 닫기
+  const handleCloseModal = (shouldRefresh: boolean) => {
+    setShowModal(false);
+    setSelectedDateInfo(null);
+    setSelectedScheduleId(null);
+    setModalType(null);
+  
+    if (shouldRefresh) {
+      refreshCalendar();
+    }
+  };
+  
+  // 일정 생성/삭제 후 캘린더를 최신화
+  const refreshCalendar = async () => {
+    if (calendarRef.current) {
+      const calendarApi = calendarRef.current.getApi();
+      const view = calendarApi.view;
+      const startDate = extractDateFromISO(view.activeStart.toISOString());
+      const endDate = extractDateFromISO(view.activeEnd.toISOString());
+      // 일정 목록 재조회
+      await fetchSchedules(startDate, endDate);
+    }
+  };
+
   return (
     <div className='flex flex-col lg:flex-row min-h-screen bg-gray-100 font-sans'>
       {/* Main Calendar */}
       <div className='flex-1 p-4 lg:p-6'>
-        <Calendar events={events} handleDatesSet={handleDatesSet} />
+        <Calendar 
+          ref={calendarRef}
+          events={events} 
+          handleDatesSet={handleDatesSet} 
+          handleEventClick={handleEventClick}
+          />
+        <ScheduleModal
+          showModal={showModal}
+          selectedScheduleId={selectedScheduleId}
+          onClose={handleCloseModal}
+        />
       </div>
     </div>
   );
