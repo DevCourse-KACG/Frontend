@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getClubInfoByInvitationToken, applyToClubByInvitationToken } from '@/api/clubLink';
-import { registerGuest } from '@/api/members';
 
+// 클럽 데이터 인터페이스
 interface ClubData {
   clubId: number;
   name: string;
@@ -103,7 +103,8 @@ export default function InvitationPage() {
     setIsApplying(true);
     setApplyResult(null);
     try {
-      const message = await applyToClubByInvitationToken(token);
+      // applyToClubByInvitationToken 함수는 `api/clubLink`에 정의되어 있어야 합니다.
+      const message = await applyToClubByInvitationToken(token); 
       setApplyResult(message);
       alert('모임 가입 신청이 완료되었습니다!');
       router.push('/');
@@ -126,6 +127,7 @@ export default function InvitationPage() {
   };
 
   const handleGuestProceed = () => {
+    // 토큰이 올바르게 전달되도록 수정
     router.push(`/members/guest-register?token=${token}`);
     setShowLoginModal(false);
   };
