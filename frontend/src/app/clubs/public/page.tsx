@@ -4,6 +4,7 @@ import React from 'react';
 import { components } from "@/types/backend/apiV1/schema";
 import ClubCard from '@/components/domain/clubs/clubCard';
 import { getPublicClubs } from '@/api/club';
+import { applyToJoinClub } from '@/api/myClub';
 import { useEffect, useState } from 'react';
 import LoadingSpinner from '@/components/global/LoadingSpinner';
 import { useSearchParams } from 'next/navigation';
@@ -101,6 +102,21 @@ export default function ClubListPage() {
         setIsModalOpen(true);
     };
 
+    const handleApplyButtonClick = async () => {
+        if (!selectedClub) return;
+
+        try {
+            // 모임 가입 신청 API 호출
+            const result = await applyToJoinClub(String(selectedClub.clubId));
+            alert(`'${result.clubName}'에 가입 신청이 완료되었습니다.`);
+            setIsModalOpen(false);
+            setSelectedClub(null);
+        } catch (error) {
+            const errorMessage = (error as any)?.message || '알 수 없는 오류가 발생했습니다.';
+            alert(`가입 신청에 실패했습니다\n ${errorMessage}`);
+        }
+    }
+
 
     // 가드 클로즈 : 로딩 중
     if (loading) {
@@ -146,7 +162,7 @@ export default function ClubListPage() {
                         <p className="mt-4 text-sm text-gray-500" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                             <ClubIntroInfo club={selectedClub as ClubInfoResponse} />
                             <button
-                                onClick={() => { }}
+                                onClick={handleApplyButtonClick}
                                 style={{
                                     padding: '0.7rem 1.5rem',
                                     background: 'linear-gradient(90deg, #6366f1 0%, #60a5fa 100%)',
