@@ -6,7 +6,7 @@ import { components } from '@/types/backend/apiV1/schema';
 import { getClubMembers } from '@/api/clubMember';
 import MemberTabs from './MemberTabs';
 import MemberList from './MemberList';
-import { approveApplication, rejectApplication, changeMemberRole, deleteMember } from '@/api/clubMember';
+import { approveApplication, rejectApplication, changeMemberRole, deleteMember, inviteMembers } from '@/api/clubMember';
 
 type MemberInfo = components['schemas']['ClubMemberInfo'];
 
@@ -37,8 +37,7 @@ export default function MemberManagement({ clubId, initialMembers }: MemberManag
     const handleAction = async (action: () => Promise<void>) => {
         try {
             await action();
-            // 성공 시, 실제로는 전체 목록을 다시 fetch 하는 것이 가장 정확합니다.
-            // 여기서는 예시로 로컬 상태를 직접 조작합니다.
+
             alert('작업이 완료되었습니다.');
             await refreshMembers();
         } catch (err) {
@@ -50,6 +49,7 @@ export default function MemberManagement({ clubId, initialMembers }: MemberManag
     const handleReject = (memberId: number) => handleAction(() => rejectApplication(clubId, memberId));
     const handleChangeRole = (memberId: number, role: 'MANAGER' | 'PARTICIPANT') => handleAction(() => changeMemberRole(clubId, memberId, role));
     const handleDelete = (memberId: number) => handleAction(() => deleteMember(clubId, memberId));
+    const handleInviteMembers = (emails: string[]) => handleAction(() => inviteMembers(clubId, emails));
 
     return (
         <>
@@ -61,6 +61,7 @@ export default function MemberManagement({ clubId, initialMembers }: MemberManag
                 onReject={handleReject}
                 onChangeRole={handleChangeRole}
                 onDelete={handleDelete}
+                onInvite={handleInviteMembers}
             />
         </>
     );

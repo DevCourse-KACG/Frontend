@@ -16,31 +16,19 @@ interface MemberListProps {
     onReject: (memberId: number) => void;
     onChangeRole: (memberId: number, role: 'MANAGER' | 'PARTICIPANT') => void;
     onDelete: (memberId: number) => void;
+    onInvite: (emails: string[]) => void;
 }
 
-export default function MemberList({ members, state, ...handlers }: MemberListProps) {
+export default function MemberList({ members, state, onInvite, ...handlers }: MemberListProps) {
     const params = useParams();
     const clubId = params.clubId as string;
-
-    const handleInviteMembers = (emails: string[]) => {
-        console.log("초대할 최종 이메일 목록:", emails);
-        // 여기에 실제 API 호출 로직을 구현합니다.
-        inviteMembers(clubId, emails)
-            .then(() => {
-                alert('초대 이메일이 성공적으로 발송되었습니다.');
-            })
-            .catch((error) => {
-                console.error('초대 이메일 발송 실패:', error);
-                alert('초대 이메일 발송에 실패했습니다. 다시 시도해주세요.');
-            });
-    };
 
     return (
         <div>
             {state === 'INVITED' && (
                 <div className="mb-4">
                     <MultiEmailInput
-                        onSubmit={handleInviteMembers}
+                        onSubmit={onInvite}
                         label="모임에 초대할 멤버의 이메일 주소를 입력하세요"
                         placeholder="예: user@example.com"
                     />
