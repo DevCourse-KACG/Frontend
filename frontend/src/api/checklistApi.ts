@@ -7,7 +7,7 @@ export type ClubMember = components['schemas']['ClubMemberInfo'];
 // 그룹 내 사용자 정보 타입
 export interface GroupUserInfo {
   role: 'HOST' | 'MANAGER' | 'PARTICIPANT';
-  state: 'JOINED' | 'PENDING' | 'INVITED';
+  state: 'JOINING' | 'PENDING' | 'INVITED';
 }
 
 export interface GroupUserResponse {
@@ -36,8 +36,22 @@ export async function fetchChecklists(groupId: string): Promise<CheckListListRes
       throw new Error(`LOGIN_REQUIRED:${errorData.message}`);
     }
 
+    // 각 상태 코드별 구체적 에러 메시지
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorData = data as ApiErrorResponse;
+      const message = errorData?.message || '알 수 없는 오류가 발생했습니다.';
+      
+      // 서버에서 code 필드를 제공하는 경우 해당 값을 우선 사용
+      const statusCode = errorData?.code || response.status;
+      
+      switch (statusCode) {
+        case 403:
+          throw new Error(`ACCESS_DENIED:${message}`);
+        case 404:
+          throw new Error(`GROUP_NOT_FOUND:${message}`);
+        default:
+          throw new Error(`HTTP error! status: ${statusCode} - ${message}`);
+      }
     }
 
     return data;
@@ -64,8 +78,22 @@ export async function fetchChecklistDetail(checklistId: string): Promise<CheckLi
       throw new Error(`LOGIN_REQUIRED:${errorData.message}`);
     }
 
+    // 각 상태 코드별 구체적 에러 메시지
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorData = data as ApiErrorResponse;
+      const message = errorData?.message || '알 수 없는 오류가 발생했습니다.';
+      
+      // 서버에서 code 필드를 제공하는 경우 해당 값을 우선 사용
+      const statusCode = errorData?.code || response.status;
+      
+      switch (statusCode) {
+        case 403:
+          throw new Error(`ACCESS_DENIED:${message}`);
+        case 404:
+          throw new Error(`CHECKLIST_NOT_FOUND:${message}`);
+        default:
+          throw new Error(`HTTP error! status: ${statusCode} - ${message}`);
+      }
     }
 
     return data;
@@ -93,8 +121,22 @@ export async function updateChecklist(checklistId: string, updateData: CheckList
       throw new Error(`LOGIN_REQUIRED:${errorData.message}`);
     }
 
+    // 각 상태 코드별 구체적 에러 메시지
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorData = data as ApiErrorResponse;
+      const message = errorData?.message || '알 수 없는 오류가 발생했습니다.';
+      
+      // 서버에서 code 필드를 제공하는 경우 해당 값을 우선 사용
+      const statusCode = errorData?.code || response.status;
+      
+      switch (statusCode) {
+        case 403:
+          throw new Error(`ACCESS_DENIED:${message}`);
+        case 404:
+          throw new Error(`CHECKLIST_NOT_FOUND:${message}`);
+        default:
+          throw new Error(`HTTP error! status: ${statusCode} - ${message}`);
+      }
     }
 
     return data;
@@ -113,24 +155,39 @@ export async function deleteChecklist(checklistId: string): Promise<void> {
       credentials: 'include',
     });
 
+    const data = await response.json();
+
     // 401 에러인 경우 (로그인 필요)
     if (response.status === 401) {
-      const data = await response.json();
       const errorData = data as ApiErrorResponse;
       throw new Error(`LOGIN_REQUIRED:${errorData.message}`);
     }
 
+    // 각 상태 코드별 구체적 에러 메시지
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorData = data as ApiErrorResponse;
+      const message = errorData?.message || '알 수 없는 오류가 발생했습니다.';
+      
+      // 서버에서 code 필드를 제공하는 경우 해당 값을 우선 사용
+      const statusCode = errorData?.code || response.status;
+      
+      switch (statusCode) {
+        case 403:
+          throw new Error(`ACCESS_DENIED:${message}`);
+        case 404:
+          throw new Error(`CHECKLIST_NOT_FOUND:${message}`);
+        default:
+          throw new Error(`HTTP error! status: ${statusCode} - ${message}`);
+      }
     }
   } catch (error) {
     throw error;
   }
 }
 
-export async function fetchGroupMembers(groupId: string): Promise<ClubMemberResponse> {
+export async function fetchGroupMembers(clubId: string): Promise<ClubMemberResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/groups/${groupId}/members?state=JOINED`, {
+    const response = await fetch(`${API_BASE_URL}/clubs/${clubId}/members?state=JOINING`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -156,9 +213,25 @@ export async function fetchGroupMembers(groupId: string): Promise<ClubMemberResp
   }
 }
 
-export async function fetchGroupUserInfo(groupId: string): Promise<GroupUserResponse> {
+// 일정 정보 타입
+export interface ScheduleInfo {
+  id: number;
+  title: string;
+  startDate: string;
+  endDate: string;
+  clubId: number;
+  checkListId?: number;
+}
+
+export interface ScheduleResponse {
+  code: number;
+  message: string;
+  data: ScheduleInfo;
+}
+
+export async function fetchScheduleDetail(scheduleId: string): Promise<ScheduleResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/groups/${groupId}/me`, {
+    const response = await fetch(`${API_BASE_URL}/schedules/${scheduleId}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -179,13 +252,58 @@ export async function fetchGroupUserInfo(groupId: string): Promise<GroupUserResp
       const errorData = data as ApiErrorResponse;
       const message = errorData?.message || '알 수 없는 오류가 발생했습니다.';
       
-      switch (response.status) {
+      // 서버에서 code 필드를 제공하는 경우 해당 값을 우선 사용
+      const statusCode = errorData?.code || response.status;
+      
+      switch (statusCode) {
+        case 404:
+          throw new Error(`SCHEDULE_NOT_FOUND:${message}`);
+        case 403:
+          throw new Error(`ACCESS_DENIED:${message}`);
+        default:
+          throw new Error(`HTTP error! status: ${statusCode} - ${message}`);
+      }
+    }
+
+    return data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function fetchGroupUserInfo(clubId: string): Promise<GroupUserResponse> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/my-clubs/${clubId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    });
+
+    const data = await response.json();
+
+    // 401 에러인 경우 (로그인 필요)
+    if (response.status === 401) {
+      const errorData = data as ApiErrorResponse;
+      throw new Error(`LOGIN_REQUIRED:${errorData.message}`);
+    }
+
+    // 각 상태 코드별 구체적 에러 메시지
+    if (!response.ok) {
+      const errorData = data as ApiErrorResponse;
+      const message = errorData?.message || '알 수 없는 오류가 발생했습니다.';
+      
+      // 서버에서 code 필드를 제공하는 경우 해당 값을 우선 사용
+      const statusCode = errorData?.code || response.status;
+      
+      switch (statusCode) {
         case 404:
           throw new Error(`GROUP_NOT_FOUND:${message}`);
         case 403:
           throw new Error(`ACCESS_DENIED:${message}`);
         default:
-          throw new Error(`HTTP error! status: ${response.status} - ${message}`);
+          throw new Error(`HTTP error! status: ${statusCode} - ${message}`);
       }
     }
 
@@ -227,7 +345,7 @@ export async function createChecklist(checklistData: CheckListWriteReqDto): Prom
         case 409:
           throw new Error(`CHECKLIST_ALREADY_EXISTS:${message}`);
         default:
-          throw new Error(`HTTP error! status: ${response.status} - ${message}`);
+          throw new Error(`HTTP error! status: ${statusCode} - ${message}`);
       }
     }
 

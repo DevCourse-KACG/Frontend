@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { CheckList } from '@/types/checklist';
-import { fetchChecklists } from '@/api/checklistApi';
+import { fetchChecklists, fetchGroupUserInfo, GroupUserInfo } from '@/api/checklistApi';
 import LoadingSpinner from '@/components/global/LoadingSpinner';
+import { canCreateChecklist } from '@/utils/permissions';
 
 // 데모 데이터
 const DEMO_CHECKLISTS: CheckList[] = [
@@ -80,24 +81,66 @@ export default function SchedulesPage() {
   const [checklists, setChecklists] = useState<CheckList[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [userInfo, setUserInfo] = useState<GroupUserInfo | null>(null);
+  const [userInfoLoading, setUserInfoLoading] = useState(true);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const groupId = searchParams.get('groupId');
+
+  const loadUserInfo = async () => {
+    if (!groupId) {
+      setUserInfoLoading(false);
+      return;
+    }
+    
+    try {
+      setUserInfoLoading(true);
+      const response = await fetchGroupUserInfo(groupId);
+      setUserInfo(response.data);
+    } catch (err) {
+      // 사용자 정보를 불러올 수 없는 경우 null로 설정
+      setUserInfo(null);
+    } finally {
+      setUserInfoLoading(false);
+    }
+  };
 
   const loadChecklists = async () => {
+    if (!groupId) {
+      setLoading(false);
+      setError('그룹 ID가 필요합니다.');
+      return;
+    }
+    
     try {
       setLoading(true);
       setError(null);
       
-      // 임시 groupId (실제로는 사용자의 그룹 ID를 사용해야 함)
-      const groupId = '1';
-      
       const response = await fetchChecklists(groupId);
-      setChecklists(response.data || []);
+      const checklistsData = response.data || [];
+      
+      // 서버 데이터를 클라이언트 형식으로 변환
+      const convertedChecklists = checklistsData.map(checklist => ({
+        ...checklist,
+        checkListItems: checklist.checkListItems?.map(item => ({
+          ...item,
+          itemAssigns: item.itemAssigns?.map(assign => ({
+            ...assign,
+            id: assign.clubMemberId || assign.id, // clubMemberId를 id로 사용
+          })) || []
+        })) || []
+      }));
+      
+      setChecklists(convertedChecklists);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.';
       
       // 401 에러인 경우 데모 데이터 사용
       if (errorMessage.startsWith('LOGIN_REQUIRED:')) {
         setChecklists(DEMO_CHECKLISTS);
+      } else if (errorMessage.startsWith('ACCESS_DENIED:')) {
+        setError('이 그룹의 체크리스트에 접근할 권한이 없습니다. 그룹 관리자에게 문의하세요.');
+        setChecklists([]);
       } else {
         setError('체크리스트를 불러오는 중 오류가 발생했습니다.');
         setChecklists([]);
@@ -108,18 +151,27 @@ export default function SchedulesPage() {
   };
 
   useEffect(() => {
+    loadUserInfo();
     loadChecklists();
-  }, []);
+  }, [groupId]);
 
 
   const handleCreateChecklist = () => {
-    router.push('/checklists/create');
+    if (!groupId) {
+      alert('그룹 ID가 필요합니다. 올바른 그룹 페이지에서 접근해주세요.');
+      return;
+    }
+    router.push(`/checklists/create?groupId=${groupId}`);
   };
 
   const handleChecklistClick = (checklist: CheckList) => {
     if (checklist.isActive) {
+      if (!groupId) {
+        alert('그룹 ID가 필요합니다. 올바른 그룹 페이지에서 접근해주세요.');
+        return;
+      }
       // 활성 체크리스트인 경우 상세보기로 이동
-      router.push(`/checklists/${checklist.id}`);
+      router.push(`/checklists/${checklist.id}?groupId=${groupId}`);
     }
   };
 
@@ -145,11 +197,43 @@ export default function SchedulesPage() {
     return `${formatDate(startDate)} - ${formatDate(endDate)}`;
   };
 
-  if (loading) {
+  if (loading || userInfoLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="container mx-auto px-4 py-8">
           <LoadingSpinner />
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="container mx-auto px-4 py-8">
+          <div className="bg-white rounded-lg border border-red-200 shadow-sm p-8 text-center">
+            <div className="text-red-500 mb-4">
+              <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">오류가 발생했습니다</h2>
+            <p className="text-gray-600 mb-6">{error}</p>
+            <div className="flex gap-3 justify-center">
+              <Link
+                href="/"
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+              >
+                홈으로 이동
+              </Link>
+              <button
+                onClick={() => window.history.back()}
+                className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+              >
+                이전 페이지로
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -173,13 +257,15 @@ export default function SchedulesPage() {
               <h1 className="text-3xl font-bold text-gray-900">체크리스트 목록</h1>
             </div>
             
-            {/* 체크리스트 생성 버튼 */}
-            <button
-              onClick={handleCreateChecklist}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"
-            >
-              체크리스트 생성
-            </button>
+            {/* 체크리스트 생성 버튼 - 권한이 있는 사용자만 표시 */}
+            {canCreateChecklist(userInfo) && (
+              <button
+                onClick={handleCreateChecklist}
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"
+              >
+                체크리스트 생성
+              </button>
+            )}
           </div>
           <p className="text-gray-600">체크리스트를 관리하고 할 일들을 체크하세요</p>
         </div>

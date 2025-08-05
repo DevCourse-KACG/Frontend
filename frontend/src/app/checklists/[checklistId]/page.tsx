@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { CheckList, CheckListItem, CheckListUpdateReqDto } from '@/types/checklist';
 import { fetchChecklistDetail, updateChecklist, deleteChecklist, fetchGroupMembers, ClubMember, fetchGroupUserInfo, GroupUserInfo } from '@/api/checklistApi';
 import LoadingSpinner from '@/components/global/LoadingSpinner';
 import { canEditChecklist, canDeleteChecklist, canViewChecklist, getPermissionDeniedMessage } from '@/utils/permissions';
+import toast from 'react-hot-toast';
 import {
   DndContext,
   closestCenter,
@@ -484,10 +485,10 @@ function SortableItem({
                         {(() => {
                           const availableToAdd = availableMembers
                             .filter(member => 
-                              !item.itemAssigns?.some(assign => assign.clubMemberName === member.name)
+                              !item.itemAssigns?.some(assign => assign.id === member.clubMemberId)
                             )
                             .filter(member => 
-                              member.name?.toLowerCase().includes(memberSearchTerm.toLowerCase()) ?? false
+                              (member.nickname || member.name)?.toLowerCase().includes(memberSearchTerm.toLowerCase()) ?? false
                             );
                           
                           if (availableToAdd.length === 0) {
@@ -507,7 +508,7 @@ function SortableItem({
                               }}
                               className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 transition-colors flex items-center justify-between group"
                             >
-                              <span className="font-medium text-gray-900">{member.name}</span>
+                              <span className="font-medium text-gray-900">{member.nickname || member.name}</span>
                               <svg className="w-4 h-4 text-gray-400 group-hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                               </svg>
@@ -521,14 +522,14 @@ function SortableItem({
                         <div className="text-xs text-gray-500 text-center">
                           {(() => {
                             const totalAvailable = availableMembers.filter(member => 
-                              !item.itemAssigns?.some(assign => assign.clubMemberName === member.name)
+                              !item.itemAssigns?.some(assign => assign.id === member.clubMemberId)
                             ).length;
                             const filteredCount = availableMembers
                               .filter(member => 
-                                !item.itemAssigns?.some(assign => assign.clubMemberName === member.name)
+                                !item.itemAssigns?.some(assign => assign.id === member.clubMemberId)
                               )
                               .filter(member => 
-                                member.name?.toLowerCase().includes(memberSearchTerm.toLowerCase()) ?? false
+                                (member.nickname || member.name)?.toLowerCase().includes(memberSearchTerm.toLowerCase()) ?? false
                               ).length;
                             
                             if (memberSearchTerm) {
@@ -590,7 +591,25 @@ function SortableItem({
 export default function ChecklistDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const checklistId = params.checklistId as string;
+  const groupId = searchParams.get('groupId');
+
+  // 서버 데이터를 클라이언트 형식으로 변환하는 함수
+  const convertServerDataToClient = (checklistData: CheckList | null): CheckList | null => {
+    if (!checklistData?.checkListItems) return checklistData;
+    
+    return {
+      ...checklistData,
+      checkListItems: checklistData.checkListItems.map(item => ({
+        ...item,
+        itemAssigns: item.itemAssigns?.map(assign => ({
+          ...assign,
+          id: assign.clubMemberId || assign.id, // clubMemberId를 id로 사용
+        })) || []
+      }))
+    };
+  };
   
   const [checklist, setChecklist] = useState<CheckList | null>(null);
   const [loading, setLoading] = useState(true);
@@ -613,7 +632,16 @@ export default function ChecklistDetailPage() {
       setLoading(true);
       setError(null);
       const response = await fetchChecklistDetail(checklistId);
-      setChecklist(response.data || null);
+      const checklistData = convertServerDataToClient(response.data || null);
+      setChecklist(checklistData);
+      
+      // 체크리스트 로드 후 해당 클럽의 멤버들과 사용자 권한 정보를 불러옴
+      if (checklistData?.schedule?.clubId) {
+        await Promise.all([
+          loadGroupMembers(checklistData.schedule.clubId),
+          loadGroupUserInfo(checklistData.schedule.clubId)
+        ]);
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.';
       
@@ -621,7 +649,18 @@ export default function ChecklistDetailPage() {
       if (errorMessage.startsWith('LOGIN_REQUIRED:')) {
         // checklistId에 따른 데모 데이터 선택
         const demoData = getDemoDataByChecklistId(checklistId);
-        setChecklist(demoData);
+        const convertedDemoData = convertServerDataToClient(demoData);
+        setChecklist(convertedDemoData);
+        
+        // 데모 데이터의 clubId로 멤버와 사용자 권한 정보 로드
+        if (demoData?.schedule?.clubId) {
+          await Promise.all([
+            loadGroupMembers(demoData.schedule.clubId),
+            loadGroupUserInfo(demoData.schedule.clubId)
+          ]);
+        }
+      } else if (errorMessage.startsWith('ACCESS_DENIED:')) {
+        setError('이 체크리스트에 접근할 권한이 없습니다. 그룹 관리자에게 문의하세요.');
       } else {
         setError('체크리스트를 불러오는 중 오류가 발생했습니다.');
       }
@@ -630,11 +669,11 @@ export default function ChecklistDetailPage() {
     }
   };
 
-  const loadGroupUserInfo = async () => {
+  const loadGroupUserInfo = async (clubId?: number) => {
     try {
-      // 임시 groupId (실제로는 체크리스트에서 groupId를 가져와야 함)
-      const groupId = '1';
-      const response = await fetchGroupUserInfo(groupId);
+      // 체크리스트에서 clubId를 가져와서 사용
+      const clubIdToUse = clubId || checklist?.schedule?.clubId || 1;
+      const response = await fetchGroupUserInfo(clubIdToUse.toString());
       setUserInfo(response.data);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.';
@@ -644,7 +683,7 @@ export default function ChecklistDetailPage() {
         // 데모 사용자 정보 (HOST 권한으로 설정)
         setUserInfo({
           role: 'HOST',
-          state: 'JOINED'
+          state: 'JOINING'
         });
       } else {
         console.error('사용자 권한 정보를 불러오는 중 오류가 발생했습니다:', errorMessage);
@@ -655,11 +694,11 @@ export default function ChecklistDetailPage() {
     }
   };
 
-  const loadGroupMembers = async () => {
+  const loadGroupMembers = async (clubId?: number) => {
     try {
-      // 임시 groupId (실제로는 체크리스트에서 groupId를 가져와야 함)
-      const groupId = '1';
-      const response = await fetchGroupMembers(groupId);
+      // 체크리스트에서 clubId를 가져와서 사용
+      const clubIdToUse = clubId || checklist?.schedule?.clubId || 1;
+      const response = await fetchGroupMembers(clubIdToUse.toString());
       setAvailableMembers(response.data?.members || []);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.';
@@ -668,11 +707,11 @@ export default function ChecklistDetailPage() {
       if (errorMessage.startsWith('LOGIN_REQUIRED:')) {
         // 데모 멤버 데이터
         setAvailableMembers([
-          { id: 1, name: '김민수', role: 'MEMBER' },
-          { id: 2, name: '이영희', role: 'MEMBER' },
-          { id: 3, name: '박철수', role: 'MEMBER' },
-          { id: 4, name: '정수진', role: 'MEMBER' },
-          { id: 5, name: '홍길동', role: 'MEMBER' },
+          { id: 1, clubMemberId: 101, name: '김민수', nickname: '민수야', role: 'MEMBER' },
+          { id: 2, clubMemberId: 102, name: '이영희', nickname: '영희님', role: 'MEMBER' },
+          { id: 3, clubMemberId: 103, name: '박철수', nickname: '철수형', role: 'MEMBER' },
+          { id: 4, clubMemberId: 104, name: '정수진', nickname: '수진이', role: 'MEMBER' },
+          { id: 5, clubMemberId: 105, name: '홍길동', nickname: '길동이', role: 'MEMBER' },
         ] as ClubMember[]);
       } else {
         console.error('멤버를 불러오는 중 오류가 발생했습니다:', errorMessage);
@@ -682,12 +721,16 @@ export default function ChecklistDetailPage() {
   };
 
   useEffect(() => {
+    if (!groupId) {
+      setLoading(false);
+      setError('그룹 ID가 필요합니다. 올바른 그룹 페이지에서 접근해주세요.');
+      return;
+    }
+    
     if (checklistId) {
       loadChecklistDetail();
-      loadGroupUserInfo();
-      loadGroupMembers();
     }
-  }, [checklistId]);
+  }, [checklistId, groupId]);
 
   const handleToggleItem = (itemId: number) => {
     if (!checklist) return;
@@ -713,19 +756,31 @@ export default function ChecklistDetailPage() {
       // 체크리스트 업데이트 데이터 준비
       const updateData: CheckListUpdateReqDto = {
         checkListItems: checklist.checkListItems?.map(item => ({
+          id: item.id,
           content: item.content || '',
           category: item.category || 'ETC',
           sequence: item.sequence || 0,
+          isChecked: item.isChecked || false,
+          itemAssigns: item.itemAssigns?.map(assign => ({
+            clubMemberId: assign.id, // clubMemberId 필드명으로 전송
+            isChecked: assign.isChecked || false
+          })) || []
         })) || []
       };
       
       const response = await updateChecklist(checklistId, updateData);
-      setChecklist(response.data || checklist);
+      const updatedData = convertServerDataToClient(response.data || checklist);
+      setChecklist(updatedData);
       setIsEditMode(false);
-      alert('체크리스트가 성공적으로 수정되었습니다.');
+      toast.success('체크리스트가 성공적으로 수정되었습니다.');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.';
-      alert('체크리스트 수정 중 오류가 발생했습니다.');
+      
+      if (errorMessage.startsWith('ACCESS_DENIED:')) {
+        toast.error('이 체크리스트를 수정할 권한이 없습니다. 그룹 관리자에게 문의하세요.');
+      } else {
+        toast.error('체크리스트 수정 중 오류가 발생했습니다.');
+      }
     } finally {
       setSaving(false);
     }
@@ -743,11 +798,16 @@ export default function ChecklistDetailPage() {
     if (confirm('정말로 이 체크리스트를 삭제하시겠습니까?')) {
       try {
         await deleteChecklist(checklistId);
-        alert('체크리스트가 성공적으로 삭제되었습니다.');
-        router.push('/checklists');
+        toast.success('체크리스트가 성공적으로 삭제되었습니다.');
+        router.push(`/checklists?groupId=${groupId}`);
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.';
-        alert('체크리스트 삭제 중 오류가 발생했습니다.');
+        
+        if (errorMessage.startsWith('ACCESS_DENIED:')) {
+          toast.error('이 체크리스트를 삭제할 권한이 없습니다. 그룹 관리자에게 문의하세요.');
+        } else {
+          toast.error('체크리스트 삭제 중 오류가 발생했습니다.');
+        }
       }
     }
   };
@@ -829,8 +889,8 @@ export default function ChecklistDetailPage() {
       checkListItems: checklist.checkListItems?.map(item => {
         if (item.id === itemId) {
           const newAssign = {
-            id: Date.now(), // 임시 ID (실제로는 서버에서 생성)
-            clubMemberName: member.name || '',
+            id: member.clubMemberId, // 담당자의 clubMemberId 사용
+            clubMemberName: member.nickname || member.name || '',
             isChecked: false
           };
           
@@ -940,7 +1000,7 @@ export default function ChecklistDetailPage() {
             <p className="text-gray-600 mb-6">{getPermissionDeniedMessage(userInfo, '체크리스트 조회')}</p>
             <div className="flex gap-3 justify-center">
               <Link
-                href="/checklists"
+                href={`/checklists?groupId=${groupId}`}
                 className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
               >
                 체크리스트 목록으로
@@ -962,15 +1022,37 @@ export default function ChecklistDetailPage() {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="container mx-auto px-4 py-8">
-          <div className="text-center">
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">오류가 발생했습니다</h2>
-            <p className="text-gray-600 mb-4">{error}</p>
-            <Link
-              href="/checklists"
-              className="text-blue-500 hover:text-blue-600 underline"
-            >
-              체크리스트 목록으로 돌아가기
-            </Link>
+          <div className="bg-white rounded-lg border border-red-200 shadow-sm p-8 text-center">
+            <div className="text-red-500 mb-4">
+              <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">오류가 발생했습니다</h2>
+            <p className="text-gray-600 mb-6">{error}</p>
+            <div className="flex gap-3 justify-center">
+              {groupId ? (
+                <Link
+                  href={`/checklists?groupId=${groupId}`}
+                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                >
+                  체크리스트 목록으로
+                </Link>
+              ) : (
+                <Link
+                  href="/"
+                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                >
+                  홈으로 이동
+                </Link>
+              )}
+              <button
+                onClick={() => window.history.back()}
+                className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+              >
+                이전 페이지로
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -984,7 +1066,7 @@ export default function ChecklistDetailPage() {
           <div className="text-center">
             <h2 className="text-xl font-semibold text-gray-800 mb-2">체크리스트를 찾을 수 없습니다</h2>
             <Link
-              href="/checklists"
+              href={`/checklists?groupId=${groupId}`}
               className="text-blue-500 hover:text-blue-600 underline"
             >
               체크리스트 목록으로 돌아가기
@@ -1007,7 +1089,7 @@ export default function ChecklistDetailPage() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-4">
               <Link
-                href="/checklists"
+                href={`/checklists?groupId=${groupId}`}
                 className="text-gray-600 hover:text-gray-800 transition-colors"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1061,7 +1143,7 @@ export default function ChecklistDetailPage() {
           {isEditMode && (
             <p className="text-gray-600 text-sm mt-2">체크리스트 아이템들을 수정할 수 있습니다</p>
           )}
-          {!canEditChecklist(userInfo) && userInfo?.state === 'JOINED' && (
+          {!canEditChecklist(userInfo) && userInfo?.state === 'JOINING' && (
             <p className="text-amber-600 text-sm mt-2 bg-amber-50 px-3 py-2 rounded-lg border border-amber-200">
               ℹ️ 체크리스트 수정은 클럽 관리자(호스트/매니저)만 가능합니다
             </p>
