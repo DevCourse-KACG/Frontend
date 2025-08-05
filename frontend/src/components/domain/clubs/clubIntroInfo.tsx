@@ -6,15 +6,16 @@ import InfoCard from '@/components/global/InfoCard';
 import { COLORS } from '@/constants/colors';
 import { EventType, EventTypeKorean } from '@/types/EventType';
 import { ClubCategory, ClubCategoryKorean } from '@/types/ClubCategory';
+
 type ClubInfoResponse = components['schemas']['ClubInfoResponse'];
 
 interface ClubInfoProps {
     club: ClubInfoResponse;
 }
 
-const ClubInfo: React.FC<ClubInfoProps> = ({ club }) => {
+const ClubIntroInfo: React.FC<ClubInfoProps> = ({ club }) => {
     return (
-        <section style={{ padding: 16, borderRadius: 8, backgroundColor: COLORS.beige, boxShadow: `0 2px 4px ${COLORS.brown}14` }}>
+        <section style={{ backgroundColor: COLORS.white }}>
             <header>
                 <InfoCard title="모임명" content={club.name} color={COLORS.brown} contentColor="#FFFFFF" />
             </header>
@@ -57,17 +58,16 @@ const ClubInfo: React.FC<ClubInfoProps> = ({ club }) => {
                         color={COLORS.yellow}
                         contentColor={COLORS.brown}
                     />
-                    <InfoCard title="공개 여부" content={club.isPublic ? '공개' : '비공개'} color={COLORS.yellow} contentColor={COLORS.brown} />
                 </aside>
             </main>
             <div style={{ height: 16 }} />
             <section>
-                <InfoCard title="소개" content={club.bio} />
+                <InfoCard title="소개" content={club.bio} color={COLORS.brown} contentColor={COLORS.white} />
             </section>
         </section>
     );
 };
 
-export default ClubInfo;
+export default ClubIntroInfo;
 
 

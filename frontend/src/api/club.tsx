@@ -4,6 +4,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://localhost:8080';
 
 type CreateClubRequest = components['schemas']['CreateClubRequest'];
 type ClubResponse = components['schemas']['ClubResponse'];
+type RsDataPageSimpleClubInfoWithoutLeader = components['schemas']['RsDataPageSimpleClubInfoWithoutLeader'];
 
 /**
  * 모임 생성
@@ -72,5 +73,50 @@ export const getClubInfo = async (clubId: string): Promise<components['schemas']
     }
 
     const data: components['schemas']['RsDataClubInfoResponse'] = await response.json();
+    return data;
+}
+
+/**
+ * 공개 모임 목록 조회
+ * @param page 페이지 번호 (기본값: 0)
+ * @param size 페이지 크기 (기본값: 10)
+ * @param sort 정렬 기준 (기본값: 'createdAt,desc')
+ * @return 공개 모임 목록
+ */
+export const getPublicClubs = async (
+    page: number = 0,
+    size: number = 10,
+    sort: string = 'id,desc',
+    name?: string | null,
+    category?: string | null,
+    mainSpot?: string | null,
+    eventType?: string | null
+): Promise<RsDataPageSimpleClubInfoWithoutLeader> => {
+    const params = new URLSearchParams({
+        page: page.toString(),
+        size: size.toString(),
+        sort: sort
+    });
+
+    if (name) params.append('name', name);
+    if (category) params.append('category', category);
+    if (mainSpot) params.append('mainSpot', mainSpot);
+    if (eventType) params.append('eventType', eventType);
+
+    const response = await fetch(`${API_URL}/api/v1/clubs/public?${params.toString()}`, {
+        method: 'GET',
+        credentials: 'include',
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json();
+        if (!('code' in errorData) || !('message' in errorData)) {
+            throw new Error('공개 모임 목록을 가져오는 데 실패했습니다.');
+        } else {
+            throw new Error(errorData.code + " : " + (errorData.message || '공개 모임 목록을 가져오는 데 실패했습니다.'));
+        }
+    }
+
+    const data: RsDataPageSimpleClubInfoWithoutLeader = await response.json();
     return data;
 }

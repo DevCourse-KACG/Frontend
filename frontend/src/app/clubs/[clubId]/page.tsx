@@ -28,6 +28,7 @@ export default function ClubPage() {
                 return '해당 모임을 찾을 수 없습니다.';
             case '403 : 비공개 클럽 정보는 클럽 멤버만 조회할 수 있습니다.':
             case '404 : 클럽 멤버 정보가 존재하지 않습니다.':
+            case '403 : 가입 신청 중인 모임입니다. 가입 승인이 필요합니다.':
                 return '접근 권한이 없습니다.';
             default:
                 return error ? `오류가 발생했습니다: ${error}` : null;
@@ -44,6 +45,11 @@ export default function ClubPage() {
 
                 if (!data?.data) {
                     throw new Error('해당 ID의 클럽을 찾을 수 없습니다.');
+                }
+
+                // APPLYING 상태인 경우, 접근 금지
+                if (myInfo.state === 'APPLYING') {
+                    throw new Error('403 : 가입 신청 중인 모임입니다. 가입 승인이 필요합니다.');
                 }
 
                 setClubInfo(data.data);
@@ -79,7 +85,6 @@ export default function ClubPage() {
                     {clubInfo ? <ClubInfo club={clubInfo} /> : <div className="text-center">클럽 정보를 불러오는 중입니다...</div>}
                 </section>
             </section>
-
         </div>
     );
 }
