@@ -19,16 +19,29 @@ export default function ClubCard({ club, onAcceptInvitation, onRejectInvitation,
 
     return (
         <div className="border rounded-lg shadow-md overflow-hidden">
-            <Link href={`/clubs/${club.clubId}`}>
-                <div className="relative h-40 w-full">
-                    <Image src={club.imageUrl || '/default-club.png'} alt={club.clubName!} fill style={{ objectFit: 'cover' }} />
+            {club.myState === 'JOINING' ? (
+                <Link href={`/clubs/${club.clubId}`}>
+                    <div className="relative h-40 w-full">
+                        <Image src={club.imageUrl || '/default-club-image.png'} alt={club.clubName!} fill style={{ objectFit: 'cover' }} />
+                    </div>
+                    <div className="p-4">
+                        <h3 className="font-bold text-lg truncate">{club.clubName}</h3>
+                        <p className="text-sm text-gray-600 truncate">{club.bio}</p>
+                        <span className="text-xs bg-gray-200 px-2 py-1 rounded-full">{club.category}</span>
+                    </div>
+                </Link>
+            ) : (
+                <div>
+                    <div className="relative h-40 w-full">
+                        <Image src={club.imageUrl || '/default-club-image.png'} alt={club.clubName!} fill style={{ objectFit: 'cover' }} />
+                    </div>
+                    <div className="p-4">
+                        <h3 className="font-bold text-lg truncate">{club.clubName}</h3>
+                        <p className="text-sm text-gray-600 truncate">{club.bio}</p>
+                        <span className="text-xs bg-gray-200 px-2 py-1 rounded-full">{club.category}</span>
+                    </div>
                 </div>
-                <div className="p-4">
-                    <h3 className="font-bold text-lg truncate">{club.clubName}</h3>
-                    <p className="text-sm text-gray-600 truncate">{club.bio}</p>
-                    <span className="text-xs bg-gray-200 px-2 py-1 rounded-full">{club.category}</span>
-                </div>
-            </Link>
+            )}
             {/* --- 조건부 버튼 렌더링 --- */}
             <div className="p-4 bg-gray-50 border-t flex justify-end space-x-2">
                 {club.myState === 'INVITED' && (

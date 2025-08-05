@@ -13,7 +13,7 @@ interface ClubListProps {
     onCancelApplication?: (clubId: number) => void;
 }
 
-export default function ClubList({ clubs }: ClubListProps) {
+export default function ClubList({ clubs, state, onAcceptInvitation, onRejectInvitation, onCancelApplication }: ClubListProps) {
     // 1. 표시할 모임이 없는 경우
     if (clubs.length === 0) {
         return (
@@ -27,7 +27,13 @@ export default function ClubList({ clubs }: ClubListProps) {
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {clubs.map(club => (
-                <ClubCard key={club.clubId} club={club} />
+                <ClubCard
+                    key={club.clubId}
+                    club={club}
+                    onAcceptInvitation={onAcceptInvitation}
+                    onRejectInvitation={onRejectInvitation}
+                    onCancelApplication={onCancelApplication}
+                />
             ))}
         </div>
     );
