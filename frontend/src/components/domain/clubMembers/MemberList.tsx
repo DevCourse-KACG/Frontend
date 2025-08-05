@@ -47,19 +47,17 @@ export default function MemberList({ members, state, ...handlers }: MemberListPr
     return (
         <div>
             {
-                (state === 'INVITED') && (
-                    <p className="text-center text-gray-500 py-4">
-                        초대된 멤버는 클럽에 참여하기 전까지는 목록에 표시되지 않습니다.
-                    </p>
-                )
-            }
-            <ul className="bg-white rounded-lg shadow">
-                {members.map(member => (
-                    <MultiEmailInput
+                state === 'INVITED' && (
+                    < MultiEmailInput
                         onSubmit={handleInviteMembers}
                         label="모임에 초대할 멤버의 이메일 주소를 입력하세요"
                         placeholder="예: user@example.com"
                     />
+                )
+            }
+            <ul className="bg-white rounded-lg shadow">
+                {members.map(member => (
+                    <MemberListItem key={member.clubMemberId} member={member} {...handlers} />
                 ))}
             </ul>
         </div>
