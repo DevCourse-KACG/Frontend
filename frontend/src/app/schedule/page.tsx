@@ -30,7 +30,7 @@ export default function ScheduleListPage() {
 
   // 모달 상태 관리
   const [showModal, setShowModal] = useState<boolean>(false);
-  const [modalType, setModalType] = useState<'create' | 'detail' | null>(null);
+  const [modalType, setModalType] = useState<'edit' | 'detail' | null>(null);
 
   // API 호출 취소를 위한 AbortController
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -80,7 +80,7 @@ export default function ScheduleListPage() {
       setEvents(events);
     } catch (e) {
       // 요청 취소는 무시
-      if (e instanceof DOMException && e.name === 'AbortError') return;
+      if (e instanceof Error && e.message.includes('aborted')) return; 
       // 에러 처리
       const msg = e instanceof Error ? e.message : '일정 불러오기 실패';
       setError(msg);
@@ -95,9 +95,9 @@ export default function ScheduleListPage() {
     fetchSchedules(startDate, endDate);
   }, [fetchSchedules]);
 
-  // Date UI(일) 클릭 시 일정 생성 모달
+  // Date UI(일) 클릭 시 일정 생성/수정정 모달
   const handleDateSelect = (selectInfo: DateSelectArg) => {
-    setModalType('create');
+    setModalType('edit');
     setSelectedDateInfo(selectInfo);
     setSelectedScheduleId(null);
     setShowModal(true);
@@ -146,18 +146,22 @@ export default function ScheduleListPage() {
           handleEventClick={handleEventClick}
           handleDateSelect={handleDateSelect}
           />
-        <ScheduleModal
-          showModal={showModal}
-          selectedScheduleId={selectedScheduleId}
-          onClose={handleCloseModal}
-        />
-        <ScheduleEditModal
-          showModal={showModal}
-          clubId={clubId}
-          startDate={selectedDateInfo?.startStr}
-          endDate={selectedDateInfo?.endStr}
-          onClose={handleCloseModal}
-        />
+        {showModal && modalType === 'detail' && (
+          <ScheduleModal
+            showModal={showModal}
+            selectedScheduleId={selectedScheduleId}
+            onClose={handleCloseModal}
+          />
+        )}
+        {showModal && modalType === 'edit' && (
+          <ScheduleEditModal
+            showModal={showModal}
+            clubId={clubId}
+            startDate={selectedDateInfo?.startStr}
+            endDate={selectedDateInfo?.endStr}
+            onClose={handleCloseModal}
+          />
+        )}
       </div>
     </div>
   );
