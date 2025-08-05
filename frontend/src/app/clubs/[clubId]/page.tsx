@@ -79,7 +79,6 @@ export default function ClubPage() {
                     {clubInfo ? <ClubInfo club={clubInfo} /> : <div className="text-center">클럽 정보를 불러오는 중입니다...</div>}
                 </section>
             </section>
-
         </div>
     );
 }
