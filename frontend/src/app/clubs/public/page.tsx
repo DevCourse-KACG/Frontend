@@ -159,7 +159,7 @@ export default function ClubListPage() {
             <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
                 {selectedClub && (
                     <div>
-                        <p className="mt-4 text-sm text-gray-500" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        <div className="mt-4 text-sm text-gray-500" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                             <ClubIntroInfo club={selectedClub as ClubInfoResponse} />
                             <button
                                 onClick={handleApplyButtonClick}
@@ -179,7 +179,7 @@ export default function ClubListPage() {
                             >
                                 가입 신청
                             </button>
-                        </p>
+                        </div>
                     </div>
                 )}
             </Modal>
