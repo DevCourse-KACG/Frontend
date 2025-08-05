@@ -1283,14 +1283,14 @@ export interface components {
             message?: string;
             data?: components["schemas"]["ClubMemberResponse"];
         };
-        PageSimpleClubInfoResponse: {
+        PageSimpleClubInfoWithoutLeader: {
             /** Format: int64 */
             totalElements?: number;
             /** Format: int32 */
             totalPages?: number;
             /** Format: int32 */
             size?: number;
-            content?: components["schemas"]["SimpleClubInfoResponse"][];
+            content?: components["schemas"]["SimpleClubInfoWithoutLeader"][];
             /** Format: int32 */
             number?: number;
             sort?: components["schemas"]["SortObject"];
@@ -1305,18 +1305,41 @@ export interface components {
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
-            unpaged?: boolean;
             paged?: boolean;
             /** Format: int32 */
             pageSize?: number;
             /** Format: int32 */
             pageNumber?: number;
+            unpaged?: boolean;
         };
-        RsDataPageSimpleClubInfoResponse: {
+        RsDataPageSimpleClubInfoWithoutLeader: {
             /** Format: int32 */
             code?: number;
             message?: string;
-            data?: components["schemas"]["PageSimpleClubInfoResponse"];
+            data?: components["schemas"]["PageSimpleClubInfoWithoutLeader"];
+        };
+        SimpleClubInfoWithoutLeader: {
+            /** Format: int64 */
+            clubId?: number;
+            name?: string;
+            category?: string;
+            imageUrl?: string;
+            mainSpot?: string;
+            eventType?: string;
+            startDate?: string;
+            endDate?: string;
+            bio?: string;
+        };
+        SortObject: {
+            empty?: boolean;
+            sorted?: boolean;
+            unsorted?: boolean;
+        };
+        RsDataSimpleClubInfoResponse: {
+            /** Format: int32 */
+            code?: number;
+            message?: string;
+            data?: components["schemas"]["SimpleClubInfoResponse"];
         };
         SimpleClubInfoResponse: {
             /** Format: int64 */
@@ -1331,17 +1354,6 @@ export interface components {
             /** Format: int64 */
             leaderId?: number;
             leaderName?: string;
-        };
-        SortObject: {
-            empty?: boolean;
-            unsorted?: boolean;
-            sorted?: boolean;
-        };
-        RsDataSimpleClubInfoResponse: {
-            /** Format: int32 */
-            code?: number;
-            message?: string;
-            data?: components["schemas"]["SimpleClubInfoResponse"];
         };
         RsDataListCheckListDto: {
             /** Format: int32 */
@@ -2891,6 +2903,10 @@ export interface operations {
                 size?: number;
                 /** @description Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported. */
                 sort?: string[];
+                name?: string;
+                mainSpot?: string;
+                category?: "STUDY" | "HOBBY" | "SPORTS" | "TRAVEL" | "CULTURE" | "FOOD" | "PARTY" | "WORK" | "OTHER";
+                eventType?: "ONE_TIME" | "SHORT_TERM" | "LONG_TERM";
             };
             header?: never;
             path?: never;
@@ -2904,7 +2920,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json;charset=UTF-8": components["schemas"]["RsDataPageSimpleClubInfoResponse"];
+                    "application/json;charset=UTF-8": components["schemas"]["RsDataPageSimpleClubInfoWithoutLeader"];
                 };
             };
             /** @description Bad Request */
