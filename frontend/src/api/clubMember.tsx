@@ -59,4 +59,15 @@ export const changeMemberRole = async (clubId: string, memberId: number, role: '
         throw new Error(errorData.message || '멤버 역할 변경에 실패했습니다.');
     }
 };
-// 멤버 추가/삭제 등 필요한 다른 API 함수들...
+
+// 클럽에서 멤버 삭제
+export const deleteMember = async (clubId: string, memberId: number) => {
+    const response = await fetch(`${API_URL}/api/v1/clubs/${clubId}/members/${memberId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+    });
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || '멤버 삭제에 실패했습니다.');
+    }
+};

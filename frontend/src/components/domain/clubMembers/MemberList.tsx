@@ -9,6 +9,7 @@ interface MemberListProps {
     onApprove: (memberId: number) => void;
     onReject: (memberId: number) => void;
     onChangeRole: (memberId: number, role: 'MANAGER' | 'PARTICIPANT') => void;
+    onDelete: (memberId: number) => void;
 }
 
 export default function MemberList({ members, ...handlers }: MemberListProps) {

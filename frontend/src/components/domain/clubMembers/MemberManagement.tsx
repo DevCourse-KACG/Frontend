@@ -6,7 +6,7 @@ import { components } from '@/types/backend/apiV1/schema';
 import { getClubMembers } from '@/api/clubMember';
 import MemberTabs from './MemberTabs';
 import MemberList from './MemberList';
-import { approveApplication, rejectApplication, changeMemberRole } from '@/api/clubMember';
+import { approveApplication, rejectApplication, changeMemberRole, deleteMember } from '@/api/clubMember';
 
 type MemberInfo = components['schemas']['ClubMemberInfo'];
 
@@ -49,6 +49,7 @@ export default function MemberManagement({ clubId, initialMembers }: MemberManag
     const handleApprove = (memberId: number) => handleAction(() => approveApplication(clubId, memberId));
     const handleReject = (memberId: number) => handleAction(() => rejectApplication(clubId, memberId));
     const handleChangeRole = (memberId: number, role: 'MANAGER' | 'PARTICIPANT') => handleAction(() => changeMemberRole(clubId, memberId, role));
+    const handleDelete = (memberId: number) => handleAction(() => deleteMember(clubId, memberId));
 
     return (
         <>
@@ -58,6 +59,7 @@ export default function MemberManagement({ clubId, initialMembers }: MemberManag
                 onApprove={handleApprove}
                 onReject={handleReject}
                 onChangeRole={handleChangeRole}
+                onDelete={handleDelete}
             />
         </>
     );
