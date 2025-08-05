@@ -17,6 +17,10 @@ interface MemberListItemProps {
 export default function MemberListItem({ member, isHost, onApprove, onReject, onChangeRole, onDelete }: MemberListItemProps) {
     const memberId = member.memberId!;
 
+    if (!memberId) {
+        return <li className="text-red-500">멤버 ID가 없습니다.</li>;
+    }
+
     const handleRoleChange = () => {
         const newRole = member.role === 'MANAGER' ? 'PARTICIPANT' : 'MANAGER';
         onChangeRole(memberId, newRole);
@@ -28,7 +32,7 @@ export default function MemberListItem({ member, isHost, onApprove, onReject, on
                 {member.profileImageUrl ? (
                     <Image
                         src={member.profileImageUrl}
-                        alt={member.nickname!}
+                        alt={member.nickname || '프로필 이미지'}
                         width={40}
                         height={40}
                         className="rounded-full"
@@ -70,7 +74,7 @@ export default function MemberListItem({ member, isHost, onApprove, onReject, on
                     )}
                     {member.state === 'JOINING' && member.role !== 'HOST' && (
                         <>
-                            <button onClick={handleRoleChange} className="btn-secondary">
+                            <button onClick={handleRoleChange} >
                                 {member.role === 'MANAGER' ? '참여자로 변경' : '매니저로 임명'}
                             </button>
                             <button onClick={() => onDelete(memberId)} className="btn-danger">삭제</button>

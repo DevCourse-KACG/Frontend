@@ -23,7 +23,7 @@ export default function MultiEmailInput({
 
     // 2. 이메일 유효성 검사 함수
     const isValidEmail = (email: string) => {
-        return /\S+@\S+\.\S+/.test(email);
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     };
 
     // 3. Enter 키 입력 처리
@@ -82,11 +82,7 @@ export default function MultiEmailInput({
             </label>
             <div className="flex flex-wrap items-center gap-2 p-2 border border-gray-300 rounded-md focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500">
                 {emails.map((email) => (
-                    <div
-                        key={email}
-                        className="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full flex items-center gap-2 cursor-pointer"
-                        onClick={() => handleDeleteEmail(email)}
-                    >
+                    <div key={email} className="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full flex items-center gap-2" onClick={() => handleDeleteEmail(email)}>
                         <span>{email}</span>
                     </div>
                 ))}

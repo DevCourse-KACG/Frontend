@@ -27,8 +27,13 @@ export default function MemberManagement({ clubId, initialMembers, isHost }: Mem
     }, [initialMembers]);
 
     const refreshMembers = async () => {
-        const updatedMembers = await getClubMembers(clubId);
-        setMembers(updatedMembers);
+        try {
+            const updatedMembers = await getClubMembers(clubId);
+            setMembers(updatedMembers);
+        } catch (err) {
+            console.error('멤버 목록을 불러오는 데 실패했습니다.', err);
+            throw new Error('멤버 목록을 불러오는 데 실패했습니다.');
+        }
     };
 
     const filteredMembers = useMemo(() => {
