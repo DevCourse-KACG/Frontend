@@ -96,7 +96,7 @@ export default function ScheduleModal({
           });
           setScheduleTimes({
             startTime: detail.startDate ? detail.startDate.split('T')[1].substring(0, 5) : '09:00',
-            endTime: detail.endDate ? detail.endDate.split('T')[1].substring(0, 5) : '18:00',
+            endTime: detail.endDate ? detail.endDate.split('T')[1].substring(0, 5) : '10:00',
           });
         } catch (e) {
           const msg = e instanceof Error ? e.message : '일정 불러오기 실패하였습니다.';
@@ -110,22 +110,37 @@ export default function ScheduleModal({
     } 
     // 생성 모드일 때 폼 상태 초기화
     else {
-      // 현재 시간을 기준으로 동적 시간 설정
+      // 날짜/시간 데이터 파싱 로직 추가
+      let initialStartDate = startDate || '';
+      let initialEndDate = endDate || '';
+
       const { startTime, endTime } = getInitialTimes();
-      setScheduleTimes({ startTime, endTime });
-      
-      // 캘린더 라이브러리는 종료일의 다음 날을 반환하므로, 하루를 빼야함
-      let finalEndDate = startDate;
-      if (endDate && endDate !== startDate) {
-        const end = new Date(endDate);
-        end.setDate(end.getDate() - 1);
-        finalEndDate = end.toISOString().split('T')[0];
+      let initialStartTime = startTime;
+      let initialEndTime = endTime;
+
+      // 시간 정보가 포함된 경우 (timeGridWeek 뷰)
+      if (initialStartDate.includes('T')) {
+        initialStartTime = initialStartDate.split('T')[1].substring(0, 5);
+        initialEndTime = initialEndDate?.split('T')[1].substring(0, 5) || endTime;
+        initialStartDate = initialStartDate.split('T')[0];
+        initialEndDate = initialEndDate?.split('T')[0] || '';
+      } else {
+        // 시간 정보가 없을 때 (dayGridMonth 뷰)
+        // 캘린더 라이브러리는 종료일의 다음 날을 반환하므로, 하루를 빼야함
+        if (initialEndDate && initialStartDate !== initialEndDate) {
+            const end = new Date(initialEndDate);
+            end.setDate(end.getDate() - 1);
+            initialEndDate = end.toISOString().split('T')[0];
+        } else {
+            initialEndDate = initialStartDate;
+        }
       }
       // 일정 세팅
+      setScheduleTimes({ startTime: initialStartTime, endTime: initialEndTime });
       setScheduleData(prev => ({
         ...prev,
-        startDate: startDate || '',
-        endDate: finalEndDate || '',
+        startDate: initialStartDate,
+        endDate: initialEndDate,
       }));
     }
   }, [selectedScheduleId, isEditing, showModal, clubId, startDate, endDate]);

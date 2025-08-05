@@ -46,6 +46,8 @@ export default function ScheduleListPage() {
       start: schedule.startDate || new Date().toISOString(),
       end: schedule.endDate,
       allDay: (schedule.startDate?.length || 0) <= 10 && (schedule.endDate?.length || 0) <= 10,
+      color: '#6366F1', // bg-indigo-500
+      textColor: '#FFFFFF'
     }));
   };
   
