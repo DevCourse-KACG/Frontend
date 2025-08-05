@@ -27,14 +27,20 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      // api.ts에서 정의한 login 함수를 호출
       const data = await login({ email, password });
       
       console.log("로그인 성공:", data);
-      setSuccess("로그인에 성공했습니다!");
       
-      // 로그인 성공 시 메인 페이지로 이동
-      router.push('/'); 
+      if (data && data.data && data.data.accessToken) {
+        localStorage.setItem('accessToken', data.data.accessToken);
+        setSuccess("로그인에 성공했습니다!");
+        
+        // 로그인 성공 시 직전 페이지로 돌아갑니다.
+        // 이 방법은 URL 파라미터에 의존하지 않아 더 안정적입니다.
+        router.back();
+      } else {
+        setError("로그인에 성공했으나, 토큰을 받지 못했습니다.");
+      }
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
