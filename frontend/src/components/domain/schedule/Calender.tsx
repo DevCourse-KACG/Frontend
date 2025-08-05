@@ -12,12 +12,14 @@ interface CalendarProps {
   events: any[];
   handleDatesSet: (arg: any) => void;
   handleEventClick: (clickInfo: EventClickArg) => void; 
+  handleDateSelect: (selectInfo: DateSelectArg) => void;
 }
 
 const Calendar = forwardRef<FullCalendar, CalendarProps>(({
   events, 
   handleDatesSet,
-  handleEventClick
+  handleEventClick,
+  handleDateSelect
 }, ref) => {
 
   // 이벤트 내용 렌더링 함수
@@ -48,6 +50,7 @@ const Calendar = forwardRef<FullCalendar, CalendarProps>(({
       height='auto'
       events={events}
       eventClick={handleEventClick}
+      select={handleDateSelect}
     />
   );
 });
