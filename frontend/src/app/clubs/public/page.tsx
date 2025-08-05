@@ -95,7 +95,7 @@ export default function ClubListPage() {
 
     return (
         <div className="max-w-5xl mx-auto p-4">
-            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: 16, position: 'sticky', top: 0, backgroundColor: '#fff', zIndex: 10 }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: 16 }}>
                 <ClubSearchBar
                     value={filters}
                     onChange={(newFilters) => setFilters(newFilters)}
