@@ -28,7 +28,10 @@ export const approveApplication = async (clubId: string, memberId: number) => {
         method: 'PATCH',
         credentials: 'include',
     });
-    if (!response.ok) throw new Error('가입 승인에 실패했습니다.');
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || '가입 승인에 실패했습니다.');
+    }
 };
 
 // 가입 신청 거절
@@ -37,7 +40,10 @@ export const rejectApplication = async (clubId: string, memberId: number) => {
         method: 'DELETE',
         credentials: 'include',
     });
-    if (!response.ok) throw new Error('가입 거절에 실패했습니다.');
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || '가입 거절에 실패했습니다.');
+    }
 };
 
 // 멤버 역할 변경
@@ -48,7 +54,9 @@ export const changeMemberRole = async (clubId: string, memberId: number, role: '
         body: JSON.stringify({ role }),
         credentials: 'include',
     });
-    if (!response.ok) throw new Error('역할 변경에 실패했습니다.');
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || '멤버 역할 변경에 실패했습니다.');
+    }
 };
-
 // 멤버 추가/삭제 등 필요한 다른 API 함수들...

@@ -13,7 +13,7 @@ interface MemberListItemProps {
 }
 
 export default function MemberListItem({ member, onApprove, onReject, onChangeRole }: MemberListItemProps) {
-    const memberId = member.clubMemberId!;
+    const memberId = member.memberId!;
 
     const handleRoleChange = () => {
         const newRole = member.role === 'MANAGER' ? 'PARTICIPANT' : 'MANAGER';
