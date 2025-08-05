@@ -1,102 +1,233 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+// 공개 모임 목록을 불러오는 API 함수를 임포트합니다.
+import { getPublicClubs } from '@/api/club';
+// 백엔드 스키마에서 정의된 클럽 정보 타입을 임포트합니다.
+import { components } from "@/types/backend/apiV1/schema";
+
+type SimpleClubInfoWithoutLeader = components['schemas']['SimpleClubInfoWithoutLeader'];
+
+export default function MainPage() {
+  const router = useRouter();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [publicClubs, setPublicClubs] = useState<SimpleClubInfoWithoutLeader[]>([]);
+  const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
+  const [isLoadingClubs, setIsLoadingClubs] = useState(true);
+
+  useEffect(() => {
+    // 컴포넌트가 마운트될 때 로컬 스토리지에서 accessToken을 확인합니다.
+    const token = localStorage.getItem('accessToken');
+    setIsLoggedIn(!!token);
+
+    // 공개 모임 목록을 불러오는 함수
+    const fetchPublicClubs = async () => {
+      try {
+        const response = await getPublicClubs();
+        if (response.data && response.data.content) {
+          setPublicClubs(response.data.content);
+        }
+      } catch (error) {
+        console.error('Failed to fetch public clubs:', error);
+      } finally {
+        setIsLoadingClubs(false);
+      }
+    };
+
+    fetchPublicClubs();
+  }, []);
+
+  // 3초마다 배너를 자동으로 전환하는 useEffect 훅
+  useEffect(() => {
+    if (publicClubs.length > 0) {
+      const interval = setInterval(() => {
+        setCurrentBannerIndex((prevIndex) =>
+          (prevIndex + 1) % publicClubs.length
+        );
+      }, 3000); // 3초마다 전환
+
+      return () => clearInterval(interval);
+    }
+  }, [publicClubs]);
+  
+  // 배너를 수동으로 전환하는 함수
+  const goToBanner = (index: number) => {
+    setCurrentBannerIndex(index);
+  };
+
+  const handleLogout = () => {
+    // 로그아웃 시 로컬 스토리지에서 토큰을 제거하고 로그인 상태를 업데이트합니다.
+    localStorage.removeItem('accessToken');
+    setIsLoggedIn(false);
+    alert('로그아웃되었습니다.');
+  };
+
+  const handleLogin = () => {
+    router.push('/members/login');
+  };
+
+  const handleSignup = () => {
+    router.push('/members/signup');
+  };
+
+  const handleMypage = () => {
+    // 로그인 상태에 따라 다른 페이지로 이동합니다.
+    if (isLoggedIn) {
+      router.push('/members/mypage');
+    } else {
+      router.push('/members/login');
+    }
+  };
+
+  const currentBanner = publicClubs[currentBannerIndex];
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="flex flex-col min-h-screen bg-gray-50 text-gray-800 font-sans">
+      {/* 헤더 섹션 */}
+      <header className="bg-white shadow-md w-full p-4 md:p-6 sticky top-0 z-50">
+        <div className="container mx-auto flex items-center justify-between">
+          <h1 className="text-3xl font-extrabold text-blue-600">
+            <span className="text-blue-600">준비물</span>
+            <span className="text-gray-900">.com</span>
+          </h1>
+          <nav className="flex items-center space-x-4">
+            {isLoggedIn ? (
+              <>
+                <button
+                  onClick={handleLogout}
+                  className="px-4 py-2 bg-red-500 text-white font-semibold rounded-full shadow-md transition-all duration-200 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400"
+                >
+                  로그아웃
+                </button>
+                <button
+                  onClick={handleMypage}
+                  className="px-4 py-2 text-gray-800 bg-gray-200 font-semibold rounded-full shadow-md transition-all duration-200 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                >
+                  마이페이지
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={handleSignup}
+                  className="px-4 py-2 bg-green-500 text-white font-semibold rounded-full shadow-md transition-all duration-200 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400"
+                >
+                  회원가입
+                </button>
+                <button
+                  onClick={handleLogin}
+                  className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-full shadow-md transition-all duration-200 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                >
+                  로그인
+                </button>
+                <button
+                  onClick={handleMypage}
+                  className="px-4 py-2 text-gray-800 bg-gray-200 font-semibold rounded-full shadow-md transition-all duration-200 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                >
+                  마이페이지
+                </button>
+              </>
+            )}
+          </nav>
+        </div>
+      </header>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
+      {/* 스크롤 스냅 컨테이너 */}
+      {/* main 태그에 스크롤 스냅 속성을 다시 적용하여 스크롤 가능한 영역을 명확히 했습니다. */}
+      <main className="flex-grow overflow-y-scroll snap-y snap-mandatory scroll-smooth">
+        {/* 첫 번째 섹션: 환영 메시지 */}
+        {/* `h-screen` 대신 `min-h-[calc(100vh-theme(spacing.24))]`와 같이 헤더 높이를 제외한 계산값을 사용합니다.
+        헤더의 높이가 `6rem` 또는 `24`이기 때문에 `96`을 사용했습니다.
+        p-4 또는 p-6가 4 * 4=16 or 6*4=24이므로
+        tailwind.config.ts에 padding 값을 직접 지정해야 합니다.*/}
+        <div className="flex flex-col items-center justify-center min-h-[calc(100vh-6rem)] snap-start text-center p-4">
+          <h2 className="text-5xl font-extrabold text-gray-900 mb-4">
+            준비물 닷컴에 오신 것을 환영합니다!
+          </h2>
+          <p className="text-xl text-gray-600 max-w-2xl">
+            모임을 만들고, 필요한 준비물을 공유하고, 사람들을 초대해 보세요.
+          </p>
+          <a href="#public-clubs" className="mt-8 animate-bounce">
+            <svg
+              className="w-10 h-10 text-gray-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M19 14l-7 7m0 0l-7-7m7 7V3"
+              ></path>
+            </svg>
           </a>
         </div>
+
+        {/* 두 번째 섹션: 공개 모임 배너 */}
+        {/* `h-screen` 대신 `min-h-[calc(100vh-6rem)]`와 같이 헤더 높이를 제외한 계산값을 사용합니다. */}
+        <div id="public-clubs" className="flex flex-col items-center justify-center min-h-[calc(100vh-6rem)] snap-start p-4">
+          <div className="container mx-auto">
+            {/* 공개 모임에 대한 설명 추가 */}
+            <div className="text-center mb-8">
+              <h3 className="text-4xl font-extrabold text-gray-900">공개 모임</h3>
+              <p className="mt-2 text-lg text-gray-600 max-w-2xl mx-auto">
+                현재 활발하게 진행 중인 공개 모임들을 둘러보고 참여해보세요.
+              </p>
+            </div>
+            {isLoadingClubs ? (
+              <div className="w-full max-w-4xl h-64 bg-gray-200 rounded-xl animate-pulse flex items-center justify-center mx-auto">
+                <p className="text-xl text-gray-600">공개 모임 배너를 불러오는 중...</p>
+              </div>
+            ) : (
+              publicClubs.length > 0 && (
+                <div className="relative">
+                  <div
+                    className="w-full max-w-4xl h-64 rounded-xl shadow-xl overflow-hidden relative cursor-pointer group mx-auto"
+                    style={{
+                      backgroundImage: `url(${currentBanner?.imageUrl})`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      transition: 'background-image 0.5s ease-in-out',
+                      backgroundColor: currentBanner?.imageUrl ? 'transparent' : '#3B82F6',
+                    }}
+                  >
+                    {!currentBanner?.imageUrl && (
+                      <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-indigo-600 opacity-80 transition-opacity duration-300 group-hover:opacity-90"></div>
+                    )}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-40 transition-all duration-300 group-hover:bg-opacity-60">
+                      <h2 className="text-4xl md:text-5xl font-extrabold text-white text-shadow-lg drop-shadow-md">
+                        {currentBanner?.name}
+                      </h2>
+                      <p className="mt-2 text-lg md:text-xl text-white opacity-80">
+                        {currentBanner?.mainSpot}
+                      </p>
+                    </div>
+                  </div>
+                  {/* 작은 원형 페이징 버튼 추가 */}
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
+                    {publicClubs.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => goToBanner(index)}
+                        className={`w-3 h-3 rounded-full transition-colors duration-300 ${
+                          currentBannerIndex === index ? 'bg-blue-600' : 'bg-gray-400 hover:bg-blue-300'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )
+            )}
+          </div>
+        </div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+
+      {/* 푸터 섹션 */}
+      <footer className="bg-gray-800 text-white text-center p-4">
+        <p>© 2024 준비물 닷컴. 모든 권리 보유.</p>
       </footer>
     </div>
   );
