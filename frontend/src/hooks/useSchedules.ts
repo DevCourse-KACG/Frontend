@@ -49,7 +49,8 @@ export const useSchedules = <T extends UnionScheduleDto>(
         start: schedule.startDate || new Date().toISOString(),
         end: schedule.endDate,
         allDay: (schedule.startDate?.length || 0) <= 10 && (schedule.endDate?.length || 0) <= 10,
-        color
+        color,
+        display: 'block'
       };
     });
   };

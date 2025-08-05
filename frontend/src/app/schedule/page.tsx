@@ -46,7 +46,7 @@ export default function ScheduleListPage() {
       const endDate = extractDateFromISO(view.activeEnd.toISOString());
       fetchSchedules({ startDate, endDate });
     }
-  }, [fetchSchedules]);
+  }, []);
 
   // 캘린더 날짜가 변경될 때마다(이전, 다음 버튼 등) 일정 목록 API 재호출
   const handleDatesSet = useCallback((arg: DatesSetArg) => {
