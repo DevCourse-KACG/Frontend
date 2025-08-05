@@ -28,6 +28,9 @@ export default function ClubCard({ club, onAcceptInvitation, onRejectInvitation,
                         <h3 className="font-bold text-lg truncate">{club.clubName}</h3>
                         <p className="text-sm text-gray-600 truncate">{club.bio}</p>
                         <span className="text-xs bg-gray-200 px-2 py-1 rounded-full">{club.category}</span>
+                        <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                            {club.myRole}
+                        </span>
                     </div>
                 </Link>
             ) : (
@@ -39,6 +42,9 @@ export default function ClubCard({ club, onAcceptInvitation, onRejectInvitation,
                         <h3 className="font-bold text-lg truncate">{club.clubName}</h3>
                         <p className="text-sm text-gray-600 truncate">{club.bio}</p>
                         <span className="text-xs bg-gray-200 px-2 py-1 rounded-full">{club.category}</span>
+                        <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                            {club.myRole}
+                        </span>
                     </div>
                 </div>
             )}
