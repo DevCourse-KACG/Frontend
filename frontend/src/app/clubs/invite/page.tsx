@@ -3,32 +3,20 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
+import { getClubInfoByInvitationToken } from '@/api/clubLink'; // 변경된 파일에서 API 함수를 import
 
-// 클럽 데이터의 타입을 명시적으로 정의합니다.
+// 백엔드 응답에 맞게 ClubData 인터페이스를 수정합니다.
 interface ClubData {
-  clubName: string;
-  description: string;
-  memberCount: number;
-  maxMembers: number;
-  // TODO: 백엔드 API 응답에 맞게 필드를 추가하세요.
-}
-
-// inviteToken 매개변수에 string 타입을 명시했습니다.
-async function fetchClubInfo(inviteToken: string): Promise<ClubData> {
-  try {
-    const response = await fetch(`/api/clubs/invite-info?token=${inviteToken}`);
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: '클럽 정보를 불러오는 데 실패했습니다.' }));
-      throw new Error(errorData.message);
-    }
-    const data: ClubData = await response.json();
-    return data;
-  } catch (error) {
-    if (error instanceof Error) {
-      throw error;
-    }
-    throw new Error('알 수 없는 오류가 발생했습니다.');
-  }
+  clubId: number;
+  name: string;
+  category: string;
+  imageUrl: string;
+  mainSpot: string;
+  eventType: string;
+  startDate: string;
+  endDate: string;
+  leaderId: number;
+  leaderName: string;
 }
 
 export default function InvitePage() {
@@ -45,19 +33,18 @@ export default function InvitePage() {
 
   useEffect(() => {
     if (!token) {
-      alert('유효하지 않은 초대 링크입니다.');
-      router.push('/');
+      setError('유효하지 않은 초대 링크입니다.');
+      setIsLoading(false);
       return;
     }
 
-    // TODO: 로그인 상태를 확인하는 실제 로직을 구현하세요.
-    const userAuthToken = localStorage.getItem('authToken');
-    const userIsLoggedIn = !!userAuthToken; // 토큰이 존재하면 true, 아니면 false
+    const userAuthToken = localStorage.getItem('accessToken');
+    const userIsLoggedIn = !!userAuthToken;
     setIsLoggedIn(userIsLoggedIn);
 
     const loadData = async () => {
       try {
-        const data = await fetchClubInfo(token);
+        const data = await getClubInfoByInvitationToken(token); // 분리된 함수 사용
         setClubData(data);
       } catch (err: unknown) {
         if (err instanceof Error) {
@@ -67,10 +54,10 @@ export default function InvitePage() {
         }
       } finally {
         setIsLoading(false);
-        // 로그인하지 않았으면 모달을 바로 띄웁니다.
-        if (!userIsLoggedIn) {
-          setShowLoginModal(true);
-        }
+        // 로그인 여부에 따라 모달을 바로 띄우는 로직을 제거했습니다.
+        // if (!userIsLoggedIn) {
+        //   setShowLoginModal(true);
+        // }
       }
     };
     
@@ -83,11 +70,8 @@ export default function InvitePage() {
       alert('모임 가입을 신청합니다.');
     } else if (isGuestUser) {
       // TODO: 닉네임과 임시 비밀번호 입력 페이지로 이동하는 로직
-      // 현재는 페이지가 없으므로 alert으로 대체
       alert('비회원 가입 신청을 위해 닉네임과 임시 비밀번호를 입력하는 페이지로 이동합니다.');
-      // router.push('/guest-join');
     } else {
-      // 로그인/비회원 선택 모달이 이미 떴어야 하지만, 혹시 모를 상황에 대비
       setShowLoginModal(true);
     }
   };
@@ -111,8 +95,11 @@ export default function InvitePage() {
 
   return (
     <div className="p-6">
-      <h1>{clubData.clubName}</h1>
-      <p>모임 설명: {clubData.description}</p>
+      <h1 className="text-3xl font-bold mb-2">{clubData.name}</h1>
+      <p>카테고리: {clubData.category}</p>
+      <p>리더: {clubData.leaderName}</p>
+      <p>모임 시작일: {clubData.startDate}</p>
+      <p>모임 종료일: {clubData.endDate}</p>
       
       <button onClick={handleJoinClick} className="mt-4 px-4 py-2 bg-black text-white rounded">
         가입 신청
