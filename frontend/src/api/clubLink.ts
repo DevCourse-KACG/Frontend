@@ -34,8 +34,11 @@ interface RsData<T> {
         const errorData = await response.json().catch(() => ({ message: '클럽 정보를 불러오는 데 실패했습니다.' }));
         throw new Error(errorData.message);
       }
-      const { data }: { data: ClubData } = await response.json();
-      return data;
+      const result: RsData<ClubData> = await response.json();
+      if (!result.data) {
+        throw new Error('클럽 정보를 찾을 수 없습니다.');
+      }
+      return result.data;
     } catch (error) {
       if (error instanceof Error) {
         throw error;
@@ -66,13 +69,13 @@ interface RsData<T> {
           'Authorization': `Bearer ${accessToken}`
         },
       });
-  
-      const result: RsData<null> = await response.json();
    
       if (!response.ok) {
-        throw new Error(result.message);
+        const errorData = await response.json().catch(() => ({ message: '가입 신청에 실패했습니다.' }));
+        throw new Error(errorData.message);
       }
    
+      const result: RsData<null> = await response.json();
       return result.message;
    
     } catch (error) {
