@@ -10,7 +10,6 @@ interface ClubInfoProps {
     club: ClubInfoResponse;
 }
 
-// 57564F 7A7A73 DDDAD0 F8F3CE
 const ClubInfo: React.FC<ClubInfoProps> = ({ club }) => {
     return (
         <section style={{ padding: 16, borderRadius: 8, backgroundColor: COLORS.beige, boxShadow: `0 2px 4px ${COLORS.brown}14` }}>
