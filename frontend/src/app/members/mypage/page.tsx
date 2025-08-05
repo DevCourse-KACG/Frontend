@@ -15,6 +15,7 @@ interface Club {
   clubId: number;
   clubName: string;
   myRole: 'HOST' | 'MANAGER' | 'PARTICIPANT';
+  myState: 'JOINING' | 'APPLIED';
 }
 
 interface Friend {
@@ -110,7 +111,7 @@ function MyPage() {
         마이페이지
       </h1>
 
-      {userData && (
+      {userData ? (
         <div className="space-y-6">
           <div className="text-center">
             <p className="text-2xl font-bold text-gray-800">
@@ -121,7 +122,7 @@ function MyPage() {
             </p>
           </div>
 
-          {/* 프로필 이미지 섹션 수정 */}
+          {/* 프로필 이미지 섹션 */}
           <div className="relative flex items-start space-x-6 p-6 border-t border-gray-200">
             <div className="w-24 h-24 rounded-full flex-shrink-0 overflow-hidden bg-gray-200 flex items-center justify-center">
               {userData.profileImage ? (
@@ -158,7 +159,6 @@ function MyPage() {
               수정
             </button>
           </div>
-          {/* 프로필 이미지 섹션 수정 끝 */}
           
           <div className="p-6 border rounded-lg shadow-sm">
             <div className="flex justify-between items-center mb-2">
@@ -193,7 +193,9 @@ function MyPage() {
             </div>
             {clubs && clubs.length > 0 ? (
               <div className="space-y-2">
-                {clubs.map(club => (
+                {clubs
+                  .filter(club => club.myState === 'JOINING')
+                  .map(club => (
                   <div
                     key={club.clubId}
                     onClick={() => router.push(`/clubs/${club.clubId}`)}
@@ -255,9 +257,7 @@ function MyPage() {
             )}
           </div>
         </div>
-      )}
-
-      {!userData && (
+      ) : (
         <div className="text-center text-red-500">
           <p>회원 정보를 불러올 수 없습니다. 다시 로그인해 주세요.</p>
         </div>
@@ -267,4 +267,3 @@ function MyPage() {
 }
 
 export default MyPage;
-
