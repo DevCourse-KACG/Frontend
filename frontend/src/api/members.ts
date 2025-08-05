@@ -68,20 +68,9 @@ export async function fetchMyPresets() {
 }
 
 export async function verifyPassword({ email, password }: { email: string; password: string }) {
-  const payload = { email, password };
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/members/auth/verify-password`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    credentials: 'include',
-    body: JSON.stringify(payload),
-  });
-  
-  if (!res.ok) {
-    const errorData = await res.json();
-    throw new Error(errorData.message || '비밀번호 인증 실패');
+    const payload = { email, password };
+    return fetcher('/api/v1/members/auth/verify-password', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
   }
-  
-  return res.json();
-}
