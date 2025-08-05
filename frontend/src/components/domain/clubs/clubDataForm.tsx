@@ -408,7 +408,7 @@ export default function ClubDataForm({ onSubmit, isLoading = false, initialData,
                     disabled={isLoading}
                     className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
                 >
-                    {isLoading ? '처리 중...' : '모임 생성'}
+                    {isLoading ? '처리 중...' : '확인'}
                 </button>
             </div>
         </form>
