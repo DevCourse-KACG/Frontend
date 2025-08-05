@@ -9,16 +9,45 @@ import { components } from "@/types/backend/apiV1/schema";
 
 type SimpleClubInfoWithoutLeader = components['schemas']['SimpleClubInfoWithoutLeader'];
 
+// 토스트 메시지 컴포넌트입니다.
+// 이 컴포넌트는 상태에 따라 화면에 나타났다 사라집니다.
+const Toast = ({ show, message, type = 'success' }: { show: boolean; message: string; type?: 'success' | 'error' }) => {
+  // 토스트 메시지 타입에 따라 색상을 다르게 설정합니다.
+  const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
+
+  return (
+    <div
+      className={`fixed bottom-5 left-1/2 -translate-x-1/2 p-4 rounded-xl text-white shadow-xl transition-all duration-300 transform
+      ${show ? 'translate-y-0 opacity-100 visible' : 'translate-y-full opacity-0 invisible'}
+      ${bgColor}`}
+    >
+      <span>{message}</span>
+    </div>
+  );
+};
+
 export default function MainPage() {
   const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [publicClubs, setPublicClubs] = useState<SimpleClubInfoWithoutLeader[]>([]);
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [isLoadingClubs, setIsLoadingClubs] = useState(true);
+  
+  // 토스트 메시지 상태를 관리하는 새로운 상태입니다.
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+
+  // 토스트 메시지를 표시하고 일정 시간 후 숨기는 함수
+  const showToast = (message: string, type: 'success' | 'error') => {
+    setToast({ show: true, message, type });
+    // 3초 후에 토스트를 자동으로 숨깁니다.
+    setTimeout(() => {
+      setToast({ show: false, message: '', type: 'success' });
+    }, 3000);
+  };
 
   useEffect(() => {
     // 컴포넌트가 마운트될 때 로컬 스토리지에서 accessToken을 확인합니다.
-    const token = localStorage.getItem('accessToken');
+    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
     setIsLoggedIn(!!token);
 
     // 공개 모임 목록을 불러오는 함수
@@ -30,6 +59,8 @@ export default function MainPage() {
         }
       } catch (error) {
         console.error('Failed to fetch public clubs:', error);
+        // 에러 발생 시 토스트 메시지를 표시합니다.
+        showToast('공개 모임 목록을 불러오는 데 실패했습니다.', 'error');
       } finally {
         setIsLoadingClubs(false);
       }
@@ -57,11 +88,13 @@ export default function MainPage() {
   };
 
   const handleLogout = () => {
-    // 로그아웃 시 로컬 스토리지에서 토큰을 제거하고 로그인 상태를 업데이트합니다.
-    localStorage.removeItem('accessToken');
+    // 로그아웃 시 로컬 스토리지에서 토큰을 제거합니다.
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('accessToken');
+    }
     setIsLoggedIn(false);
-    // 로그아웃 후 알림 메시지 표시
-    alert('로그아웃되었습니다.');
+    // 로그아웃 후 토스트 메시지를 표시합니다.
+    showToast('로그아웃되었습니다.', 'success');
   };
 
   const handleLogin = () => {
@@ -90,10 +123,13 @@ export default function MainPage() {
     }
   };
 
-  const currentBanner = publicClubs[currentBannerIndex];
+  const currentBanner = publicClubs[currentBannerIndex] || null;
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 text-gray-800 font-sans">
+      {/* 토스트 컴포넌트를 최상단에 렌더링합니다. */}
+      <Toast show={toast.show} message={toast.message} type={toast.type} />
+      
       {/* 전체 페이지를 스크롤 스냅 컨테이너로 만듭니다. */}
       <main className="flex-grow overflow-y-scroll snap-y snap-mandatory scroll-smooth">
         {/* 헤더 섹션: 이제 스크롤 스냅의 일부가 됩니다. */}
