@@ -53,6 +53,11 @@ export default function ClubPage() {
                     throw new Error('403 : 가입 신청 중인 모임입니다. 가입 승인이 필요합니다.');
                 }
 
+                // WITHDRAWN 상태인 경우, 접근 금지
+                if (myInfo.state === 'WITHDRAWN') {
+                    throw new Error('404 : 클럽 멤버 정보가 존재하지 않습니다.');
+                }
+
                 setClubInfo(data.data);
                 setMyInfo(myInfo);
             } catch (err) {
