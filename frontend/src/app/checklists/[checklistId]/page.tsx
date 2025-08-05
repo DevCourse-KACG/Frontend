@@ -946,6 +946,33 @@ export default function ChecklistDetailPage() {
     });
   };
 
+  const handleAddItem = (category: string) => {
+    if (!checklist) return;
+    
+    // 해당 카테고리의 다음 sequence 계산
+    const categoryItems = checklist.checkListItems?.filter(item => item.category === category) || [];
+    const maxSequence = categoryItems.length > 0 ? Math.max(...categoryItems.map(item => item.sequence || 0)) : 0;
+    
+    // 전체 아이템의 다음 ID 계산 (임시 ID로 음수 사용)
+    const existingIds = checklist.checkListItems?.map(item => item.id || 0) || [];
+    const minId = existingIds.length > 0 ? Math.min(...existingIds) : 0;
+    const newId = minId <= 0 ? minId - 1 : -1;
+    
+    const newItem: CheckListItem = {
+      id: newId,
+      content: '',
+      category: category as any,
+      sequence: maxSequence + 1,
+      isChecked: false,
+      itemAssigns: []
+    };
+    
+    setChecklist({
+      ...checklist,
+      checkListItems: [...(checklist.checkListItems || []), newItem]
+    });
+  };
+
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString('ko-KR', {
@@ -1128,14 +1155,6 @@ export default function ChecklistDetailPage() {
                       수정
                     </button>
                   )}
-                  {canDeleteChecklist(userInfo) && (
-                    <button
-                      onClick={handleDeleteChecklist}
-                      className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-                    >
-                      삭제
-                    </button>
-                  )}
                 </>
               )}
             </div>
@@ -1234,6 +1253,19 @@ export default function ChecklistDetailPage() {
                               onToggleMemberCheck={handleToggleMemberCheck}
                             />
                           ))}
+                        
+                        {/* 아이템 추가 버튼 (수정 모드에서만 표시) */}
+                        {isEditMode && (
+                          <button
+                            onClick={() => handleAddItem(category)}
+                            className="w-full p-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-colors flex items-center justify-center gap-2"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                            <span className="font-medium">새 아이템 추가</span>
+                          </button>
+                        )}
                       </div>
                     </SortableContext>
                   </DndContext>
