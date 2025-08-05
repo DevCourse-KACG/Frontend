@@ -60,6 +60,7 @@ export default function MainPage() {
     // 로그아웃 시 로컬 스토리지에서 토큰을 제거하고 로그인 상태를 업데이트합니다.
     localStorage.removeItem('accessToken');
     setIsLoggedIn(false);
+    // 로그아웃 후 알림 메시지 표시
     alert('로그아웃되었습니다.');
   };
 
@@ -80,75 +81,83 @@ export default function MainPage() {
     }
   };
 
+  // 스크롤 다운 화살표 클릭 시 '공개 모임' 섹션으로 부드럽게 스크롤하는 함수
+  const scrollToPublicClubs = () => {
+    const publicClubsSection = document.getElementById('public-clubs');
+    if (publicClubsSection) {
+      // URL 변경 없이 부드러운 스크롤만 실행
+      publicClubsSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   const currentBanner = publicClubs[currentBannerIndex];
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 text-gray-800 font-sans">
-      {/* 헤더 섹션 */}
-      <header className="bg-white shadow-md w-full p-4 md:p-6 sticky top-0 z-50">
-        <div className="container mx-auto flex items-center justify-between">
-          <h1 className="text-3xl font-extrabold text-blue-600">
-            <span className="text-blue-600">준비물</span>
-            <span className="text-gray-900">.com</span>
-          </h1>
-          <nav className="flex items-center space-x-4">
-            {isLoggedIn ? (
-              <>
-                <button
-                  onClick={handleLogout}
-                  className="px-4 py-2 bg-red-500 text-white font-semibold rounded-full shadow-md transition-all duration-200 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400"
-                >
-                  로그아웃
-                </button>
-                <button
-                  onClick={handleMypage}
-                  className="px-4 py-2 text-gray-800 bg-gray-200 font-semibold rounded-full shadow-md transition-all duration-200 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
-                >
-                  마이페이지
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  onClick={handleSignup}
-                  className="px-4 py-2 bg-green-500 text-white font-semibold rounded-full shadow-md transition-all duration-200 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400"
-                >
-                  회원가입
-                </button>
-                <button
-                  onClick={handleLogin}
-                  className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-full shadow-md transition-all duration-200 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                >
-                  로그인
-                </button>
-                <button
-                  onClick={handleMypage}
-                  className="px-4 py-2 text-gray-800 bg-gray-200 font-semibold rounded-full shadow-md transition-all duration-200 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
-                >
-                  마이페이지
-                </button>
-              </>
-            )}
-          </nav>
-        </div>
-      </header>
-
-      {/* 스크롤 스냅 컨테이너 */}
-      {/* main 태그에 스크롤 스냅 속성을 다시 적용하여 스크롤 가능한 영역을 명확히 했습니다. */}
+      {/* 전체 페이지를 스크롤 스냅 컨테이너로 만듭니다. */}
       <main className="flex-grow overflow-y-scroll snap-y snap-mandatory scroll-smooth">
-        {/* 첫 번째 섹션: 환영 메시지 */}
-        {/* `h-screen` 대신 `min-h-[calc(100vh-theme(spacing.24))]`와 같이 헤더 높이를 제외한 계산값을 사용합니다.
-        헤더의 높이가 `6rem` 또는 `24`이기 때문에 `96`을 사용했습니다.
-        p-4 또는 p-6가 4 * 4=16 or 6*4=24이므로
-        tailwind.config.ts에 padding 값을 직접 지정해야 합니다.*/}
-        <div className="flex flex-col items-center justify-center min-h-[calc(100vh-6rem)] snap-start text-center p-4">
+        {/* 헤더 섹션: 이제 스크롤 스냅의 일부가 됩니다. */}
+        <header className="bg-white shadow-md w-full p-4 md:p-6 snap-start">
+          <div className="container mx-auto flex items-center justify-between">
+            <h1 className="text-3xl font-extrabold text-blue-600">
+              <span className="text-blue-600">준비물</span>
+              <span className="text-gray-900">.com</span>
+            </h1>
+            <nav className="flex items-center space-x-4">
+              {isLoggedIn ? (
+                <>
+                  <button
+                    onClick={handleLogout}
+                    className="px-4 py-2 bg-red-500 text-white font-semibold rounded-full shadow-md transition-all duration-200 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400"
+                  >
+                    로그아웃
+                  </button>
+                  <button
+                    onClick={handleMypage}
+                    className="px-4 py-2 text-gray-800 bg-gray-200 font-semibold rounded-full shadow-md transition-all duration-200 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                  >
+                    마이페이지
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={handleSignup}
+                    className="px-4 py-2 bg-green-500 text-white font-semibold rounded-full shadow-md transition-all duration-200 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400"
+                  >
+                    회원가입
+                  </button>
+                  <button
+                    onClick={handleLogin}
+                    className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-full shadow-md transition-all duration-200 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  >
+                    로그인
+                  </button>
+                  <button
+                    onClick={handleMypage}
+                    className="px-4 py-2 text-gray-800 bg-gray-200 font-semibold rounded-full shadow-md transition-all duration-200 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                  >
+                    마이페이지
+                  </button>
+                </>
+              )}
+            </nav>
+          </div>
+        </header>
+
+        {/* 첫 번째 스냅 섹션: 환영 메시지 */}
+        <div className="flex flex-col items-center justify-center h-screen snap-start text-center p-4">
           <h2 className="text-5xl font-extrabold text-gray-900 mb-4">
             준비물 닷컴에 오신 것을 환영합니다!
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl">
             모임을 만들고, 필요한 준비물을 공유하고, 사람들을 초대해 보세요.
           </p>
-          <a href="#public-clubs" className="mt-8 animate-bounce">
+          {/* 스크롤 다운 화살표는 이제 onClick 이벤트로 작동합니다. */}
+          <div
+            onClick={scrollToPublicClubs}
+            className="mt-8 animate-bounce cursor-pointer"
+          >
             <svg
               className="w-10 h-10 text-gray-600"
               fill="none"
@@ -163,27 +172,36 @@ export default function MainPage() {
                 d="M19 14l-7 7m0 0l-7-7m7 7V3"
               ></path>
             </svg>
-          </a>
+          </div>
         </div>
 
-        {/* 두 번째 섹션: 공개 모임 배너 */}
-        {/* `h-screen` 대신 `min-h-[calc(100vh-6rem)]`와 같이 헤더 높이를 제외한 계산값을 사용합니다. */}
-        <div id="public-clubs" className="flex flex-col items-center justify-center min-h-[calc(100vh-6rem)] snap-start p-4">
+        {/* 두 번째 스냅 섹션: 공개 모임 배너 */}
+        <div id="public-clubs" className="flex flex-col items-center justify-center h-screen snap-start p-4">
           <div className="container mx-auto">
-            {/* 공개 모임에 대한 설명 추가 */}
-            <div className="text-center mb-8">
+            {/* '공개 모임' 제목과 설명을 중앙 정렬하는 컨테이너 */}
+            <div className="flex flex-col items-center justify-center mb-2">
               <h3 className="text-4xl font-extrabold text-gray-900">공개 모임</h3>
-              <p className="mt-2 text-lg text-gray-600 max-w-2xl mx-auto">
+              <p className="mt-2 text-lg text-gray-600 max-w-2xl">
                 현재 활발하게 진행 중인 공개 모임들을 둘러보고 참여해보세요.
               </p>
             </div>
+            {/* '전체보기' 링크를 배너 바로 위에, 그리고 우측에 배치합니다. */}
+            <div className="w-full max-w-4xl flex justify-end mb-4 mx-auto">
+              <div
+                onClick={() => router.push('/clubs/public')}
+                className="whitespace-nowrap text-sm font-semibold text-blue-600 hover:underline cursor-pointer"
+              >
+                전체보기
+              </div>
+            </div>
+
             {isLoadingClubs ? (
               <div className="w-full max-w-4xl h-64 bg-gray-200 rounded-xl animate-pulse flex items-center justify-center mx-auto">
                 <p className="text-xl text-gray-600">공개 모임 배너를 불러오는 중...</p>
               </div>
             ) : (
               publicClubs.length > 0 && (
-                <div className="relative">
+                <div>
                   <div
                     className="w-full max-w-4xl h-64 rounded-xl shadow-xl overflow-hidden relative cursor-pointer group mx-auto"
                     style={{
@@ -206,8 +224,8 @@ export default function MainPage() {
                       </p>
                     </div>
                   </div>
-                  {/* 작은 원형 페이징 버튼 추가 */}
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
+                  {/* 작은 원형 페이징 버튼을 배너 아래에 위치하도록 수정했습니다. */}
+                  <div className="flex justify-center mt-4 space-x-2">
                     {publicClubs.map((_, index) => (
                       <button
                         key={index}
@@ -223,12 +241,12 @@ export default function MainPage() {
             )}
           </div>
         </div>
+        
+        {/* 푸터 섹션: 마지막 스냅 섹션으로 추가 */}
+        <footer id="footer" className="bg-gray-800 text-white text-center p-4 snap-start h-24 flex items-center justify-center">
+          <p>© 2024 준비물 닷컴. 모든 권리 보유.</p>
+        </footer>
       </main>
-
-      {/* 푸터 섹션 */}
-      <footer className="bg-gray-800 text-white text-center p-4">
-        <p>© 2024 준비물 닷컴. 모든 권리 보유.</p>
-      </footer>
     </div>
   );
 }
