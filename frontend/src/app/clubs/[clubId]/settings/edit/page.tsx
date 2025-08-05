@@ -35,8 +35,8 @@ export default function ModifyClubInfoPage() {
                     getMyInfoInClub(clubId)
                 ]);
 
-                // 클럽 정보가 없거나 비활성화 상태인 경우
-                if (!club?.data || !club.data.state) {
+                // 클럽 정보가 없는 경우
+                if (!club?.data) {
                     alert("잘못된 접근입니다.");
                     router.push("/");
                     return;

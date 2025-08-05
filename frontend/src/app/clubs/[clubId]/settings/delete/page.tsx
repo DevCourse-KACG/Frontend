@@ -30,11 +30,6 @@ const DeleteClubPage = () => {
                     router.push("/");
                 }
 
-                if (data.data?.state === false) {
-                    alert("잘못된 접근입니다.");
-                    router.push("/");
-                }
-
                 // 호스트 권한 조회
                 if (myInfo.role !== 'HOST') {
                     alert("호스트만 모임을 삭제할 수 있습니다.");

@@ -1251,7 +1251,6 @@ export interface components {
             /** Format: int64 */
             leaderId?: number;
             leaderName?: string;
-            state?: boolean;
         };
         RsDataClubInfoResponse: {
             /** Format: int32 */
