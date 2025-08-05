@@ -30,9 +30,7 @@ const PagingUnit: React.FC<PagingUnitProps> = ({
                 className="px-3 py-2 rounded-full bg-white border border-gray-300 shadow-sm hover:bg-gray-100 transition disabled:opacity-40 disabled:cursor-not-allowed"
                 aria-label="이전 페이지"
             >
-                <span className="material-icons align-middle text-lg">
-                    <ArrowLeft />
-                </span>
+                <ArrowLeft />
             </button>
             <span className="px-4 py-2 rounded bg-gray-100 text-gray-700 font-semibold shadow">
                 {page + 1} <span className="text-gray-400">/</span> {totalPages}
@@ -43,9 +41,7 @@ const PagingUnit: React.FC<PagingUnitProps> = ({
                 className="px-3 py-2 rounded-full bg-white border border-gray-300 shadow-sm hover:bg-gray-100 transition disabled:opacity-40 disabled:cursor-not-allowed"
                 aria-label="다음 페이지"
             >
-                <span className="material-icons align-middle text-lg">
-                    <ArrowRight />
-                </span>
+                <ArrowRight />
             </button>
         </div>
     );

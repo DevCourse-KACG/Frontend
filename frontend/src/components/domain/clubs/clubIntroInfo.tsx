@@ -4,6 +4,9 @@ import React from 'react';
 import { components } from "@/types/backend/apiV1/schema";
 import InfoCard from '@/components/global/InfoCard';
 import { COLORS } from '@/constants/colors';
+import { EventType, EventTypeKorean } from '@/types/EventType';
+import { ClubCategory, ClubCategoryKorean } from '@/types/ClubCategory';
+
 type ClubInfoResponse = components['schemas']['ClubInfoResponse'];
 
 interface ClubInfoProps {
@@ -32,7 +35,7 @@ const ClubIntroInfo: React.FC<ClubInfoProps> = ({ club }) => {
                 <aside style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8, minWidth: 220 }}>
                     <InfoCard title="지역" content={club.mainSpot} color={COLORS.yellow} contentColor={COLORS.brown} />
                     <InfoCard title="최대 인원" content={`${club.maximumCapacity}명`} color={COLORS.yellow} contentColor={COLORS.brown} />
-                    <InfoCard title="카테고리" content={club.category} color={COLORS.yellow} contentColor={COLORS.brown} />
+                    <InfoCard title="카테고리" content={club.category && club.category in ClubCategoryKorean ? ClubCategoryKorean[club.category as ClubCategory] : '미정'} color={COLORS.yellow} contentColor={COLORS.brown} />
                     <InfoCard
                         title="시작일"
                         content={club.startDate ? club.startDate.replace(/-/g, '.') : '미정'}
@@ -48,14 +51,8 @@ const ClubIntroInfo: React.FC<ClubInfoProps> = ({ club }) => {
                     <InfoCard
                         title="이벤트 유형"
                         content={
-                            typeof club.eventType === 'string'
-                                ? (
-                                    {
-                                        ONE_TIME: '일회성',
-                                        SHORT_TERM: '단기',
-                                        LONG_TERM: '장기',
-                                    } as Record<string, string>
-                                )[club.eventType] || '미정'
+                            club.eventType && club.eventType in EventTypeKorean
+                                ? EventTypeKorean[club.eventType as EventType]
                                 : '미정'
                         }
                         color={COLORS.yellow}

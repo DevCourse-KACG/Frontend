@@ -53,27 +53,35 @@ export default function ClubListPage() {
     // 검색어가 있는 경우, 해당 검색어로 필터링
     useEffect(() => {
         const fetchClubs = async () => {
-            setLoading(true);
+            try {
+                setLoading(true);
 
-            const name = searchParams.get('name');
-            const mainSpot = searchParams.get('mainSpot');
-            const category = searchParams.get('clubCategory');
-            const eventType = searchParams.get('eventType');
+                const name = searchParams.get('name');
+                const mainSpot = searchParams.get('mainSpot');
+                const category = searchParams.get('clubCategory');
+                const eventType = searchParams.get('eventType');
 
-            const data = await getPublicClubs(
-                page, // page
-                10, // size
-                'id,desc', // sort
-                name,
-                category,
-                mainSpot,
-                eventType
-            );
+                const data = await getPublicClubs(
+                    page, // page
+                    10, // size
+                    'id,desc', // sort
+                    name,
+                    category,
+                    mainSpot,
+                    eventType
+                );
 
+                setClubs(Array.isArray(data.data?.content) ? data.data.content : []);
+                setTotalPages(data.data?.totalPages || 1);
+            } catch (error) {
+                console.error('모임 목록을 불러오는 중 오류 발생:', error);
+                setClubs([]);
+                setTotalPages(1);
+                alert('모임 목록을 불러오는 중 오류가 발생했습니다. 나중에 다시 시도해주세요.');
+            } finally {
+                setLoading(false);
+            }
 
-            setClubs(Array.isArray(data.data?.content) ? data.data.content : []);
-            setTotalPages(data.data?.totalPages || 1);
-            setLoading(false);
         };
 
         fetchClubs();
