@@ -66,6 +66,19 @@ export default function ScheduleModal({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // 종료일-종료시간이 시작일-시작시간보다 앞서는지 체크하는 함수
+  const isEndBeforeStart = (
+    startDate: string,
+    startTime: string,
+    endDate: string,
+    endTime: string
+  ) => {
+    if (!startDate || !startTime || !endDate || !endTime) return false;
+    const start = new Date(`${startDate}T${startTime}:00`);
+    const end = new Date(`${endDate}T${endTime}:00`);
+    return end < start;
+  };
+
   // 수정 모드일 때 상세 정보 불러오기
   useEffect(() => {
     if (!showModal) {
@@ -149,7 +162,68 @@ export default function ScheduleModal({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
     if (type === 'time') {
+      // 종료시간/시작시간 입력 시, 종료가 시작보다 앞서면 종료시간을 자동으로 시작시간과 같게 맞추거나 무시
+      if (name === 'endTime') {
+        // 미리보기로 입력값을 적용해보고, 만약 종료가 시작보다 앞서면 무시
+        if (
+          isEndBeforeStart(
+            scheduleData.startDate,
+            scheduleTimes.startTime,
+            scheduleData.endDate,
+            value
+          )
+        ) {
+          // 종료시간이 시작시간보다 앞서면 종료시간을 시작시간과 같게 맞춤
+          setScheduleTimes(prev => ({ ...prev, endTime: prev.startTime }));
+          toast.error('종료시간은 시작시간보다 같거나 이후여야 합니다.');
+          return;
+        }
+      }
+      if (name === 'startTime') {
+        // 시작시간을 바꿀 때, 종료시간이 더 앞서면 종료시간도 같이 맞춰줌
+        if (
+          isEndBeforeStart(
+            scheduleData.startDate,
+            value,
+            scheduleData.endDate,
+            scheduleTimes.endTime
+          )
+        ) {
+          setScheduleTimes(prev => ({ ...prev, startTime: value, endTime: value }));
+          return;
+        }
+      }
       setScheduleTimes(prev => ({ ...prev, [name]: value }));
+    } else if (type === 'date') {
+      // 종료일/시작일 입력 시, 종료가 시작보다 앞서면 종료일을 시작일과 같게 맞추거나 무시
+      if (name === 'endDate') {
+        if (
+          isEndBeforeStart(
+            scheduleData.startDate,
+            scheduleTimes.startTime,
+            value,
+            scheduleTimes.endTime
+          )
+        ) {
+          setScheduleData(prev => ({ ...prev, endDate: prev.startDate }));
+          toast.error('종료일은 시작일보다 같거나 이후여야 합니다.');
+          return;
+        }
+      }
+      if (name === 'startDate') {
+        if (
+          isEndBeforeStart(
+            value,
+            scheduleTimes.startTime,
+            scheduleData.endDate,
+            scheduleTimes.endTime
+          )
+        ) {
+          setScheduleData(prev => ({ ...prev, startDate: value, endDate: value }));
+          return;
+        }
+      }
+      setScheduleData(prev => ({ ...prev, [name]: value }));
     } else {
       setScheduleData(prev => ({ ...prev, [name]: value }));
     }
@@ -160,6 +234,21 @@ export default function ScheduleModal({
     e.preventDefault();
     setIsLoading(true);
     setError(null);
+
+    // 종료일-종료시간이 시작일-시작시간보다 앞서는지 체크
+    if (
+      isEndBeforeStart(
+        scheduleData.startDate,
+        scheduleTimes.startTime,
+        scheduleData.endDate,
+        scheduleTimes.endTime
+      )
+    ) {
+      setIsLoading(false);
+      setError('종료일과 종료시간은 시작일과 시작시간보다 같거나 이후여야 합니다.');
+      toast.error('종료일과 종료시간은 시작일과 시작시간보다 같거나 이후여야 합니다.');
+      return;
+    }
 
     try {
       // 날짜와 시간을 결합하여 date-time 형식으로 변환
@@ -199,6 +288,14 @@ export default function ScheduleModal({
   };
   
   if (!showModal) return null;
+
+  // 종료일-종료시간이 시작일-시작시간보다 앞서는지 체크해서 버튼 비활성화
+  const isInvalidEnd = isEndBeforeStart(
+    scheduleData.startDate,
+    scheduleTimes.startTime,
+    scheduleData.endDate,
+    scheduleTimes.endTime
+  );
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
@@ -249,6 +346,7 @@ export default function ScheduleModal({
                   onChange={handleChange}
                   className="flex-1 min-w-0 p-2 border border-blue-400 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-blue-900 bg-blue-50 placeholder-blue-300"
                   required
+                  min={scheduleData.startDate}
                 />
                 <input
                   type="time"
@@ -257,8 +355,12 @@ export default function ScheduleModal({
                   onChange={handleChange}
                   className="flex-1 min-w-0 p-2 border border-blue-400 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-blue-900 bg-blue-50 placeholder-blue-300"
                   required
+                  min={scheduleData.startDate === scheduleData.endDate ? scheduleTimes.startTime : undefined}
                 />
               </div>
+              {isInvalidEnd && (
+                <div className="text-red-500 text-sm mt-1">종료일과 종료시간은 시작일과 시작시간보다 같거나 이후여야 합니다.</div>
+              )}
             </div>
             <div>
               <label className="block text-gray-700 font-semibold mb-1">장소</label>
@@ -285,7 +387,7 @@ export default function ScheduleModal({
           <div className="flex justify-end space-x-2 mt-auto">
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || isInvalidEnd}
               className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors disabled:opacity-50"
             >
               {isEditing ? '수정' : '생성'}
