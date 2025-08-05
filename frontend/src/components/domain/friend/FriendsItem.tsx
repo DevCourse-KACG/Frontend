@@ -60,7 +60,7 @@ const FriendsItem: React.FC<FriendsItemProps> = ({ friend, status, idx, onDelete
           </h3>
         </div>
         <p className="mt-1 text-[13px] text-gray-400 truncate max-w-[280px]">
-          자기소개자기소개자기소개자기소개자기소개자기소개자기소개자기소개
+          {friend.friendBio}
         </p>
       </div>
       <div className="flex gap-2.5">

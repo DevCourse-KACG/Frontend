@@ -2,8 +2,6 @@ import type { components } from "@/types/backend/apiV1/schema";
 
 // 친구
 export type FriendDto = components["schemas"]["FriendDto"];
-// 친구 + 자기소개
-export type FriendWithBioDto = components["schemas"]["FriendWithBioDto"];
 // 친구 정보
 export type FriendMemberDto = components["schemas"]["FriendMemberDto"];
 
