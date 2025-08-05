@@ -31,16 +31,14 @@ export default function LoginPage() {
       
       console.log("로그인 성공:", data);
       
-      // TODO: 여기에 액세스 토큰을 로컬 스토리지에 저장하는 로직 추가
-      // API 응답 형식에 따라 수정이 필요할 수 있습니다.
-      // 아래 예시는 응답이 { data: { accessToken: '...' } } 형태라고 가정합니다.
       if (data && data.data && data.data.accessToken) {
         localStorage.setItem('accessToken', data.data.accessToken);
         setSuccess("로그인에 성공했습니다!");
-        // 로그인 성공 시 메인 페이지로 이동
-        router.push('/'); 
+        
+        // 로그인 성공 시 직전 페이지로 돌아갑니다.
+        // 이 방법은 URL 파라미터에 의존하지 않아 더 안정적입니다.
+        router.back();
       } else {
-        // 토큰이 없으면 오류 처리
         setError("로그인에 성공했으나, 토큰을 받지 못했습니다.");
       }
     } catch (err: unknown) {

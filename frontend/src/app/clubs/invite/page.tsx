@@ -117,7 +117,7 @@ export default function InvitationPage() {
   };
   
   const handleLogin = () => {
-    router.push('/login');
+    router.push('/members/login');
   };
 
   const handleGuestLogin = async () => {
