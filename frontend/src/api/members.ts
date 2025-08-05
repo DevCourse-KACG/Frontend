@@ -1,17 +1,44 @@
-// api/members.ts
+// api/members.ts 파일
+
+import { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 
 // 백엔드 응답에 맞게 인터페이스를 정의합니다.
 interface LoginResponse {
   accessToken: string;
-  // 백엔드 응답에 따라 다른 필드가 있을 수 있습니다.
 }
 
 interface ApiResponse<T> {
   data: T;
-  // 다른 필드들이 있을 수 있습니다.
 }
 
-// 게스트 등록 요청 DTO 인터페이스
+interface UserData {
+  nickname: string;
+  email: string;
+  bio: string;
+  profileImage: string | null;
+}
+
+interface Club {
+  clubId: number;
+  clubName: string;
+  myRole: 'HOST' | 'MANAGER' | 'PARTICIPANT';
+  myState: 'JOINING' | 'APPLIED';
+}
+
+interface Friend {
+  id: number;
+  nickname: string;
+}
+
+interface Preset {
+  id: number;
+  name: string;
+}
+
+interface PasswordVerifyResponse {
+  verified: boolean;
+}
+
 interface GuestDto {
   nickname: string;
   password: string;
@@ -22,18 +49,14 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8
 
 // API 호출 시 공통으로 사용할 fetcher 함수
 export async function fetcher(url: string, options: RequestInit = {}) {
-  // localStorage에서 토큰을 가져옵니다.
   const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
 
-  // Headers 객체를 사용하여 헤더를 안전하게 관리합니다.
   const headers = new Headers(options.headers);
 
-  // 'Content-Type'이 없는 경우에만 추가합니다.
   if (!headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json');
   }
 
-  // 토큰이 있는 경우 'Authorization' 헤더를 추가합니다.
   if (accessToken) {
     headers.set('Authorization', `Bearer ${accessToken}`);
   }
@@ -41,7 +64,7 @@ export async function fetcher(url: string, options: RequestInit = {}) {
   const response = await fetch(`${API_BASE_URL}${url}`, {
     ...options,
     headers,
-    credentials: 'include', // 쿠키를 포함하여 요청
+    credentials: 'include',
   });
 
   if (!response.ok) {
@@ -76,13 +99,8 @@ export async function login({ email, password }: { email: string; password: stri
   });
 }
 
-/**
- * 게스트 계정을 등록하는 API 함수
- * @param dto GuestDto 객체 (닉네임, 비밀번호, 클럽 ID 포함)
- * @returns 액세스 토큰이 포함된 응답 데이터
- */
+// 게스트 계정 등록 API
 export async function registerGuest(dto: GuestDto): Promise<ApiResponse<LoginResponse>> {
-  // 백엔드 명세에 따라 DTO를 포함하여 POST 요청을 보냅니다.
   return fetcher('/api/v1/members/auth/guest-register', {
     method: 'POST',
     body: JSON.stringify(dto),
@@ -90,33 +108,35 @@ export async function registerGuest(dto: GuestDto): Promise<ApiResponse<LoginRes
 }
 
 // 내 정보 불러오기
-export async function fetchMe() {
+export async function fetchMe(): Promise<UserData> {
   const response = await fetcher('/api/v1/members/me');
-  return response.data; // 응답 구조에 맞게 data 필드 반환
+  return response.data;
 }
 
 // 내가 가입한 모임 불러오기
-export async function fetchMyClubs() {
+export async function fetchMyClubs(): Promise<Club[]> {
   const response = await fetcher('/api/v1/my-clubs');
-  return response.data.clubs; // 응답 구조에 맞게 data.clubs 필드 반환
+  return response.data.clubs;
 }
 
 // 내 친구 목록 불러오기
-export async function fetchMyFriends() {
+export async function fetchMyFriends(): Promise<Friend[]> {
   const response = await fetcher('/api/v1/members/me/friends');
-  return response.data; // 응답 구조에 맞게 data 필드 반환
+  return response.data;
 }
 
 // 내가 만든 프리셋 목록 불러오기
-export async function fetchMyPresets() {
+export async function fetchMyPresets(): Promise<Preset[]> {
   const response = await fetcher('/api/v1/presets');
-  return response.data; // 응답 구조에 맞게 data 필드 반환
+  return response.data;
 }
 
-export async function verifyPassword({ email, password }: { email: string; password: string }) {
+// 비밀번호 확인 API
+export async function verifyPassword({ email, password }: { email: string; password: string }): Promise<PasswordVerifyResponse> {
   const payload = { email, password };
-  return fetcher('/api/v1/members/auth/verify-password', {
+  const response = await fetcher('/api/v1/members/auth/verify-password', {
     method: 'POST',
     body: JSON.stringify(payload),
   });
+  return response.data;
 }

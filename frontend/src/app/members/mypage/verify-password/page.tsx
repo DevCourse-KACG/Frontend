@@ -14,7 +14,6 @@ export default function PasswordVerificationPage() {
   const [apiLoading, setApiLoading] = useState(false);
 
   useEffect(() => {
-    // 페이지 로드 시 현재 사용자의 이메일 정보를 가져옵니다.
     const getEmail = async () => {
       try {
         const meData = await fetchMe();
@@ -38,17 +37,21 @@ export default function PasswordVerificationPage() {
     setApiLoading(true);
 
     try {
-      await verifyPassword({ email, password });
+      const response = await verifyPassword({ email, password });
       
-      console.log("비밀번호 인증 성공");
-      
-      // 절대 경로로 수정하여 올바르게 이동하도록 변경
-      router.push('/members/mypage/edit-profile'); 
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError("비밀번호가 올바르지 않습니다. 다시 시도해 주세요.");
+      if (response.verified) {
+        console.log("비밀번호 인증 성공");
+        router.push('/members/mypage/edit-profile'); 
       } else {
-        setError("서버와 통신 중 오류가 발생했습니다.");
+        // 백엔드에서 verified: false를 반환했을 경우
+        setError("비밀번호가 올바르지 않습니다. 다시 시도해 주세요.");
+      }
+    } catch (err: unknown) {
+      // API 호출 자체가 실패했을 경우
+      if (err instanceof Error) {
+        setError("비밀번호 확인 중 오류가 발생했습니다. 다시 시도해 주세요.");
+      } else {
+        setError("서버와 통신 중 알 수 없는 오류가 발생했습니다.");
       }
     } finally {
       setApiLoading(false);
