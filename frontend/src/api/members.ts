@@ -11,10 +11,17 @@ interface ApiResponse<T> {
   // 다른 필드들이 있을 수 있습니다.
 }
 
+// 게스트 등록 요청 DTO 인터페이스
+interface GuestDto {
+  nickname: string;
+  password: string;
+  clubId: number;
+}
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
 
 // API 호출 시 공통으로 사용할 fetcher 함수
-async function fetcher(url: string, options: RequestInit = {}) {
+export async function fetcher(url: string, options: RequestInit = {}) {
   // localStorage에서 토큰을 가져옵니다.
   const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
   
@@ -70,14 +77,14 @@ export async function login({ email, password }: { email: string; password: stri
 
 /**
  * 게스트 계정을 등록하는 API 함수
+ * @param dto GuestDto 객체 (닉네임, 비밀번호, 클럽 ID 포함)
  * @returns 액세스 토큰이 포함된 응답 데이터
  */
-export async function registerGuest(): Promise<ApiResponse<LoginResponse>> {
-  // 백엔드 명세에 따라, DTO 없이 POST 요청을 보냅니다.
-  // URL을 '/api/v1/members/auth/guest-register'로 수정
+export async function registerGuest(dto: GuestDto): Promise<ApiResponse<LoginResponse>> {
+  // 백엔드 명세에 따라 DTO를 포함하여 POST 요청을 보냅니다.
   return fetcher('/api/v1/members/auth/guest-register', {
     method: 'POST',
-    body: JSON.stringify({}),
+    body: JSON.stringify(dto),
   });
 }
 
