@@ -9,9 +9,12 @@ import { components } from "@/types/backend/apiV1/schema";
 
 type SimpleClubInfoWithoutLeader = components['schemas']['SimpleClubInfoWithoutLeader'];
 
+// Toast 컴포넌트의 props 타입을 명확하게 정의합니다.
+type ToastType = 'success' | 'error';
+
 // 토스트 메시지 컴포넌트입니다.
 // 이 컴포넌트는 상태에 따라 화면에 나타났다 사라집니다.
-const Toast = ({ show, message, type = 'success' }: { show: boolean; message: string; type?: 'success' | 'error' }) => {
+const Toast = ({ show, message, type = 'success' }: { show: boolean; message: string; type?: ToastType }) => {
   // 토스트 메시지 타입에 따라 색상을 다르게 설정합니다.
   const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
 
@@ -33,17 +36,41 @@ export default function MainPage() {
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [isLoadingClubs, setIsLoadingClubs] = useState(true);
   
-  // 토스트 메시지 상태를 관리하는 새로운 상태입니다.
-  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+  // Toast 상태의 타입을 명시적으로 정의하여 타입 에러를 해결합니다.
+  type ToastState = {
+    show: boolean;
+    message: string;
+    type: ToastType;
+  };
+  const [toast, setToast] = useState<ToastState>({ show: false, message: '', type: 'success' });
+  
+  // 타이머 ID를 관리하는 상태입니다.
+  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
 
   // 토스트 메시지를 표시하고 일정 시간 후 숨기는 함수
-  const showToast = (message: string, type: 'success' | 'error') => {
+  const showToast = (message: string, type: ToastType) => {
+    // 기존 타이머가 있다면 정리
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+    
     setToast({ show: true, message, type });
     // 3초 후에 토스트를 자동으로 숨깁니다.
-    setTimeout(() => {
+    const id = setTimeout(() => {
       setToast({ show: false, message: '', type: 'success' });
+      setTimeoutId(null);
     }, 3000);
+    setTimeoutId(id);
   };
+  
+  // 컴포넌트 언마운트 시 타이머를 정리하는 useEffect
+  useEffect(() => {
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [timeoutId]);
 
   useEffect(() => {
     // 컴포넌트가 마운트될 때 로컬 스토리지에서 accessToken을 확인합니다.
