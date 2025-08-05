@@ -27,14 +27,22 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      // api.ts에서 정의한 login 함수를 호출
       const data = await login({ email, password });
       
       console.log("로그인 성공:", data);
-      setSuccess("로그인에 성공했습니다!");
       
-      // 로그인 성공 시 메인 페이지로 이동
-      router.push('/'); 
+      // TODO: 여기에 액세스 토큰을 로컬 스토리지에 저장하는 로직 추가
+      // API 응답 형식에 따라 수정이 필요할 수 있습니다.
+      // 아래 예시는 응답이 { data: { accessToken: '...' } } 형태라고 가정합니다.
+      if (data && data.data && data.data.accessToken) {
+        localStorage.setItem('accessToken', data.data.accessToken);
+        setSuccess("로그인에 성공했습니다!");
+        // 로그인 성공 시 메인 페이지로 이동
+        router.push('/'); 
+      } else {
+        // 토큰이 없으면 오류 처리
+        setError("로그인에 성공했으나, 토큰을 받지 못했습니다.");
+      }
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);

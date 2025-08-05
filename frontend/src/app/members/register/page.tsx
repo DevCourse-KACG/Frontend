@@ -55,12 +55,21 @@ export default function SignUpPage() {
         bio: bio,
       });
 
-      // 로그인 페이지처럼 성공 응답을 콘솔에 출력
       console.log("회원가입 성공:", data);
 
-      setSuccess("회원가입에 성공했습니다!");
-      // 회원가입 성공 시 메인 페이지로 이동
-      router.push("/");
+      // TODO: 로그인 페이지와 마찬가지로 회원가입 성공 시 토큰을 로컬 스토리지에 저장
+      // API 응답 형식이 { "data": { "accessToken": "..." } } 라고 가정합니다.
+      if (data && data.data && data.data.accessToken) {
+        localStorage.setItem('accessToken', data.data.accessToken);
+        setSuccess("회원가입에 성공했습니다!");
+        // 토큰 저장 후 메인 페이지로 이동
+        router.push("/");
+      } else {
+        // 토큰이 없으면 오류를 표시하거나 로그인 페이지로 이동
+        setError("회원가입에 성공했으나, 토큰을 받지 못했습니다. 로그인 페이지로 이동합니다.");
+        router.push("/login");
+      }
+
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);

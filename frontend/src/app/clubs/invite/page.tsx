@@ -37,6 +37,7 @@ export default function InvitePage() {
   const [clubData, setClubData] = useState<ClubData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isGuestUser, setIsGuestUser] = useState(false); // 비회원 상태 추가
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -48,6 +49,11 @@ export default function InvitePage() {
       router.push('/');
       return;
     }
+
+    // TODO: 로그인 상태를 확인하는 실제 로직을 구현하세요.
+    const userAuthToken = localStorage.getItem('authToken');
+    const userIsLoggedIn = !!userAuthToken; // 토큰이 존재하면 true, 아니면 false
+    setIsLoggedIn(userIsLoggedIn);
 
     const loadData = async () => {
       try {
@@ -61,23 +67,27 @@ export default function InvitePage() {
         }
       } finally {
         setIsLoading(false);
+        // 로그인하지 않았으면 모달을 바로 띄웁니다.
+        if (!userIsLoggedIn) {
+          setShowLoginModal(true);
+        }
       }
     };
     
     loadData();
-
-    // TODO: 로그인 상태를 확인하는 실제 로직을 구현하세요.
-    const userAuthToken = localStorage.getItem('authToken');
-    if (userAuthToken) {
-      setIsLoggedIn(true);
-    }
   }, [token, router]);
 
   const handleJoinClick = () => {
     if (isLoggedIn) {
       // TODO: 모임 가입 API 호출 로직
       alert('모임 가입을 신청합니다.');
+    } else if (isGuestUser) {
+      // TODO: 닉네임과 임시 비밀번호 입력 페이지로 이동하는 로직
+      // 현재는 페이지가 없으므로 alert으로 대체
+      alert('비회원 가입 신청을 위해 닉네임과 임시 비밀번호를 입력하는 페이지로 이동합니다.');
+      // router.push('/guest-join');
     } else {
+      // 로그인/비회원 선택 모달이 이미 떴어야 하지만, 혹시 모를 상황에 대비
       setShowLoginModal(true);
     }
   };
@@ -103,7 +113,7 @@ export default function InvitePage() {
     <div className="p-6">
       <h1>{clubData.clubName}</h1>
       <p>모임 설명: {clubData.description}</p>
-
+      
       <button onClick={handleJoinClick} className="mt-4 px-4 py-2 bg-black text-white rounded">
         가입 신청
       </button>
@@ -112,19 +122,25 @@ export default function InvitePage() {
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center">
           <div className="relative p-5 border w-96 shadow-lg rounded-md bg-white text-center">
             <h3 className="text-xl font-bold mb-4">로그인이 필요합니다</h3>
-            <p className="mb-4">모임 가입 신청을 위해 로그인 해주세요.</p>
-            <div className="flex justify-around">
+            <p className="mb-4">모임 가입 신청을 위해 로그인하시거나 비회원으로 진행해주세요.</p>
+            <div className="flex justify-around mt-4">
               <button 
-                onClick={() => setShowLoginModal(false)}
-                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-              >
-                닫기
-              </button>
-              <button 
-                onClick={() => router.push(`/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`)}
+                onClick={() => {
+                  setShowLoginModal(false);
+                  router.push(`/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+                }}
                 className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
               >
-                로그인 하러 가기
+                로그인하기
+              </button>
+              <button 
+                onClick={() => {
+                  setShowLoginModal(false);
+                  setIsGuestUser(true);
+                }}
+                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+              >
+                비회원으로 진행하기
               </button>
             </div>
           </div>
