@@ -24,7 +24,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8
 export async function fetcher(url: string, options: RequestInit = {}) {
   // localStorage에서 토큰을 가져옵니다.
   const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-  
+
   // Headers 객체를 사용하여 헤더를 안전하게 관리합니다.
   const headers = new Headers(options.headers);
 
@@ -41,6 +41,7 @@ export async function fetcher(url: string, options: RequestInit = {}) {
   const response = await fetch(`${API_BASE_URL}${url}`, {
     ...options,
     headers,
+    credentials: 'include', // 쿠키를 포함하여 요청
   });
 
   if (!response.ok) {
