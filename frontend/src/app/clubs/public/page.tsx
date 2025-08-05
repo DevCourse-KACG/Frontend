@@ -18,8 +18,13 @@ type SimpleClubInfoWithoutLeader = components['schemas']['SimpleClubInfoWithoutL
 export default function ClubListPage() {
     const [clubs, setClubs] = useState<SimpleClubInfoWithoutLeader[]>([]);
     const [loading, setLoading] = useState(true);
+
+    const [page, setPage] = useState(0);
+    const [totalPages, setTotalPages] = useState(1);
+
     const searchParams = useSearchParams();
     const router = useRouter();
+
 
     // 로컬 입력값 상태
     const [filters, setFilters] = useState<{
@@ -45,7 +50,7 @@ export default function ClubListPage() {
             const eventType = searchParams.get('eventType');
 
             const data = await getPublicClubs(
-                0, // page
+                page, // page
                 10, // size
                 'id,desc', // sort
                 name,
@@ -56,11 +61,13 @@ export default function ClubListPage() {
 
 
             setClubs(Array.isArray(data.data?.content) ? data.data.content : []);
+            setTotalPages(data.data?.totalPages || 1);
             setLoading(false);
         };
 
         fetchClubs();
     }, [
+        page,
         searchParams.get('name'),
         searchParams.get('mainSpot'),
         searchParams.get('clubCategory'),
@@ -76,6 +83,7 @@ export default function ClubListPage() {
         if (filters.eventType) params.set('eventType', filters.eventType);
 
         router.push(`/clubs/public?${params.toString()}`);
+        setPage(0); // 페이지 초기화
     };
 
 
@@ -86,12 +94,13 @@ export default function ClubListPage() {
 
     return (
         <div className="max-w-5xl mx-auto p-4">
-            <h1>모임 목록</h1>
-            <ClubSearchBar
-                value={filters}
-                onChange={(newFilters) => setFilters(newFilters)}
-                onSubmit={handleSubmit}
-            />
+            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: 16, position: 'sticky', top: 0, backgroundColor: '#fff', zIndex: 10 }}>
+                <ClubSearchBar
+                    value={filters}
+                    onChange={(newFilters) => setFilters(newFilters)}
+                    onSubmit={handleSubmit}
+                />
+            </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 {clubs.length > 0 ? (
                     clubs.map((club) => (
@@ -101,6 +110,25 @@ export default function ClubListPage() {
                     <p>등록된 모임이 없습니다.</p>
                 )}
             </div>
+            {/* ✅ 페이지네이션 */}
+            <div className="flex justify-center gap-2 mt-4">
+                <button
+                    disabled={page === 0}
+                    onClick={() => setPage((p) => p - 1)}
+                    className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+                >
+                    이전
+                </button>
+                <span>{page + 1} / {totalPages}</span>
+                <button
+                    disabled={page + 1 >= totalPages}
+                    onClick={() => setPage((p) => p + 1)}
+                    className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+                >
+                    다음
+                </button>
+            </div>
         </div>
+
     );
 }
