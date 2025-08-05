@@ -105,11 +105,16 @@ export default function InvitationPage() {
     try {
       const message = await applyToClubByInvitationToken(token);
       setApplyResult(message);
+      alert('모임 가입 신청이 완료되었습니다!');
+      router.push('/');
     } catch (err) {
       if (err instanceof Error) {
-        setError(err.message);
+        // 오류 메시지를 알리고 메인 페이지로 이동
+        alert(`가입 신청 중 오류가 발생했습니다: ${err.message}`);
+        router.push('/');
       } else {
-        setError('가입 신청 중 오류가 발생했습니다.');
+        alert('가입 신청 중 알 수 없는 오류가 발생했습니다.');
+        router.push('/');
       }
     } finally {
       setIsApplying(false);
@@ -121,7 +126,6 @@ export default function InvitationPage() {
   };
 
   const handleGuestProceed = () => {
-    // 비회원 가입 페이지로 이동
     router.push(`/members/guest-register?token=${token}`);
     setShowLoginModal(false);
   };
