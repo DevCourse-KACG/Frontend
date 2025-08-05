@@ -21,6 +21,10 @@ function SettingButton({ clubId }: SettingButtonProps) {
         {
             label: '모임 삭제',
             onClick: () => router.push(`/clubs/${clubId}/settings/delete`)
+        },
+        {
+            label: '초대 링크',
+            onClick: () => router.push(`/clubs/${clubId}/settings/invite`)
         }
     ];
 
