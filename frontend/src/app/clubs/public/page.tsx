@@ -12,6 +12,7 @@ import { ClubCategory, ClubCategoryKorean } from '@/types/ClubCategory';
 import { EventType, EventTypeKorean } from '@/types/EventType';
 import ClubSearchBar from '@/components/domain/clubs/clubSearchBar';
 import PagingUnit from '@/components/global/PagingUnit';
+import Modal from '@/components/global/Modal';
 
 
 type SimpleClubInfoWithoutLeader = components['schemas']['SimpleClubInfoWithoutLeader'];
@@ -20,9 +21,15 @@ export default function ClubListPage() {
     const [clubs, setClubs] = useState<SimpleClubInfoWithoutLeader[]>([]);
     const [loading, setLoading] = useState(true);
 
+    // 페이지네이션 상태
     const [page, setPage] = useState(0);
     const [totalPages, setTotalPages] = useState(1);
 
+    // 모달 상태
+    const [selectedClub, setSelectedClub] = useState<SimpleClubInfoWithoutLeader | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    // 검색 파라미터
     const searchParams = useSearchParams();
     const router = useRouter();
 
@@ -87,6 +94,11 @@ export default function ClubListPage() {
         setPage(0); // 페이지 초기화
     };
 
+    const handleClubCardClick = (club: SimpleClubInfoWithoutLeader) => {
+        setSelectedClub(club);
+        setIsModalOpen(true);
+    };
+
 
     // 가드 클로즈 : 로딩 중
     if (loading) {
@@ -95,6 +107,7 @@ export default function ClubListPage() {
 
     return (
         <div className="max-w-5xl mx-auto p-4">
+            {/* 검색 바 */}
             <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: 16 }}>
                 <ClubSearchBar
                     value={filters}
@@ -102,22 +115,40 @@ export default function ClubListPage() {
                     onSubmit={handleSubmit}
                 />
             </div>
+
+            {/* 모임 카드 리스트 */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 {clubs.length > 0 ? (
                     clubs.map((club) => (
-                        <ClubCard key={club.clubId} club={club} />
+                        <div key={club.clubId} onClick={() => handleClubCardClick(club)}>
+                            <ClubCard club={club} />
+                        </div>
                     ))
                 ) : (
                     <p>등록된 모임이 없습니다.</p>
                 )}
             </div>
-            {/* ✅ 페이지네이션 */}
+
+            {/* 페이지네이션 */}
             <PagingUnit
                 page={page}
                 totalPages={totalPages}
                 setPage={setPage}
                 className="mt-8"
             />
+
+            {/* 모달 */}
+            <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+                {selectedClub && (
+                    <div>
+                        <h2 className="text-xl font-bold mb-2">{selectedClub.name}</h2>
+                        <p>{selectedClub.bio}</p>
+                        <p className="mt-4 text-sm text-gray-500">
+                            지역: {selectedClub.mainSpot ?? '-'}
+                        </p>
+                    </div>
+                )}
+            </Modal>
         </div>
 
     );

@@ -3,7 +3,6 @@
 import React from 'react';
 import { components } from "@/types/backend/apiV1/schema";
 import { COLORS } from '@/constants/colors';
-import { useRouter } from 'next/navigation';
 import { ClubCategory, ClubCategoryKorean } from '@/types/ClubCategory';
 import { EventType, EventTypeKorean } from '@/types/EventType';
 
