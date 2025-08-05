@@ -4,13 +4,15 @@ import { useParams } from 'next/navigation';
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import toast from 'react-hot-toast';
 
+import { EventInput, EventClickArg, DateSelectArg } from '@fullcalendar/core';
+import FullCalendar from '@fullcalendar/react';
+
 import type { components } from "@/types/backend/apiV1/schema";
 import { getClubSchedules } from "@/api/schedule";
 import { extractDateFromISO } from '@/lib/formatDate';
-import { EventInput, EventClickArg, DateSelectArg } from '@fullcalendar/core';
-import FullCalendar from '@fullcalendar/react';
 import Calendar from '@/components/domain/schedule/Calender';
 import ScheduleModal from '@/app/schedule/modals/ScheduleModal';
+import ScheduleEditModal from '@/app/schedule/modals/ScheduleEditModal';
 
 import '@/lib/fullcalendar.css';
 
@@ -140,10 +142,18 @@ export default function ScheduleListPage() {
           events={events} 
           handleDatesSet={handleDatesSet} 
           handleEventClick={handleEventClick}
+          handleDateSelect={handleDateSelect}
           />
         <ScheduleModal
           showModal={showModal}
           selectedScheduleId={selectedScheduleId}
+          onClose={handleCloseModal}
+        />
+        <ScheduleEditModal
+          showModal={showModal}
+          clubId={clubId}
+          startDate={selectedDateInfo?.startStr}
+          endDate={selectedDateInfo?.endStr}
           onClose={handleCloseModal}
         />
       </div>
