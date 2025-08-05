@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { ClubCategory, ClubCategoryKorean } from '@/types/ClubCategory';
 import { EventType, EventTypeKorean } from '@/types/EventType';
 import ClubSearchBar from '@/components/domain/clubs/clubSearchBar';
+import PagingUnit from '@/components/global/PagingUnit';
 
 
 type SimpleClubInfoWithoutLeader = components['schemas']['SimpleClubInfoWithoutLeader'];
@@ -111,23 +112,12 @@ export default function ClubListPage() {
                 )}
             </div>
             {/* ✅ 페이지네이션 */}
-            <div className="flex justify-center gap-2 mt-4">
-                <button
-                    disabled={page === 0}
-                    onClick={() => setPage((p) => p - 1)}
-                    className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
-                >
-                    이전
-                </button>
-                <span>{page + 1} / {totalPages}</span>
-                <button
-                    disabled={page + 1 >= totalPages}
-                    onClick={() => setPage((p) => p + 1)}
-                    className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
-                >
-                    다음
-                </button>
-            </div>
+            <PagingUnit
+                page={page}
+                totalPages={totalPages}
+                setPage={setPage}
+                className="mt-8"
+            />
         </div>
 
     );
