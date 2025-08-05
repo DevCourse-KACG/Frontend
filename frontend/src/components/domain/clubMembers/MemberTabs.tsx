@@ -23,7 +23,7 @@ export default function MemberTabs({ clubId }: MemberTabsProps) {
                 {tabs.map(tab => (
                     <Link
                         key={tab.state}
-                        href={`/groups/${clubId}/members?state=${tab.state}`}
+                        href={`/clubs/${clubId}/members?state=${tab.state}`}
                         className={`py-2 px-4 font-medium ${currentState === tab.state ? 'border-b-2 border-blue-500 text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
                     >
                         {tab.label}
