@@ -133,6 +133,26 @@ export const updateClub = async (
     return responseData.data;
 }
 
+/**
+ * 모임 삭제
+ * @param clubId 모임 ID
+ * @returns 
+ */
+export const deleteClub = async (clubId: string): Promise<void> => {
+    const response = await fetch(`${API_URL}/api/v1/clubs/${clubId}`, {
+        method: 'DELETE',
+        credentials: 'include', // 쿠키를 포함하여 요청
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json();
+        if (!('code' in errorData) || !('message' in errorData)) {
+            throw new Error('모임 삭제에 실패했습니다.');
+        } else {
+            throw new Error(errorData.code + " : " + (errorData.message || '모임 삭제에 실패했습니다.'));
+        }
+    }
+}
 
 
 
