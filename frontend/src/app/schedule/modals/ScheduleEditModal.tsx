@@ -177,7 +177,17 @@ export default function ScheduleModal({
         const data = await createSchedule(transformedData as ScheduleCreateReqBody);
         toast.success(data.message || '일정이 생성되었습니다.');
       }
-      // 성공 시 캘린더로 이동
+      // 성공 시 폼 필드 초기화
+      setScheduleData(prev => ({
+        ...prev,
+        title: '',
+        content: '',
+        spot: '',
+      }));
+      const { startTime, endTime } = getInitialTimes();
+      setScheduleTimes({ startTime, endTime });
+
+      // 캘린더로 이동
       onClose(true);
     } catch (e: any) {
       const msg = e instanceof Error ? e.message : '저장에 실패하였습니다.';
