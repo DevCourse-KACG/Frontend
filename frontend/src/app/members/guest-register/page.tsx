@@ -22,11 +22,11 @@ export default function GuestRegisterPage() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!token) {
-      setError('초대 토큰이 유효하지 않습니다.');
+      alert('초대 토큰이 유효하지 않습니다.');
+      // router.push('/'); // 페이지 이동을 막기 위해 주석 처리
       setIsLoading(false);
       return;
     }
@@ -37,52 +37,55 @@ export default function GuestRegisterPage() {
         setClubId(info.clubId);
         setClubName(info.name);
       } catch (err) {
+        let errorMessage = '클럽 정보를 불러오는 중 오류가 발생했습니다.';
         if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError('클럽 정보를 가져오는 중 오류가 발생했습니다.');
+          errorMessage = err.message;
         }
+        alert(errorMessage);
+        // router.push('/'); // 페이지 이동을 막기 위해 주석 처리
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchClubInfo();
-  }, [token]);
+  }, [token]); // router를 의존성 배열에서 제거
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     // 입력값 유효성 검사
     if (!nickname || !password) {
-      setError('닉네임과 비밀번호를 모두 입력해주세요.');
+      alert('닉네임과 비밀번호를 모두 입력해주세요.');
       return;
     }
     if (clubId === null) {
-      setError('클럽 정보를 불러오지 못했습니다.');
+      alert('클럽 정보를 불러오지 못했습니다.');
       return;
     }
 
     setIsSubmitting(true);
-    setError(null);
 
     try {
+      // registerGuest 함수는 clubId를 포함한 데이터를 전송해야 합니다.
       const response = await registerGuest({ nickname, password, clubId });
       
       // 액세스 토큰을 로컬 스토리지에 저장
       if (response.data?.accessToken) {
         localStorage.setItem('accessToken', response.data.accessToken);
         alert('비회원 모임 가입이 완료되었습니다!');
-        router.push('/');
+        // router.push('/'); // 페이지 이동을 막기 위해 주석 처리
       } else {
-        throw new Error('액세스 토큰을 받지 못했습니다.');
+        alert('액세스 토큰을 받지 못했습니다.');
+        // router.push('/'); // 페이지 이동을 막기 위해 주석 처리
       }
     } catch (err) {
+      let errorMessage = '게스트 등록 중 알 수 없는 오류가 발생했습니다.';
       if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError('게스트 등록 중 알 수 없는 오류가 발생했습니다.');
+        errorMessage = err.message;
       }
+      alert(errorMessage);
+      // router.push('/'); // 페이지 이동을 막기 위해 주석 처리
     } finally {
       setIsSubmitting(false);
     }
@@ -92,20 +95,6 @@ export default function GuestRegisterPage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <p className="text-xl font-semibold text-gray-700">클럽 정보를 불러오는 중...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-4">
-        <p className="text-red-500 text-lg">{error}</p>
-        <button
-          onClick={() => router.push('/')}
-          className="mt-4 px-6 py-2 bg-gray-200 text-gray-800 rounded-lg shadow-md hover:bg-gray-300 transition-colors"
-        >
-          홈으로 돌아가기
-        </button>
       </div>
     );
   }
