@@ -56,6 +56,7 @@ export default function MemberManagement({ clubId, initialMembers }: MemberManag
             <MemberTabs clubId={clubId} />
             <MemberList
                 members={filteredMembers}
+                state={currentState as 'JOINING' | 'APPLYING' | 'INVITED'}
                 onApprove={handleApprove}
                 onReject={handleReject}
                 onChangeRole={handleChangeRole}
