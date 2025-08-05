@@ -65,7 +65,7 @@ export const useSchedules = <T extends UnionScheduleDto>(
 
     try {
       // 모임의 일정 목록은 모임 아이디 전달 받음(필수)
-      if ('clubId' in params) {
+      if ('clubId' in params && !params.clubId) {
         setError('유효하지 않은 모임입니다.');
         return;
       }
@@ -78,13 +78,13 @@ export const useSchedules = <T extends UnionScheduleDto>(
       setEvents(events);
     } catch (e) {
       // 요청 취소는 무시
-      if (e instanceof Error && e.message.includes('aborted')) return;
+      if (e instanceof Error && e.name === 'AbortError') return;
       // 에러 처리
       const msg = e instanceof Error ? e.message : '일정 불러오기 실패';
       setError(msg);
       toast.error(msg);
     }
-  }, [fetchApi, convertSchedulesToEvents]);
+  }, [fetchApi]);
 
   // 컴포넌트 사라질 때 요청 취소
   useEffect(() => {

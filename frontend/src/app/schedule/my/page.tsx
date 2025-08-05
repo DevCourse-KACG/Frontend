@@ -1,12 +1,9 @@
-// app/schedule/my/MySchedulePage.tsx
-
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import toast from 'react-hot-toast';
 
 import FullCalendar from '@fullcalendar/react';
-import { EventClickArg } from '@fullcalendar/core';
+import { EventClickArg, DatesSetArg } from '@fullcalendar/core';
 
 import { getMySchedules } from "@/api/schedule";
 import { useSchedules } from '@/hooks/useSchedules';
@@ -38,7 +35,7 @@ export default function MyScheduleListPage() {
 
 
   // 캘린더 날짜가 변경될 때마다(이전, 다음 버튼 등) 일정 목록 API 재호출
-  const handleDatesSet = useCallback((arg: any) => {
+  const handleDatesSet = useCallback((arg: DatesSetArg) => {
     const startDate = extractDateFromISO(arg.startStr);
     const endDate = extractDateFromISO(arg.endStr);
     fetchSchedules({ startDate, endDate });

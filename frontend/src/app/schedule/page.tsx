@@ -4,7 +4,7 @@ import { useParams } from 'next/navigation';
 import { useState, useCallback, useRef, useEffect } from 'react';
 import toast from 'react-hot-toast';
 
-import { EventClickArg, DateSelectArg } from '@fullcalendar/core';
+import { EventClickArg, DateSelectArg, DatesSetArg } from '@fullcalendar/core';
 import FullCalendar from '@fullcalendar/react';
 
 import { getClubSchedules } from "@/api/schedule";
@@ -49,7 +49,7 @@ export default function ScheduleListPage() {
   }, [fetchSchedules]);
 
   // 캘린더 날짜가 변경될 때마다(이전, 다음 버튼 등) 일정 목록 API 재호출
-  const handleDatesSet = useCallback((arg: any) => {
+  const handleDatesSet = useCallback((arg: DatesSetArg) => {
     const startDate = extractDateFromISO(arg.startStr);
     const endDate = extractDateFromISO(arg.endStr);
     fetchSchedules({ startDate, endDate });

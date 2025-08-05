@@ -42,8 +42,9 @@ export default function ScheduleModal ({
       // 일정 세팅
       setSchedule(data.data);
     } catch (e: any) {
-      if (e instanceof DOMException && e.name === 'AbortError') return; 
-      
+      // 요청 취소는 무시
+      if (e instanceof Error && e.name === 'AbortError') return;
+      // 에러 처리
       const msg = e instanceof Error ? e.message : '일정 상세 불러오기 실패';
       setError(msg);
       toast.error(msg);
