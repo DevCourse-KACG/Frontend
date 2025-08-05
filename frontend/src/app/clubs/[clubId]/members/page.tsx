@@ -62,7 +62,7 @@ export default function MembersPage() {
                 </aside>
                 <section className="w-4/5">
                     {/* 클라이언트 컴포넌트에 초기 데이터를 props로 전달 */}
-                    <MemberManagement clubId={clubId} initialMembers={initialMembers} />
+                    <MemberManagement clubId={clubId} initialMembers={initialMembers} isHost={myInfo?.role === 'HOST'} />
                 </section>
             </section>
         </div>

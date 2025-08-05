@@ -12,6 +12,7 @@ type MemberInfo = components['schemas']['ClubMemberInfo'];
 interface MemberListProps {
     members: MemberInfo[];
     state?: 'JOINING' | 'APPLYING' | 'INVITED';
+    isHost?: boolean;
     onApprove: (memberId: number) => void;
     onReject: (memberId: number) => void;
     onChangeRole: (memberId: number, role: 'MANAGER' | 'PARTICIPANT') => void;
@@ -19,13 +20,13 @@ interface MemberListProps {
     onInvite: (emails: string[]) => void;
 }
 
-export default function MemberList({ members, state, onInvite, ...handlers }: MemberListProps) {
+export default function MemberList({ members, state, isHost, onInvite, ...handlers }: MemberListProps) {
     const params = useParams();
     const clubId = params.clubId as string;
 
     return (
         <div>
-            {state === 'INVITED' && (
+            {state === 'INVITED' && isHost && (
                 <div className="mb-4">
                     <MultiEmailInput
                         onSubmit={onInvite}
@@ -39,7 +40,7 @@ export default function MemberList({ members, state, onInvite, ...handlers }: Me
             ) : (
                 <ul className="bg-white rounded-lg shadow">
                     {members.map(member => (
-                        <MemberListItem key={member.clubMemberId} member={member} {...handlers} />
+                        <MemberListItem key={member.clubMemberId} member={member} isHost={isHost} {...handlers} />
                     ))}
                 </ul>
             )}

@@ -7,13 +7,14 @@ type MemberInfo = components['schemas']['ClubMemberInfo'];
 
 interface MemberListItemProps {
     member: MemberInfo;
+    isHost?: boolean;
     onApprove: (memberId: number) => void;
     onReject: (memberId: number) => void;
     onChangeRole: (memberId: number, role: 'MANAGER' | 'PARTICIPANT') => void;
     onDelete: (memberId: number) => void;
 }
 
-export default function MemberListItem({ member, onApprove, onReject, onChangeRole, onDelete }: MemberListItemProps) {
+export default function MemberListItem({ member, isHost, onApprove, onReject, onChangeRole, onDelete }: MemberListItemProps) {
     const memberId = member.memberId!;
 
     const handleRoleChange = () => {
@@ -59,22 +60,24 @@ export default function MemberListItem({ member, onApprove, onReject, onChangeRo
             </div>
 
             {/* 조건부 버튼 렌더링 */}
-            <div className="flex space-x-2">
-                {member.state === 'APPLYING' && (
-                    <>
-                        <button onClick={() => onApprove(memberId)} className="btn-primary">수락</button>
-                        <button onClick={() => onReject(memberId)} className="btn-secondary">거절</button>
-                    </>
-                )}
-                {member.state === 'JOINING' && member.role !== 'HOST' && (
-                    <>
-                        <button onClick={handleRoleChange} className="btn-secondary">
-                            {member.role === 'MANAGER' ? '참여자로 변경' : '매니저로 임명'}
-                        </button>
-                        <button onClick={() => onDelete(memberId)} className="btn-danger">삭제</button>
-                    </>
-                )}
-            </div>
+            {isHost && (
+                <div className="flex space-x-2">
+                    {member.state === 'APPLYING' && (
+                        <>
+                            <button onClick={() => onApprove(memberId)} className="btn-primary">수락</button>
+                            <button onClick={() => onReject(memberId)} className="btn-secondary">거절</button>
+                        </>
+                    )}
+                    {member.state === 'JOINING' && member.role !== 'HOST' && (
+                        <>
+                            <button onClick={handleRoleChange} className="btn-secondary">
+                                {member.role === 'MANAGER' ? '참여자로 변경' : '매니저로 임명'}
+                            </button>
+                            <button onClick={() => onDelete(memberId)} className="btn-danger">삭제</button>
+                        </>
+                    )}
+                </div>
+            )}
         </li>
     );
 }

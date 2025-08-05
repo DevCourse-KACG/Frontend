@@ -13,9 +13,10 @@ type MemberInfo = components['schemas']['ClubMemberInfo'];
 interface MemberManagementProps {
     clubId: string;
     initialMembers: MemberInfo[];
+    isHost: boolean;
 }
 
-export default function MemberManagement({ clubId, initialMembers }: MemberManagementProps) {
+export default function MemberManagement({ clubId, initialMembers, isHost }: MemberManagementProps) {
     const [members, setMembers] = useState(initialMembers);
     const searchParams = useSearchParams();
     const currentState = searchParams.get('state') || 'JOINING';
@@ -57,6 +58,7 @@ export default function MemberManagement({ clubId, initialMembers }: MemberManag
             <MemberList
                 members={filteredMembers}
                 state={currentState as 'JOINING' | 'APPLYING' | 'INVITED'}
+                isHost={isHost}
                 onApprove={handleApprove}
                 onReject={handleReject}
                 onChangeRole={handleChangeRole}
