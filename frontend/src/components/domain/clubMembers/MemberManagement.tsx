@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { components } from '@/types/backend/apiV1/schema';
+import { getClubMembers } from '@/api/clubMember';
 import MemberTabs from './MemberTabs';
 import MemberList from './MemberList';
 import { approveApplication, rejectApplication, changeMemberRole } from '@/api/clubMember';
@@ -15,8 +16,6 @@ interface MemberManagementProps {
 }
 
 export default function MemberManagement({ clubId, initialMembers }: MemberManagementProps) {
-    const router = useRouter();
-
     const [members, setMembers] = useState(initialMembers);
     const searchParams = useSearchParams();
     const currentState = searchParams.get('state') || 'JOINING';
@@ -26,6 +25,10 @@ export default function MemberManagement({ clubId, initialMembers }: MemberManag
         setMembers(initialMembers);
     }, [initialMembers]);
 
+    const refreshMembers = async () => {
+        const updatedMembers = await getClubMembers(clubId);
+        setMembers(updatedMembers);
+    };
 
     const filteredMembers = useMemo(() => {
         return members.filter(member => member.state === currentState);
@@ -37,7 +40,7 @@ export default function MemberManagement({ clubId, initialMembers }: MemberManag
             // 성공 시, 실제로는 전체 목록을 다시 fetch 하는 것이 가장 정확합니다.
             // 여기서는 예시로 로컬 상태를 직접 조작합니다.
             alert('작업이 완료되었습니다.');
-            router.refresh();
+            await refreshMembers();
         } catch (err) {
             alert(err instanceof Error ? err.message : '작업에 실패했습니다.');
         }

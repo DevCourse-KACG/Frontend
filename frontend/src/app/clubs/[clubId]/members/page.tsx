@@ -43,7 +43,6 @@ export default function MembersPage() {
         fetchData();
     }, [clubId]);
 
-
     // 가드 클로즈 : 로딩 중
     if (isLoading) return <LoadingSpinner />;
 
