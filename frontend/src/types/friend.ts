@@ -6,7 +6,7 @@ export type FriendDto = components["schemas"]["FriendDto"];
 export type FriendMemberDto = components["schemas"]["FriendMemberDto"];
 
 // 친구 상태
-export enum FriendStatus {
+export enum FriendStatusDto {
     SENT = "SENT",
     RECEIVED = "RECEIVED",
     ACCEPTED = "ACCEPTED",
@@ -14,10 +14,10 @@ export enum FriendStatus {
     ALL = "ALL"
   }
   
-export const FriendStatusMap: Record<FriendStatus, string> = {
-  [FriendStatus.SENT]: "요청 중",
-  [FriendStatus.RECEIVED]: "요청받음",
-  [FriendStatus.ACCEPTED]: "수락됨",
-  [FriendStatus.REJECTED]: "거절됨",
-  [FriendStatus.ALL]: "전체",
+export const FriendStatusMap: Record<FriendStatusDto, string> = {
+  [FriendStatusDto.SENT]: "요청 중",
+  [FriendStatusDto.RECEIVED]: "요청받음",
+  [FriendStatusDto.ACCEPTED]: "수락됨",
+  [FriendStatusDto.REJECTED]: "거절됨",
+  [FriendStatusDto.ALL]: "전체",
 };

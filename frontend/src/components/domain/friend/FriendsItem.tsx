@@ -1,12 +1,12 @@
 'use client';
 
 import React from 'react';
-import { FriendDto, FriendStatus } from '@/types/friend';
+import { FriendDto, FriendStatusDto } from '@/types/friend';
 import { getInitials, getAvatarColor } from '@/lib/avatarUtils';
 
 interface FriendsItemProps {
   friend: FriendDto;
-  status: FriendStatus;
+  status: FriendStatusDto;
   idx: number;
   onDelete: (id: number) => void;
   onAccept: (id: number) => void;
@@ -15,7 +15,7 @@ interface FriendsItemProps {
 
 // 친구 아이템
 const FriendsItem: React.FC<FriendsItemProps> = ({ friend, status, idx, onDelete, onAccept, onReject }) => {
-  if (typeof friend.friendId !== 'number') return null;
+  if (!friend.friendId || typeof friend.friendId !== 'number' || isNaN(friend.friendId)) return null;
   const avatarColor = getAvatarColor(idx);
 
   return (
@@ -64,24 +64,24 @@ const FriendsItem: React.FC<FriendsItemProps> = ({ friend, status, idx, onDelete
         </p>
       </div>
       <div className="flex gap-2.5">
-        {status === FriendStatus.ACCEPTED && (
+        {status === FriendStatusDto.ACCEPTED && (
           <button
-            onClick={() => onDelete(friend.friendId!)}
+            onClick={() => friend.friendId && onDelete(friend.friendId)}
             className="px-4 py-1.5 rounded-full text-white font-semibold text-[14px] min-w-[60px] h-9 bg-red-300 shadow transition hover:bg-red-600"
           >
             삭제
           </button>
         )}
-        {status === FriendStatus.RECEIVED && (
+        {status === FriendStatusDto.RECEIVED && (
           <>
             <button
-              onClick={() => onAccept(friend.friendId!)}
+              onClick={() => friend.friendId && onAccept(friend.friendId)}
               className="px-4 py-1.5 rounded-full text-white font-semibold text-[14px] min-w-[60px] h-9 bg-green-400 shadow transition hover:bg-green-700"
             >
               수락
             </button>
             <button
-              onClick={() => onReject(friend.friendId!)}
+              onClick={() => friend.friendId && onReject(friend.friendId)}
               className="px-4 py-1.5 rounded-full text-white font-semibold text-[14px] min-w-[60px] h-9 bg-gray-400 shadow transition hover:bg-gray-500"
             >
               거절

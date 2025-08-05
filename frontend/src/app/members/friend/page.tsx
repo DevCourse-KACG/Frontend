@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 
 import { getFriends, acceptFriend, rejectFriend, deleteFriend, addFriend } from '@/api/friend';
-import { FriendDto, FriendStatus, FriendStatusMap } from '@/types/friend';
+import { FriendDto, FriendStatusDto, FriendStatusMap } from '@/types/friend';
 import FriendsItem from '@/components/domain/friend/FriendsItem';
 import AccordionPanel from '@/components/domain/friend/FriendsAccordion';
 
@@ -22,20 +22,20 @@ const FriendsList: React.FC = () => {
 
   // 아코디언 패널의 열림/닫힘 상태 관리
   const [accordionState, setAccordionState] = useState({
-    [FriendStatus.ACCEPTED]: true,
-    [FriendStatus.SENT]: false,
-    [FriendStatus.RECEIVED]: false,
-    [FriendStatus.REJECTED]: false,
-    [FriendStatus.ALL]: false,
+    [FriendStatusDto.ACCEPTED]: true,
+    [FriendStatusDto.SENT]: false,
+    [FriendStatusDto.RECEIVED]: false,
+    [FriendStatusDto.REJECTED]: false,
+    [FriendStatusDto.ALL]: false,
   });
 
   const fetchFriendsData = async () => {
     try {
       // 각 상태별 친구 목록 조회
       const [acceptedRes, sentRes, receivedRes] = await Promise.all([
-        getFriends(FriendStatus.ACCEPTED),
-        getFriends(FriendStatus.SENT),
-        getFriends(FriendStatus.RECEIVED),
+        getFriends(FriendStatusDto.ACCEPTED),
+        getFriends(FriendStatusDto.SENT),
+        getFriends(FriendStatusDto.RECEIVED),
       ]);
 
       // 각 상태별 친구 목록 세팅
@@ -57,7 +57,7 @@ const FriendsList: React.FC = () => {
   }, []);
 
   // 아코디언 패널 토글
-  const handleToggleAccordion = (status: FriendStatus) => {
+  const handleToggleAccordion = (status: FriendStatusDto) => {
     setAccordionState(prev => ({
       ...prev,
       [status]: !prev[status],
@@ -175,17 +175,17 @@ const FriendsList: React.FC = () => {
 
         {/* 아코디언: 친구인 목록 */}
         <AccordionPanel
-          title={<>{FriendStatusMap[FriendStatus.ACCEPTED]}</>}
+          title={<>{FriendStatusMap[FriendStatusDto.ACCEPTED]}</>}
           count={acceptedFriends.length}
-          isOpen={accordionState[FriendStatus.ACCEPTED]}
-          onToggle={() => handleToggleAccordion(FriendStatus.ACCEPTED)}
+          isOpen={accordionState[FriendStatusDto.ACCEPTED]}
+          onToggle={() => handleToggleAccordion(FriendStatusDto.ACCEPTED)}
         >
           {acceptedFriends.length > 0 ? (
             acceptedFriends.map((f, idx) => (
               <FriendsItem
                 key={f.friendId}
                 friend={f}
-                status={FriendStatus.ACCEPTED}
+                status={FriendStatusDto.ACCEPTED}
                 idx={idx}
                 onDelete={handleDeleteFriend}
                 onAccept={handleAcceptFriend}
@@ -201,17 +201,17 @@ const FriendsList: React.FC = () => {
 
         {/* 아코디언: 친구 요청 받은 목록 */}
         <AccordionPanel
-          title={<>{FriendStatusMap[FriendStatus.RECEIVED]}</>}
+          title={<>{FriendStatusMap[FriendStatusDto.RECEIVED]}</>}
           count={receivedFriends.length}
-          isOpen={accordionState[FriendStatus.RECEIVED]}
-          onToggle={() => handleToggleAccordion(FriendStatus.RECEIVED)}
+          isOpen={accordionState[FriendStatusDto.RECEIVED]}
+          onToggle={() => handleToggleAccordion(FriendStatusDto.RECEIVED)}
         >
           {receivedFriends.length > 0 ? (
             receivedFriends.map((f, idx) => (
               <FriendsItem
                 key={f.friendId}
                 friend={f}
-                status={FriendStatus.RECEIVED}
+                status={FriendStatusDto.RECEIVED}
                 idx={idx}
                 onDelete={handleDeleteFriend}
                 onAccept={handleAcceptFriend}
@@ -227,17 +227,17 @@ const FriendsList: React.FC = () => {
 
         {/* 아코디언: 친구 요청한 목록 */}
         <AccordionPanel
-          title={<>{FriendStatusMap[FriendStatus.SENT]}</>}
+          title={<>{FriendStatusMap[FriendStatusDto.SENT]}</>}
           count={sentFriends.length}
-          isOpen={accordionState[FriendStatus.SENT]}
-          onToggle={() => handleToggleAccordion(FriendStatus.SENT)}
+          isOpen={accordionState[FriendStatusDto.SENT]}
+          onToggle={() => handleToggleAccordion(FriendStatusDto.SENT)}
         >
           {sentFriends.length > 0 ? (
             sentFriends.map((f, idx) => (
               <FriendsItem
                 key={f.friendId}
                 friend={f}
-                status={FriendStatus.SENT}
+                status={FriendStatusDto.SENT}
                 idx={idx}
                 onDelete={handleDeleteFriend}
                 onAccept={handleAcceptFriend}

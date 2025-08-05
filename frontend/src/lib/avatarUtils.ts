@@ -6,13 +6,14 @@ const AVATAR_COLORS = [
 
 // 이름에서 이니셜을 추출
 export function getInitials(name: string) {
-  if (!name) return '';
+  if (!name || !name.trim()) return '';
   const parts = name.split(' ');
-  if (parts.length === 1) return parts[0][0];
-  return parts[0][0] + parts[1][0];
+  if (parts.length === 1) return parts[0][0]?.toUpperCase() || '';
+  return (parts[0][0] + parts[1][0])?.toUpperCase() || '';
 }
 
 // 인덱스에 따라 아바타 색상을 반환
 export function getAvatarColor(idx: number) {
+  if (typeof idx !== 'number' || idx < 0) return AVATAR_COLORS[0];
   return AVATAR_COLORS[idx % AVATAR_COLORS.length];
 }

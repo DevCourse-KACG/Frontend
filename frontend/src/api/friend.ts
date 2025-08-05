@@ -1,5 +1,5 @@
 import type { components } from "@/types/backend/apiV1/schema";
-import { FriendStatus } from '@/types/friend';
+import { FriendStatusDto } from '@/types/friend';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL!;
 if (!BASE_URL) {
@@ -18,7 +18,7 @@ async function handleResponse<T>(res: Response): Promise<T> {
 
 // 친구 목록 조회
 export async function getFriends(
-  status?: FriendStatus
+  status?: FriendStatusDto
 ): Promise<components["schemas"]["RsDataListFriendDto"]> {
   const url = new URL(`${BASE_URL}/api/v1/members/me/friends`);
   // searchParams
