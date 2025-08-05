@@ -10,7 +10,7 @@ import type { ScheduleDetailDto } from '@/types/schedule';
 interface ScheduleModalProps {
   showModal: boolean;
   selectedScheduleId: number | null;
-  onClose: (shouldRefresh: boolean, action?: 'modify' | 'goToCheckList' | 'createCheckList', idToPass?: number) => void;
+  onClose: (shouldRefresh: boolean, action?: 'modify' | 'goToCheckList' | 'createCheckList', targetId?: number) => void;
 }
 
 export default function ScheduleModal ({

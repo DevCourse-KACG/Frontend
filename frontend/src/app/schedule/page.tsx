@@ -112,27 +112,23 @@ export default function ScheduleListPage() {
   };
 
   // 모달 닫기
-  const handleCloseModal = (shouldRefresh: boolean, action?: 'modify' | 'goToCheckList' | 'createCheckList', checkListId?: number) => {
+  const handleCloseModal = (shouldRefresh: boolean, action?: 'modify' | 'goToCheckList' | 'createCheckList', targetId?: number) => {
     setShowModal(false);
     setSelectedDateInfo(null);
     setModalType(null);
+    setSelectedScheduleId(null);
 
     if (action === 'modify') {
       // 상세 -> 수정버튼 클릭 -> 수정 모드
-      setModalType('edit'); 
+      setSelectedScheduleId(targetId || null);
+      setModalType('edit');
       setShowModal(true);
     } else if (action === 'goToCheckList') {
       toast.success('체크리스트로 이동합니다.'); 
-      setModalType(null);
-      setSelectedScheduleId(null);
       //router.push() // checkListId
     } else if (action === 'createCheckList') {
       toast.success('체크리스트 생성 페이지로 이동합니다.'); 
-      setModalType(null);
       //router.push() // scheduleId
-    } else {
-      // 일반 닫기 - 선택된 일정 ID 초기화
-      setSelectedScheduleId(null); 
     }
 
     // 캘린더 새로 고침
@@ -177,6 +173,7 @@ export default function ScheduleListPage() {
             clubId={clubId}
             startDate={selectedDateInfo?.startStr}
             endDate={selectedDateInfo?.endStr}
+            selectedScheduleId={selectedScheduleId} // <-- 수정: prop으로 전달
             onClose={handleCloseModal}
           />
         )}
