@@ -9,9 +9,10 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
 // 멤버 목록 조회
 export const getClubMembers = async (clubId: string): Promise<MemberInfo[]> => {
+
     const response = await fetch(`${API_URL}/api/v1/clubs/${clubId}/members`, {
         method: 'GET',
-        credentials: 'include',
+        credentials: 'include', // 쿠키를 포함하여 요청
     });
     if (!response.ok) {
         const errorData = await response.json();
