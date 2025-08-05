@@ -4,6 +4,8 @@ import { components } from '@/types/backend/apiV1/schema';
 
 type ClubMembersResponse = components['schemas']['RsDataClubMemberResponse'];
 type MemberInfo = components['schemas']['ClubMemberInfo'];
+type ClubMemberRegisterRequest = components['schemas']['ClubMemberRegisterRequest'];
+type ClubMemberRegisterInfo = components['schemas']['ClubMemberRegisterInfo'];
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
@@ -69,5 +71,28 @@ export const deleteMember = async (clubId: string, memberId: number) => {
     if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || '멤버 삭제에 실패했습니다.');
+    }
+};
+
+// 클럽에 멤버 추가
+export const addMembers = async (clubId: string, emails: string[]) => {
+    // emails 배열을 ClubMemberRegisterInfo 배열로 변환 (role은 'PARTICIPANT'로 고정)
+    const members: ClubMemberRegisterInfo[] = emails.map(email => ({
+        email,
+        role: 'PARTICIPANT',
+    }));
+
+    // ClubMemberRegisterRequest 객체 생성
+    const body: ClubMemberRegisterRequest = { members };
+
+    const response = await fetch(`${API_URL}/api/v1/clubs/${clubId}/members`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+        credentials: 'include',
+    });
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || '멤버 추가에 실패했습니다.');
     }
 };
