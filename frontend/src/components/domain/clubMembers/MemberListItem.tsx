@@ -1,0 +1,52 @@
+'use client';
+
+import Image from 'next/image';
+import { components } from '@/types/backend/apiV1/schema';
+
+type MemberInfo = components['schemas']['ClubMemberInfo'];
+
+interface MemberListItemProps {
+    member: MemberInfo;
+    onApprove: (memberId: number) => void;
+    onReject: (memberId: number) => void;
+    onChangeRole: (memberId: number, role: 'MANAGER' | 'PARTICIPANT') => void;
+}
+
+export default function MemberListItem({ member, onApprove, onReject, onChangeRole }: MemberListItemProps) {
+    const memberId = member.clubMemberId!;
+
+    const handleRoleChange = () => {
+        const newRole = member.role === 'MANAGER' ? 'PARTICIPANT' : 'MANAGER';
+        onChangeRole(memberId, newRole);
+    };
+
+    return (
+        <li className="flex items-center justify-between p-4 border-b">
+            <div className="flex items-center space-x-4">
+                <Image src={member.profileImageUrl || '/default-profile.png'} alt={member.nickname!} width={40} height={40} className="rounded-full" />
+                <div>
+                    <p className="font-bold">{member.nickname} <span className="text-gray-500 font-normal">#{member.tag}</span></p>
+                    <p className="text-sm text-gray-600">{member.role} / {member.memberType}</p>
+                </div>
+            </div>
+
+            {/* 조건부 버튼 렌더링 */}
+            <div className="flex space-x-2">
+                {member.state === 'APPLYING' && (
+                    <>
+                        <button onClick={() => onApprove(memberId)} className="btn-primary">수락</button>
+                        <button onClick={() => onReject(memberId)} className="btn-secondary">거절</button>
+                    </>
+                )}
+                {member.state === 'JOINING' && member.role !== 'HOST' && (
+                    <>
+                        <button onClick={handleRoleChange} className="btn-secondary">
+                            {member.role === 'MANAGER' ? '참여자로 변경' : '매니저로 임명'}
+                        </button>
+                        <button className="btn-danger">삭제</button>
+                    </>
+                )}
+            </div>
+        </li>
+    );
+}
