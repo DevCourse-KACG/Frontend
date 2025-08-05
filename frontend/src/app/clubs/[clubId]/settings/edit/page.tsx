@@ -126,7 +126,16 @@ export default function ModifyClubInfoPage() {
 
     return (
         <div className="max-w-2xl mx-auto p-4">
-            <h1 className="text-2xl font-bold mb-4">모임 수정</h1>
+            <div className="flex items-center justify-between mb-4">
+                <h1 className="text-2xl font-bold mb-4">모임 수정</h1>
+                <button
+                    type="button"
+                    className="mb-4 px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+                    onClick={() => router.back()}
+                >
+                    ←
+                </button>
+            </div>
             <ClubDataForm
                 onSubmit={handleSubmit}
                 isLoading={isLoading}
