@@ -36,7 +36,7 @@ export async function getFriends(
 // 친구 요청
 export async function addFriend(
   friend_email: string
-): Promise<components["schemas"]["RsDataFriendWithBioDto"]> {
+): Promise<components["schemas"]["RsDataFriendDto"]> {
   const res = await fetch(`${BASE_URL}/api/v1/members/me/friends`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -49,7 +49,7 @@ export async function addFriend(
 // 친구 수락
 export async function acceptFriend(
   friendId: number
-): Promise<components["schemas"]["RsDataFriendWithBioDto"]> {
+): Promise<components["schemas"]["RsDataFriendDto"]> {
   const res = await fetch(`${BASE_URL}/api/v1/members/me/friends/${friendId}/accept`, {
     method: "PATCH",
     credentials: "include",
@@ -61,7 +61,7 @@ export async function acceptFriend(
 // 친구 거절
 export async function rejectFriend(
   friendId: number
-): Promise<components["schemas"]["RsDataFriendWithBioDto"]> {
+): Promise<components["schemas"]["RsDataFriendDto"]> {
   const res = await fetch(`${BASE_URL}/api/v1/members/me/friends/${friendId}/reject`, {
     method: "PATCH",
     credentials: "include",
