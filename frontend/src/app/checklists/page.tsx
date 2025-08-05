@@ -1,0 +1,295 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { CheckList } from '@/types/checklist';
+import { fetchChecklists } from '@/api/checklistApi';
+import LoadingSpinner from '@/components/global/LoadingSpinner';
+
+// 데모 데이터
+const DEMO_CHECKLISTS: CheckList[] = [
+  {
+    id: 1,
+    isActive: true,
+    schedule: {
+      id: 1,
+      title: '제주도 여행',
+      content: '가족과 함께 하는 제주도 여행',
+      startDate: '2024-12-20T00:00:00',
+      endDate: '2024-12-23T23:59:59',
+      spot: '제주도',
+      clubId: 1,
+      checkListId: 1,
+    },
+    checkListItems: [
+      { id: 1, content: '삼겹살', category: 'PREPARATION', sequence: 1, isChecked: false },
+      { id: 2, content: '소시지', category: 'PREPARATION', sequence: 2, isChecked: true },
+      { id: 3, content: '세면 용품', category: 'PREPARATION', sequence: 3, isChecked: false },
+      { id: 4, content: '잠옷', category: 'PREPARATION', sequence: 4, isChecked: true },
+      { id: 5, content: '펜션 예약 확인', category: 'RESERVATION', sequence: 5, isChecked: false },
+      { id: 6, content: '렌트카 예약', category: 'RESERVATION', sequence: 6, isChecked: true },
+      { id: 7, content: '맛집 리스트 정리', category: 'PRE_WORK', sequence: 7, isChecked: false },
+      { id: 8, content: '여행 일정 계획', category: 'PRE_WORK', sequence: 8, isChecked: false },
+      { id: 9, content: '카메라 배터리 충전', category: 'ETC', sequence: 9, isChecked: true },
+      { id: 10, content: '여행자 보험 가입', category: 'ETC', sequence: 10, isChecked: false },
+    ],
+  },
+  {
+    id: 2,
+    isActive: true,
+    schedule: {
+      id: 2,
+      title: '부산 출장',
+      content: '회사 업무 출장',
+      startDate: '2024-12-15T09:00:00',
+      endDate: '2024-12-16T18:00:00',
+      spot: '부산',
+      clubId: 1,
+      checkListId: 2,
+    },
+    checkListItems: [
+      { id: 11, content: '노트북', category: 'PREPARATION', sequence: 1, isChecked: false },
+      { id: 12, content: '충전기', category: 'PREPARATION', sequence: 2, isChecked: true },
+      { id: 13, content: '회의 자료 준비', category: 'PRE_WORK', sequence: 3, isChecked: false },
+      { id: 14, content: '출장비 정산', category: 'ETC', sequence: 4, isChecked: false },
+    ],
+  },
+  {
+    id: 3,
+    isActive: false,
+    schedule: {
+      id: 3,
+      title: '서울 미팅',
+      content: '클라이언트 미팅',
+      startDate: '2024-11-28T14:00:00',
+      endDate: '2024-11-28T16:00:00',
+      spot: '서울 강남구',
+      clubId: 1,
+      checkListId: 3,
+    },
+    checkListItems: [
+      { id: 15, content: '프레젠테이션 자료', category: 'PRE_WORK', sequence: 1, isChecked: true },
+      { id: 16, content: '계약서 검토', category: 'PRE_WORK', sequence: 2, isChecked: true },
+      { id: 17, content: '명함', category: 'PREPARATION', sequence: 3, isChecked: true },
+    ],
+  },
+];
+
+export default function SchedulesPage() {
+  const [checklists, setChecklists] = useState<CheckList[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+
+  const loadChecklists = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // 임시 groupId (실제로는 사용자의 그룹 ID를 사용해야 함)
+      const groupId = '1';
+      
+      const response = await fetchChecklists(groupId);
+      setChecklists(response.data || []);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.';
+      
+      // 401 에러인 경우 데모 데이터 사용
+      if (errorMessage.startsWith('LOGIN_REQUIRED:')) {
+        setChecklists(DEMO_CHECKLISTS);
+      } else {
+        setError('체크리스트를 불러오는 중 오류가 발생했습니다.');
+        setChecklists([]);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadChecklists();
+  }, []);
+
+
+  const handleCreateChecklist = () => {
+    router.push('/checklists/create');
+  };
+
+  const handleChecklistClick = (checklist: CheckList) => {
+    if (checklist.isActive) {
+      // 활성 체크리스트인 경우 상세보기로 이동
+      router.push(`/checklists/${checklist.id}`);
+    }
+  };
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('ko-KR', {
+      month: 'short',
+      day: 'numeric',
+    });
+  };
+
+  const isPastChecklist = (checklist: CheckList) => {
+    if (!checklist.schedule?.endDate) return false;
+    const now = new Date();
+    const scheduleEnd = new Date(checklist.schedule.endDate);
+    return scheduleEnd < now;
+  };
+
+  const formatDateRange = (startDate: string, endDate: string) => {
+    if (startDate === endDate) {
+      return formatDate(startDate);
+    }
+    return `${formatDate(startDate)} - ${formatDate(endDate)}`;
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="container mx-auto px-4 py-8">
+          <LoadingSpinner />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="container mx-auto px-4 py-8">
+        {/* 헤더 */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-4">
+              <Link
+                href="/"
+                className="text-gray-600 hover:text-gray-800 transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </Link>
+              <h1 className="text-3xl font-bold text-gray-900">체크리스트 목록</h1>
+            </div>
+            
+            {/* 체크리스트 생성 버튼 */}
+            <button
+              onClick={handleCreateChecklist}
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"
+            >
+              체크리스트 생성
+            </button>
+          </div>
+          <p className="text-gray-600">체크리스트를 관리하고 할 일들을 체크하세요</p>
+        </div>
+
+
+        {/* 체크리스트 목록 */}
+        {checklists.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="text-gray-400 mb-4">
+              <svg className="w-24 h-24 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">아직 체크리스트가 없습니다</h3>
+            <p className="text-gray-600">새로운 체크리스트를 만들어보세요!</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {checklists.map((checklist) => (
+              <div
+                key={checklist.id}
+                className={`p-4 bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer ${
+                  isPastChecklist(checklist) ? 'opacity-60' : ''
+                }`}
+                onClick={() => checklist.isActive && handleChecklistClick(checklist)}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    {/* 일정 제목 */}
+                    <h3 className={`text-lg font-semibold mb-2 ${
+                      isPastChecklist(checklist) ? 'text-gray-500' : 'text-gray-900'
+                    }`}>
+                      {checklist.schedule?.title || '제목 없음'}
+                    </h3>
+                    
+                    {/* 날짜 및 위치 정보 */}
+                    {checklist.schedule && (
+                      <div className="flex items-center gap-4 text-sm text-gray-600">
+                        <div className="flex items-center gap-1">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a1 1 0 012 0v4h4V3a1 1 0 012 0v4h.586l.707.707c.39.39.586.902.586 1.414v11.172a2 2 0 01-.586 1.414l-.707.707H7.414l-.707-.707A2 2 0 016 18.586V7.414c0-.512.196-1.024.586-1.414L7.293 5.293A1 1 0 018 5z" />
+                          </svg>
+                          <span>{formatDateRange(checklist.schedule.startDate || '', checklist.schedule.endDate || '')}</span>
+                        </div>
+                        
+                        {checklist.schedule.spot && (
+                          <div className="flex items-center gap-1">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <span>{checklist.schedule.spot}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    
+                    {/* 체크리스트 진행 상황 */}
+                    {checklist.checkListItems && checklist.checkListItems.length > 0 && (
+                      <div className="mt-3">
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 6h6m-6 4h6" />
+                          </svg>
+                          <span>
+                            {checklist.checkListItems.filter(item => item.isChecked).length} / {checklist.checkListItems.length} 완료
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* 상태 태그 */}
+                    <div className="flex items-center gap-2 mt-3">
+                      {isPastChecklist(checklist) && (
+                        <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                          지난 일정
+                        </span>
+                      )}
+                      {checklist.isActive ? (
+                        <span className="px-2 py-1 bg-green-100 text-green-600 text-xs rounded-full">
+                          활성
+                        </span>
+                      ) : (
+                        <span className="px-2 py-1 bg-red-100 text-red-600 text-xs rounded-full">
+                          비활성
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* 액션 버튼 */}
+                  {checklist.isActive && (
+                    <div className="ml-4">
+                      <button
+                        className="px-3 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleChecklistClick(checklist);
+                        }}
+                      >
+                        상세보기
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
