@@ -4,13 +4,15 @@ import { useParams } from 'next/navigation';
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import toast from 'react-hot-toast';
 
+import { EventInput, EventClickArg, DateSelectArg } from '@fullcalendar/core';
+import FullCalendar from '@fullcalendar/react';
+
 import type { components } from "@/types/backend/apiV1/schema";
 import { getClubSchedules } from "@/api/schedule";
 import { extractDateFromISO } from '@/lib/formatDate';
-import { EventInput, EventClickArg, DateSelectArg } from '@fullcalendar/core';
-import FullCalendar from '@fullcalendar/react';
 import Calendar from '@/components/domain/schedule/Calender';
 import ScheduleModal from '@/app/schedule/modals/ScheduleModal';
+import ScheduleEditModal from '@/app/schedule/modals/ScheduleEditModal';
 
 import '@/lib/fullcalendar.css';
 
@@ -28,7 +30,7 @@ export default function ScheduleListPage() {
 
   // 모달 상태 관리
   const [showModal, setShowModal] = useState<boolean>(false);
-  const [modalType, setModalType] = useState<'create' | 'detail' | null>(null);
+  const [modalType, setModalType] = useState<'edit' | 'detail' | null>(null);
 
   // API 호출 취소를 위한 AbortController
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -44,6 +46,8 @@ export default function ScheduleListPage() {
       start: schedule.startDate || new Date().toISOString(),
       end: schedule.endDate,
       allDay: (schedule.startDate?.length || 0) <= 10 && (schedule.endDate?.length || 0) <= 10,
+      color: '#6366F1', // bg-indigo-500
+      textColor: '#FFFFFF'
     }));
   };
   
@@ -76,7 +80,7 @@ export default function ScheduleListPage() {
       setEvents(events);
     } catch (e) {
       // 요청 취소는 무시
-      if (e instanceof DOMException && e.name === 'AbortError') return;
+      if (e instanceof Error && e.message.includes('aborted')) return; 
       // 에러 처리
       const msg = e instanceof Error ? e.message : '일정 불러오기 실패';
       setError(msg);
@@ -91,9 +95,9 @@ export default function ScheduleListPage() {
     fetchSchedules(startDate, endDate);
   }, [fetchSchedules]);
 
-  // Date UI(일) 클릭 시 일정 생성 모달
+  // Date UI(일) 클릭 시 일정 생성/수정정 모달
   const handleDateSelect = (selectInfo: DateSelectArg) => {
-    setModalType('create');
+    setModalType('edit');
     setSelectedDateInfo(selectInfo);
     setSelectedScheduleId(null);
     setShowModal(true);
@@ -108,12 +112,26 @@ export default function ScheduleListPage() {
   };
 
   // 모달 닫기
-  const handleCloseModal = (shouldRefresh: boolean) => {
+  const handleCloseModal = (shouldRefresh: boolean, action?: 'modify' | 'goToCheckList' | 'createCheckList', targetId?: number) => {
     setShowModal(false);
     setSelectedDateInfo(null);
-    setSelectedScheduleId(null);
     setModalType(null);
-  
+    setSelectedScheduleId(null);
+
+    if (action === 'modify') {
+      // 상세 -> 수정버튼 클릭 -> 수정 모드
+      setSelectedScheduleId(targetId || null);
+      setModalType('edit');
+      setShowModal(true);
+    } else if (action === 'goToCheckList') {
+      toast.success('체크리스트로 이동합니다.'); 
+      //router.push() // checkListId
+    } else if (action === 'createCheckList') {
+      toast.success('체크리스트 생성 페이지로 이동합니다.'); 
+      //router.push() // scheduleId
+    }
+
+    // 캘린더 새로 고침
     if (shouldRefresh) {
       refreshCalendar();
     }
@@ -140,12 +158,25 @@ export default function ScheduleListPage() {
           events={events} 
           handleDatesSet={handleDatesSet} 
           handleEventClick={handleEventClick}
+          handleDateSelect={handleDateSelect}
           />
-        <ScheduleModal
-          showModal={showModal}
-          selectedScheduleId={selectedScheduleId}
-          onClose={handleCloseModal}
-        />
+        {showModal && modalType === 'detail' && (
+          <ScheduleModal
+            showModal={showModal}
+            selectedScheduleId={selectedScheduleId}
+            onClose={handleCloseModal}
+          />
+        )}
+        {showModal && modalType === 'edit' && (
+          <ScheduleEditModal
+            showModal={showModal}
+            clubId={clubId}
+            startDate={selectedDateInfo?.startStr}
+            endDate={selectedDateInfo?.endStr}
+            selectedScheduleId={selectedScheduleId} // <-- 수정: prop으로 전달
+            onClose={handleCloseModal}
+          />
+        )}
       </div>
     </div>
   );
