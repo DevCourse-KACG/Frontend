@@ -60,6 +60,7 @@ export default function MainPage() {
     // 로그아웃 시 로컬 스토리지에서 토큰을 제거하고 로그인 상태를 업데이트합니다.
     localStorage.removeItem('accessToken');
     setIsLoggedIn(false);
+    // 로그아웃 후 알림 메시지 표시
     alert('로그아웃되었습니다.');
   };
 
@@ -77,6 +78,15 @@ export default function MainPage() {
       router.push('/members/mypage');
     } else {
       router.push('/members/login');
+    }
+  };
+
+  // 스크롤 다운 화살표 클릭 시 '공개 모임' 섹션으로 부드럽게 스크롤하는 함수
+  const scrollToPublicClubs = () => {
+    const publicClubsSection = document.getElementById('public-clubs');
+    if (publicClubsSection) {
+      // URL 변경 없이 부드러운 스크롤만 실행
+      publicClubsSection.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
@@ -143,8 +153,11 @@ export default function MainPage() {
           <p className="text-xl text-gray-600 max-w-2xl">
             모임을 만들고, 필요한 준비물을 공유하고, 사람들을 초대해 보세요.
           </p>
-          {/* 스크롤 다운 화살표는 이제 공개 모임 배너로 이동합니다. */}
-          <a href="#public-clubs" className="mt-8 animate-bounce">
+          {/* 스크롤 다운 화살표는 이제 onClick 이벤트로 작동합니다. */}
+          <div
+            onClick={scrollToPublicClubs}
+            className="mt-8 animate-bounce cursor-pointer"
+          >
             <svg
               className="w-10 h-10 text-gray-600"
               fill="none"
@@ -159,7 +172,7 @@ export default function MainPage() {
                 d="M19 14l-7 7m0 0l-7-7m7 7V3"
               ></path>
             </svg>
-          </a>
+          </div>
         </div>
 
         {/* 두 번째 스냅 섹션: 공개 모임 배너 */}
@@ -174,12 +187,12 @@ export default function MainPage() {
             </div>
             {/* '전체보기' 링크를 배너 바로 위에, 그리고 우측에 배치합니다. */}
             <div className="w-full max-w-4xl flex justify-end mb-4 mx-auto">
-              <a
+              <div
                 onClick={() => router.push('/clubs/public')}
                 className="whitespace-nowrap text-sm font-semibold text-blue-600 hover:underline cursor-pointer"
               >
                 전체보기
-              </a>
+              </div>
             </div>
 
             {isLoadingClubs ? (
