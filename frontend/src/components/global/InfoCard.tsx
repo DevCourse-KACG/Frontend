@@ -22,7 +22,7 @@ const InfoCard: React.FC<InfoCardProps> = ({
         style={{
             background: color,
             borderRadius: 12,
-            boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.185)",
             padding: "18px 20px",
             width: "100%",
             minWidth: 120,

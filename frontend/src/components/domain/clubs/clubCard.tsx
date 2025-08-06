@@ -16,11 +16,10 @@ const ClubCard: React.FC<{ club: SimpleClubInfoWithoutLeader }> = ({ club }) => 
                 display: 'flex',
                 alignItems: 'center',
                 padding: 20,
-                borderRadius: 16,
-                background: COLORS.beige,
+                borderRadius: 8,
+                background: COLORS.white,
                 boxShadow: `0 2px 8px ${COLORS.gray}`,
                 gap: 32,
-                border: `1px solid ${COLORS.gray}`,
                 height: '30vh'
             }}
         >
@@ -35,27 +34,21 @@ const ClubCard: React.FC<{ club: SimpleClubInfoWithoutLeader }> = ({ club }) => 
                             height: '100%',
                             objectFit: 'scale-down',
                             borderRadius: 12,
-                            border: `2px solid ${COLORS.brown}`,
                             background: COLORS.white,
                         }}
                     />
                 ) : (
-                    <div
+                    <img
+                        src="/default-club-image.png"
+                        alt={club.name}
                         style={{
                             width: '100%',
                             height: '100%',
-                            background: COLORS.white,
+                            objectFit: 'scale-down',
                             borderRadius: 12,
-                            border: `2px solid ${COLORS.gray}`,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: COLORS.gray,
-                            fontSize: 13,
+                            background: COLORS.white,
                         }}
-                    >
-                        No Image
-                    </div>
+                    />
                 )}
             </div>
             {/* Center: Name & Bio */}
