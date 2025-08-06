@@ -48,27 +48,14 @@ function Header({
           </h1>
         </div>
         <nav className="flex items-center space-x-4">
+          {/* 로그인 상태에 따라 로그인/회원가입 또는 로그아웃 버튼 표시 */}
           {isLoggedIn ? (
-            <>
-              <button
-                onClick={onLogout}
-                className="px-4 py-2 bg-red-500 text-white font-semibold rounded-full shadow-md transition-all duration-200 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400"
-              >
-                로그아웃
-              </button>
-              <button
-                onClick={onFriends}
-                className="px-4 py-2 text-gray-800 bg-gray-200 font-semibold rounded-full shadow-md transition-all duration-200 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
-              >
-                내 친구
-              </button>
-              <button
-                onClick={onMypage}
-                className="px-4 py-2 text-gray-800 bg-gray-200 font-semibold rounded-full shadow-md transition-all duration-200 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
-              >
-                마이페이지
-              </button>
-            </>
+            <button
+              onClick={onLogout}
+              className="px-4 py-2 bg-red-500 text-white font-semibold rounded-full shadow-md transition-all duration-200 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400"
+            >
+              로그아웃
+            </button>
           ) : (
             <>
               <button
@@ -83,20 +70,22 @@ function Header({
               >
                 로그인
               </button>
-              <button
-                onClick={onFriends}
-                className="px-4 py-2 text-gray-800 bg-gray-200 font-semibold rounded-full shadow-md transition-all duration-200 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
-              >
-                내 친구
-              </button>
-              <button
-                onClick={onMypage}
-                className="px-4 py-2 text-gray-800 bg-gray-200 font-semibold rounded-full shadow-md transition-all duration-200 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
-              >
-                마이페이지
-              </button>
             </>
           )}
+
+          {/* 내 친구 및 마이페이지 버튼은 항상 표시 */}
+          <button
+            onClick={onFriends}
+            className="px-4 py-2 text-gray-800 bg-gray-200 font-semibold rounded-full shadow-md transition-all duration-200 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
+          >
+            내 친구
+          </button>
+          <button
+            onClick={onMypage}
+            className="px-4 py-2 text-gray-800 bg-gray-200 font-semibold rounded-full shadow-md transition-all duration-200 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
+          >
+            마이페이지
+          </button>
         </nav>
       </div>
     </header>
@@ -180,7 +169,7 @@ export default function RootLayout({
           toastOptions={{
             error: {
               style: {
-                background: '#EF4444', // Tailwind CSS 'red-500'
+                background: '#EF4444', 
                 color: 'white',
               },
             },
