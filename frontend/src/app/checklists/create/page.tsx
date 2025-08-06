@@ -291,7 +291,7 @@ function SortableItem({
 export default function CreateChecklistPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const groupId = searchParams.get('groupId');
+  const clubId = searchParams.get('clubId');
   const scheduleId = searchParams.get('scheduleId');
   
   const [checkListItems, setCheckListItems] = useState<CheckListItem[]>([]);
@@ -378,13 +378,13 @@ export default function CreateChecklistPage() {
   };
 
   useEffect(() => {
-    // groupId나 scheduleId가 없으면 리다이렉트
-    if (!groupId) {
+    // clubId나 scheduleId가 없으면 리다이렉트
+    if (!clubId) {
       router.replace('/');
       return;
     }
     if (!scheduleId) {
-      router.replace(`/checklists?groupId=${groupId}`);
+      router.replace(`/checklists?clubId=${clubId}`);
       return;
     }
     
@@ -568,13 +568,13 @@ export default function CreateChecklistPage() {
       
       const response = await createChecklist(checklistData);
       toast.success('체크리스트가 성공적으로 생성되었습니다.');
-      router.push(`/checklists?groupId=${groupId}`);
+      router.push(`/checklists?clubId=${clubId}`);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.';
       
       if (errorMessage.startsWith('LOGIN_REQUIRED:')) {
         toast.success('체크리스트가 생성되었습니다. (데모 모드)');
-        router.push(`/checklists?groupId=${groupId}`);
+        router.push(`/checklists?clubId=${clubId}`);
       } else if (errorMessage.startsWith('SCHEDULE_NOT_FOUND:')) {
         toast.error('일정을 찾을 수 없습니다. 올바른 일정 ID인지 확인해주세요.');
       } else if (errorMessage.startsWith('PERMISSION_DENIED:')) {
@@ -636,7 +636,7 @@ export default function CreateChecklistPage() {
             <p className="text-gray-600 mb-6">{getPermissionDeniedMessage(userInfo, '체크리스트 생성')}</p>
             <div className="flex gap-3 justify-center">
               <Link
-                href={`/checklists?groupId=${groupId}`}
+                href={`/checklists?clubId=${clubId}`}
                 className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
               >
                 체크리스트 목록으로
@@ -672,7 +672,7 @@ export default function CreateChecklistPage() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-4">
               <Link
-                href={`/checklists?groupId=${groupId}`}
+                href={`/checklists?clubId=${clubId}`}
                 className="text-gray-600 hover:text-gray-800 transition-colors"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -697,7 +697,7 @@ export default function CreateChecklistPage() {
                 {loading ? '생성 중...' : '완료'}
               </button>
               <Link
-                href={`/checklists?groupId=${groupId}`}
+                href={`/checklists?clubId=${clubId}`}
                 className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
               >
                 취소

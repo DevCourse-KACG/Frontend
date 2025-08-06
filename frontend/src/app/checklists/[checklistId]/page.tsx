@@ -370,7 +370,7 @@ export default function ChecklistDetailPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const checklistId = params.checklistId as string;
-  const groupId = searchParams.get('groupId');
+  const clubId = searchParams.get('clubId');
 
   // 서버 데이터를 클라이언트 형식으로 변환하는 함수
   const convertServerDataToClient = (checklistData: CheckList | null): CheckList | null => {
@@ -461,16 +461,16 @@ export default function ChecklistDetailPage() {
   };
 
   useEffect(() => {
-    if (!groupId) {
+    if (!clubId) {
       setLoading(false);
-      setError('그룹 ID가 필요합니다. 올바른 그룹 페이지에서 접근해주세요.');
+      setError('클럽 ID가 필요합니다. 올바른 클럽 페이지에서 접근해주세요.');
       return;
     }
     
     if (checklistId) {
       loadChecklistDetail();
     }
-  }, [checklistId, groupId]);
+  }, [checklistId, clubId]);
 
   const handleToggleItem = (itemId: number) => {
     if (!checklist) return;
@@ -539,7 +539,7 @@ export default function ChecklistDetailPage() {
       try {
         await deleteChecklist(checklistId);
         toast.success('체크리스트가 성공적으로 삭제되었습니다.');
-        router.push(`/checklists?groupId=${groupId}`);
+        router.push(`/checklists?clubId=${clubId}`);
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.';
         
@@ -767,7 +767,7 @@ export default function ChecklistDetailPage() {
             <p className="text-gray-600 mb-6">{getPermissionDeniedMessage(userInfo, '체크리스트 조회')}</p>
             <div className="flex gap-3 justify-center">
               <Link
-                href={`/checklists?groupId=${groupId}`}
+                href={`/checklists?clubId=${clubId}`}
                 className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
               >
                 체크리스트 목록으로
@@ -798,9 +798,9 @@ export default function ChecklistDetailPage() {
             <h2 className="text-2xl font-bold text-gray-900 mb-4">오류가 발생했습니다</h2>
             <p className="text-gray-600 mb-6">{error}</p>
             <div className="flex gap-3 justify-center">
-              {groupId ? (
+              {clubId ? (
                 <Link
-                  href={`/checklists?groupId=${groupId}`}
+                  href={`/checklists?clubId=${clubId}`}
                   className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
                 >
                   체크리스트 목록으로
@@ -856,7 +856,7 @@ export default function ChecklistDetailPage() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-4">
               <Link
-                href={`/checklists?groupId=${groupId}`}
+                href={`/checklists?clubId=${clubId}`}
                 className="text-gray-600 hover:text-gray-800 transition-colors"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
