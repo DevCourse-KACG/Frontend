@@ -7,7 +7,7 @@ type MemberInfo = components['schemas']['ClubMemberInfo'];
 type ClubMemberRegisterRequest = components['schemas']['ClubMemberRegisterRequest'];
 type ClubMemberRegisterInfo = components['schemas']['ClubMemberRegisterInfo'];
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
 
 // 멤버 목록 조회
 export const getClubMembers = async (clubId: string): Promise<MemberInfo[]> => {

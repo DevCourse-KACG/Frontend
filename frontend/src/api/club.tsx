@@ -1,6 +1,6 @@
 import { components } from "@/types/backend/apiV1/schema";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://localhost:8080';
+const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
 
 type CreateClubRequest = components['schemas']['CreateClubRequest'];
 type UpdateClubRequest = components['schemas']['UpdateClubRequest'];
