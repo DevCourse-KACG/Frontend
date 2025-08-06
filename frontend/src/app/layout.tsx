@@ -151,7 +151,7 @@ export default function RootLayout({
         <Header
           isLoggedIn={isLoggedIn}
           onLogout={handleLogout}
-          onLogin={() => router.push('/login')}
+          onLogin={() => router.push('/members/login')}
           onSignup={() => router.push('/members/register')}
           onMypage={() => router.push('/members/mypage')}
           onFriends={() => router.push('/members/friend')}
