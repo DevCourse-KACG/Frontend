@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import { EventClickArg, DateSelectArg, DatesSetArg } from '@fullcalendar/core';
 import FullCalendar from '@fullcalendar/react';
 
-import { getClubSchedules } from "@/api/schedule";
+import { getClubSchedules, getMyClubInfoForSchedule } from "@/api/schedule";
 import { useSchedules } from '@/hooks/useSchedules';
 import { extractDateFromISO } from '@/lib/formatDate';
 import Calendar from '@/components/domain/schedule/Calender';
@@ -18,9 +18,8 @@ import '@/lib/fullcalendar.css';
 
 export default function ScheduleListPage() {
   // 파라미터 처리 - 모임 아이디
-  //const parm = useParams();
-  //const clubId = parm.clubId;
-  const clubId = 1;
+  const parm = useParams();
+  const clubId = parm.clubId;
 
   // 캘린더 처리
   const calendarRef = useRef<FullCalendar>(null);
@@ -30,6 +29,9 @@ export default function ScheduleListPage() {
   // 모달 상태 관리
   const [showModal, setShowModal] = useState<boolean>(false);
   const [modalType, setModalType] = useState<'edit' | 'detail' | null>(null);
+
+  // 리드온리 여부
+  const [isReadOnly, setIsReadOnly] = useState<boolean>(true);
 
   // 커스텀 훅 - 일정 dto, 모임의 일정 목록 조회 fetch 넘김
   const { events, fetchSchedules } = useSchedules((params, signal) => 
@@ -46,7 +48,19 @@ export default function ScheduleListPage() {
       const endDate = extractDateFromISO(view.activeEnd.toISOString());
       fetchSchedules({ startDate, endDate });
     }
-  }, []);
+
+    // 유저의 모임 정보 조회
+    getMyClubInfoForSchedule(clubId)
+      .then(res => {
+        if (res.data?.role) {
+          // 모임 일반 참여자는 조회만 가능
+          setIsReadOnly(res.data.role === 'PARTICIPANT');
+        }
+      })
+      .catch(e => {
+        toast.error("모임 정보를 불러오지 못했습니다.");
+      });
+  }, [clubId]);
 
   // 캘린더 날짜가 변경될 때마다(이전, 다음 버튼 등) 일정 목록 API 재호출
   const handleDatesSet = useCallback((arg: DatesSetArg) => {
@@ -57,6 +71,9 @@ export default function ScheduleListPage() {
 
   // Date UI(일) 클릭 시 일정 생성/수정정 모달
   const handleDateSelect = (selectInfo: DateSelectArg) => {
+    if (isReadOnly) return;
+
+    // 모임장, 매니저만 가능
     setModalType('edit');
     setSelectedDateInfo(selectInfo);
     setSelectedScheduleId(null);
@@ -129,6 +146,7 @@ export default function ScheduleListPage() {
             showModal={showModal}
             selectedScheduleId={selectedScheduleId}
             onClose={handleCloseModal}
+            isReadOnly={isReadOnly}
           />
         )}
         {showModal && modalType === 'edit' && (
@@ -137,7 +155,7 @@ export default function ScheduleListPage() {
             clubId={clubId}
             startDate={selectedDateInfo?.startStr}
             endDate={selectedDateInfo?.endStr}
-            selectedScheduleId={selectedScheduleId} // <-- 수정: prop으로 전달
+            selectedScheduleId={selectedScheduleId}
             onClose={handleCloseModal}
           />
         )}
