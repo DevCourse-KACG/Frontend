@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import toast from 'react-hot-toast';
 
-// 백엔드 API 응답에 맞춰 인터페이스를 정의합니다.
+// 백엔드 API 응답에 맞춰 인터페이스를 수정합니다.
 interface CreateClubLinkResponse {
-  invitationLink: string;
+  link: string; // <-- 'invitationLink'를 'link'로 변경
 }
 
 /**
@@ -17,32 +18,27 @@ interface CreateClubLinkResponse {
 async function generateClubLink(clubId: string, accessToken: string): Promise<string> {
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
   try {
-    // 프론트엔드 API 호출 경로를 백엔드 컨트롤러 경로와 일치하도록 수정합니다.
     const response = await fetch(`${API_BASE_URL}/api/v1/clubs/${clubId}/members/invitation-link`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${accessToken}`,
       },
-      // CORS 문제 해결을 위해 'include'를 추가합니다.
       credentials: 'include',
     });
 
     if (!response.ok) {
-      // 응답이 OK가 아닌 경우, 에러 메시지를 파싱하여 반환합니다.
       const errorData = await response.json().catch(() => ({ message: '서버 응답 파싱 실패' }));
       throw new Error(errorData.message || `초대 링크 생성 실패: ${response.status} ${response.statusText}`);
     }
 
-    // RsData 구조에서 data 필드를 추출합니다.
+    // RsData 구조에서 data 필드를 추출하고, link 속성을 반환하도록 수정합니다.
     const { data }: { data: CreateClubLinkResponse } = await response.json();
-    return data.invitationLink;
+    return data.link; // <-- 'invitationLink'를 'link'로 변경
 
   } catch (error) {
     if (error instanceof TypeError) {
-      // 'Failed to fetch'와 같은 네트워크 오류는 TypeError로 발생합니다.
-      // 이 경우, 백엔드 서버의 CORS 설정이 올바른지 확인해야 합니다.
-      console.error('Fetch Error:', error); // 콘솔에 상세 에러 로그를 출력합니다.
+      console.error('Fetch Error:', error);
       throw new Error('네트워크 요청에 실패했습니다. 백엔드 서버의 CORS 설정을 확인해주세요.');
     }
     if (error instanceof Error) {
@@ -63,24 +59,29 @@ export default function CreateLinkPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    // URL에서 clubId가 없으면 에러 처리
     if (!clubId) {
       setError('유효하지 않은 클럽 ID입니다.');
       return;
     }
-    // 로그인 상태 확인
+    
     const userAuthToken = localStorage.getItem('accessToken');
-    if (userAuthToken) {
-      setIsLoggedIn(true);
+    if (!userAuthToken) {
+      toast.error('로그인이 필요합니다. 로그인 페이지로 이동합니다.');
+      setTimeout(() => {
+        router.push('/members/login');
+      }, 2000);
     } else {
-      // 로그인이 되어있지 않으면 로그인 페이지로 리디렉션
-      router.push('/login');
+      setIsLoggedIn(true);
     }
   }, [clubId, router]);
 
   const handleGenerateLink = async () => {
-    if (!isLoggedIn) {
-      router.push('/login');
+    const accessToken = localStorage.getItem('accessToken');
+    if (!accessToken) {
+      toast.error('초대 링크 생성은 로그인 후 이용 가능합니다.');
+      setTimeout(() => {
+        router.push('/members/login');
+      }, 2000);
       return;
     }
 
@@ -92,16 +93,18 @@ export default function CreateLinkPage() {
     setIsLoading(true);
     setError(null);
     setInvitationLink(null);
-    const accessToken = localStorage.getItem('accessToken') as string;
 
     try {
       const link = await generateClubLink(clubId, accessToken);
       setInvitationLink(link);
+      toast.success('초대 링크가 성공적으로 생성되었습니다!');
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);
+        toast.error(`초대 링크 생성 실패: ${err.message}`);
       } else {
         setError('초대 링크 생성 중 오류가 발생했습니다.');
+        toast.error('초대 링크 생성 중 알 수 없는 오류가 발생했습니다.');
       }
     } finally {
       setIsLoading(false);
@@ -117,8 +120,10 @@ export default function CreateLinkPage() {
         tempInput.select();
         document.execCommand('copy');
         document.body.removeChild(tempInput);
+        toast.success('초대 링크가 클립보드에 복사되었습니다.');
       } catch (err) {
         console.error('Failed to copy to clipboard:', err);
+        toast.error('클립보드 복사에 실패했습니다.');
       }
     }
   };
