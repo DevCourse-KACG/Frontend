@@ -37,6 +37,7 @@ export async function getClubSchedules(
   const res = await fetch(url, {
     method: "GET",
     signal,
+    credentials: 'include',
   });
   return handleResponse<components["schemas"]["RsDataListScheduleDto"]>(res);
 }
@@ -49,6 +50,7 @@ export async function getSchedule(
 ): Promise<RsDataScheduleDetailDto> {
   const res = await fetch(`${BASE_URL}/api/v1/schedules/${scheduleId}`, {
     signal,
+    credentials: 'include',
   });
   return handleResponse(res);
 }
@@ -60,6 +62,7 @@ export async function createSchedule(
   const res = await fetch(`${BASE_URL}/api/v1/schedules`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    credentials: 'include',
     body: JSON.stringify(body),
   });
   return handleResponse(res);
@@ -73,6 +76,7 @@ export async function modifySchedule(
   const res = await fetch(`${BASE_URL}/api/v1/schedules/${scheduleId}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
+    credentials: 'include',
     body: JSON.stringify(body),
   });
   return handleResponse(res);
@@ -84,6 +88,7 @@ export async function deleteSchedule(
 ): Promise<components["schemas"]["RsDataVoid"]> {
   const res = await fetch(`${BASE_URL}/api/v1/schedules/${scheduleId}`, {
     method: "DELETE",
+    credentials: 'include',
   });
   return handleResponse(res);
 }
@@ -92,7 +97,7 @@ export async function deleteSchedule(
 export async function getMySchedules(
   query?: { startDate?: string; endDate?: string },
   signal?: AbortSignal
-): Promise<components["schemas"]["RsDataListScheduleDto"]> {
+): Promise<components["schemas"]["RsDataListScheduleWithClubDto"]> {
   let url = `${BASE_URL}/api/v1/schedules/me`;
   if (query) {
     const params = new URLSearchParams();
@@ -104,6 +109,21 @@ export async function getMySchedules(
   const res = await fetch(url, {
     method: "GET",
     signal,
+    credentials: 'include',
   });
   return handleResponse<components["schemas"]["RsDataListScheduleWithClubDto"]>(res);
+}
+
+// 로그인한 사용자의 모임 정보(권한 확인용)
+export async function getMyClubInfoForSchedule(
+  clubId: number
+): Promise<components["schemas"]["RsDataMyInfoInClub"]> {
+  const url = `${BASE_URL}/api/v1/my-clubs/${clubId}`;
+  
+  const res = await fetch(url, {
+    method: "GET",
+    credentials: 'include',
+  });
+  
+  return handleResponse<components["schemas"]["RsDataMyInfoInClub"]>(res);
 }
