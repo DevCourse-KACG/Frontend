@@ -149,15 +149,15 @@ export default function ScheduleModal ({
 
             <div className="flex justify-between mt-4">
               {/* 좌측 버튼 */}
-              {/* <button
+              <button
                 type="button"
                 onClick={handleGoToChecklist}
                 disabled={isDeleting}
                 className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors disabled:opacity-50"
               >
                 {schedule?.checkListId ? '체크리스트로 이동' : '체크리스트 생성'}
-              </button> */}
-              <div style={{ width: '120px' }}></div>
+              </button> 
+              {/* <div style={{ width: '120px' }}></div> */}
               {/* 우측 버튼 그룹 */}
               <div className="flex space-x-2">
                 {!isReadOnly && (
