@@ -3,7 +3,6 @@
 import MemberListItem from './MemberListItem';
 import { components } from '@/types/backend/apiV1/schema';
 import MultiEmailInput from './MultiEmailInput';
-import { inviteMembers } from '@/api/clubMember';
 import { useParams } from 'next/navigation';
 
 type MemberInfo = components['schemas']['ClubMemberInfo'];
