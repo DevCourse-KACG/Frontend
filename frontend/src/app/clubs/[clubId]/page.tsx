@@ -81,16 +81,23 @@ export default function ClubPage() {
     }
 
     return (
-        <div className="max-w-7xl mx-auto p-4">
-            <h1 className="text-2xl font-bold mb-4">{clubId}번 모임 페이지</h1>
-            <section className="flex" style={{ height: 'calc(90vh - 64px)' }}>
-                <aside className="w-1/5 pr-4">
-                    <ClubInfoSideMenu isHost={myInfo?.role === 'HOST'} />
-                </aside>
-                <section className="w-4/5" style={{ maxHeight: '100%', borderRadius: '8px' }}>
-                    {clubInfo ? <ClubInfo club={clubInfo} /> : <div className="text-center">클럽 정보를 불러오는 중입니다...</div>}
-                </section>
+        <div className="max-w-7xl mx-auto p-4 flex">
+            <aside
+                className="w-1/5 pr-4"
+                style={{
+                    position: 'sticky',
+                    top: '1rem',
+                    alignSelf: 'flex-start',
+                    height: '80vh',
+                    zIndex: 10,
+                }}
+            >
+                <ClubInfoSideMenu isHost={myInfo?.role === 'HOST'} />
+            </aside>
+            <section className="w-4/5" style={{ maxHeight: '100%', borderRadius: '8px' }}>
+                {clubInfo ? <ClubInfo club={clubInfo} /> : <div className="text-center">클럽 정보를 불러오는 중입니다...</div>}
             </section>
+
         </div>
     );
 }
