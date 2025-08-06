@@ -7,74 +7,6 @@ import { CheckList } from '@/types/checklist';
 import { fetchChecklists, fetchGroupUserInfo, GroupUserInfo } from '@/api/checklistApi';
 import LoadingSpinner from '@/components/global/LoadingSpinner';
 
-// 데모 데이터
-const DEMO_CHECKLISTS: CheckList[] = [
-  {
-    id: 1,
-    isActive: true,
-    schedule: {
-      id: 1,
-      title: '제주도 여행',
-      content: '가족과 함께 하는 제주도 여행',
-      startDate: '2024-12-20T00:00:00',
-      endDate: '2024-12-23T23:59:59',
-      spot: '제주도',
-      clubId: 1,
-      checkListId: 1,
-    },
-    checkListItems: [
-      { id: 1, content: '삼겹살', category: 'PREPARATION', sequence: 1, isChecked: false },
-      { id: 2, content: '소시지', category: 'PREPARATION', sequence: 2, isChecked: true },
-      { id: 3, content: '세면 용품', category: 'PREPARATION', sequence: 3, isChecked: false },
-      { id: 4, content: '잠옷', category: 'PREPARATION', sequence: 4, isChecked: true },
-      { id: 5, content: '펜션 예약 확인', category: 'RESERVATION', sequence: 5, isChecked: false },
-      { id: 6, content: '렌트카 예약', category: 'RESERVATION', sequence: 6, isChecked: true },
-      { id: 7, content: '맛집 리스트 정리', category: 'PRE_WORK', sequence: 7, isChecked: false },
-      { id: 8, content: '여행 일정 계획', category: 'PRE_WORK', sequence: 8, isChecked: false },
-      { id: 9, content: '카메라 배터리 충전', category: 'ETC', sequence: 9, isChecked: true },
-      { id: 10, content: '여행자 보험 가입', category: 'ETC', sequence: 10, isChecked: false },
-    ],
-  },
-  {
-    id: 2,
-    isActive: true,
-    schedule: {
-      id: 2,
-      title: '부산 출장',
-      content: '회사 업무 출장',
-      startDate: '2024-12-15T09:00:00',
-      endDate: '2024-12-16T18:00:00',
-      spot: '부산',
-      clubId: 1,
-      checkListId: 2,
-    },
-    checkListItems: [
-      { id: 11, content: '노트북', category: 'PREPARATION', sequence: 1, isChecked: false },
-      { id: 12, content: '충전기', category: 'PREPARATION', sequence: 2, isChecked: true },
-      { id: 13, content: '회의 자료 준비', category: 'PRE_WORK', sequence: 3, isChecked: false },
-      { id: 14, content: '출장비 정산', category: 'ETC', sequence: 4, isChecked: false },
-    ],
-  },
-  {
-    id: 3,
-    isActive: false,
-    schedule: {
-      id: 3,
-      title: '서울 미팅',
-      content: '클라이언트 미팅',
-      startDate: '2024-11-28T14:00:00',
-      endDate: '2024-11-28T16:00:00',
-      spot: '서울 강남구',
-      clubId: 1,
-      checkListId: 3,
-    },
-    checkListItems: [
-      { id: 15, content: '프레젠테이션 자료', category: 'PRE_WORK', sequence: 1, isChecked: true },
-      { id: 16, content: '계약서 검토', category: 'PRE_WORK', sequence: 2, isChecked: true },
-      { id: 17, content: '명함', category: 'PREPARATION', sequence: 3, isChecked: true },
-    ],
-  },
-];
 
 export default function SchedulesPage() {
   const [checklists, setChecklists] = useState<CheckList[]>([]);
@@ -134,10 +66,7 @@ export default function SchedulesPage() {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.';
       
-      // 401 에러인 경우 데모 데이터 사용
-      if (errorMessage.startsWith('LOGIN_REQUIRED:')) {
-        setChecklists(DEMO_CHECKLISTS);
-      } else if (errorMessage.startsWith('ACCESS_DENIED:')) {
+      if (errorMessage.startsWith('ACCESS_DENIED:')) {
         setError('이 그룹의 체크리스트에 접근할 권한이 없습니다. 그룹 관리자에게 문의하세요.');
         setChecklists([]);
       } else {

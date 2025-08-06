@@ -349,7 +349,7 @@ export async function createChecklist(checklistData: CheckListWriteReqDto): Prom
         case 409:
           throw new Error(`CHECKLIST_ALREADY_EXISTS:${message}`);
         default:
-          throw new Error(`HTTP error! status: ${statusCode} - ${message}`);
+          throw new Error(`HTTP error! status: ${response.status} - ${message}`);
       }
     }
 

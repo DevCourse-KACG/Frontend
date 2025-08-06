@@ -357,18 +357,8 @@ export default function CreateChecklistPage() {
       setUserInfo(response.data);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.';
-      
-      // 401 에러인 경우 데모 데이터 사용
-      if (errorMessage.startsWith('LOGIN_REQUIRED:')) {
-        // 데모 사용자 정보 (HOST 권한으로 설정)
-        setUserInfo({
-          role: 'HOST',
-          state: 'JOINING'
-        });
-      } else {
-        console.error('사용자 권한 정보를 불러오는 중 오류가 발생했습니다:', errorMessage);
-        setUserInfo(null);
-      }
+      console.error('사용자 권한 정보를 불러오는 중 오류가 발생했습니다:', errorMessage);
+      setUserInfo(null);
     } finally {
       setPermissionLoading(false);
     }
@@ -382,21 +372,8 @@ export default function CreateChecklistPage() {
       setAvailableMembers(response.data?.members || []);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.';
-      
-      // 401 에러인 경우 데모 데이터 사용
-      if (errorMessage.startsWith('LOGIN_REQUIRED:')) {
-        // 데모 멤버 데이터
-        setAvailableMembers([
-          { id: 1, clubMemberId: 101, name: '김민수', nickname: '민수야', role: 'MEMBER' },
-          { id: 2, clubMemberId: 102, name: '이영희', nickname: '영희님', role: 'MEMBER' },
-          { id: 3, clubMemberId: 103, name: '박철수', nickname: '철수형', role: 'MEMBER' },
-          { id: 4, clubMemberId: 104, name: '정수진', nickname: '수진이', role: 'MEMBER' },
-          { id: 5, clubMemberId: 105, name: '홍길동', nickname: '길동이', role: 'MEMBER' },
-        ] as ClubMember[]);
-      } else {
-        console.error('멤버를 불러오는 중 오류가 발생했습니다:', errorMessage);
-        setAvailableMembers([]);
-      }
+      console.error('멤버를 불러오는 중 오류가 발생했습니다:', errorMessage);
+      setAvailableMembers([]);
     }
   };
 

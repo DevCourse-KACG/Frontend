@@ -36,229 +36,6 @@ const CATEGORY_DISPLAY_NAMES = {
   'ETC': '기타',
 } as const;
 
-// 데모 데이터들
-const DEMO_CHECKLISTS: Record<string, CheckList> = {
-  '1': {
-    id: 1,
-    isActive: true,
-    schedule: {
-      id: 1,
-      title: '제주도 여행',
-      content: '가족과 함께 하는 제주도 여행',
-      startDate: '2024-12-20T00:00:00',
-      endDate: '2024-12-23T23:59:59',
-      spot: '제주도',
-      clubId: 1,
-      checkListId: 1,
-    },
-    checkListItems: [
-      { 
-        id: 1, 
-        content: '삼겹살', 
-        category: 'PREPARATION', 
-        sequence: 1, 
-        isChecked: false,
-        itemAssigns: [
-          { id: 1, clubMemberName: '김민수', isChecked: false },
-          { id: 2, clubMemberName: '이영희', isChecked: true }
-        ]
-      },
-      { 
-        id: 2, 
-        content: '소시지', 
-        category: 'PREPARATION', 
-        sequence: 2, 
-        isChecked: true,
-        itemAssigns: [
-          { id: 3, clubMemberName: '박철수', isChecked: true }
-        ]
-      },
-      { 
-        id: 3, 
-        content: '세면 용품', 
-        category: 'PREPARATION', 
-        sequence: 3, 
-        isChecked: false,
-        itemAssigns: [
-          { id: 4, clubMemberName: '정수진', isChecked: false }
-        ]
-      },
-      { 
-        id: 4, 
-        content: '잠옷', 
-        category: 'PREPARATION', 
-        sequence: 4, 
-        isChecked: true,
-        itemAssigns: []
-      },
-      { 
-        id: 5, 
-        content: '펜션 예약 확인', 
-        category: 'RESERVATION', 
-        sequence: 5, 
-        isChecked: false,
-        itemAssigns: [
-          { id: 5, clubMemberName: '홍길동', isChecked: false }
-        ]
-      },
-      { 
-        id: 6, 
-        content: '렌트카 예약', 
-        category: 'RESERVATION', 
-        sequence: 6, 
-        isChecked: true,
-        itemAssigns: [
-          { id: 6, clubMemberName: '김민수', isChecked: true },
-          { id: 7, clubMemberName: '박철수', isChecked: false }
-        ]
-      },
-      { 
-        id: 7, 
-        content: '맛집 리스트 정리', 
-        category: 'PRE_WORK', 
-        sequence: 7, 
-        isChecked: false,
-        itemAssigns: [
-          { id: 8, clubMemberName: '이영희', isChecked: false }
-        ]
-      },
-      { 
-        id: 8, 
-        content: '여행 일정 계획', 
-        category: 'PRE_WORK', 
-        sequence: 8, 
-        isChecked: false,
-        itemAssigns: []
-      },
-      { 
-        id: 9, 
-        content: '카메라 배터리 충전', 
-        category: 'ETC', 
-        sequence: 9, 
-        isChecked: true,
-        itemAssigns: [
-          { id: 9, clubMemberName: '정수진', isChecked: true }
-        ]
-      },
-      { 
-        id: 10, 
-        content: '여행자 보험 가입', 
-        category: 'ETC', 
-        sequence: 10, 
-        isChecked: false,
-        itemAssigns: [
-          { id: 10, clubMemberName: '홍길동', isChecked: false }
-        ]
-      },
-    ],
-  },
-  '2': {
-    id: 2,
-    isActive: true,
-    schedule: {
-      id: 2,
-      title: '부산 출장',
-      content: '회사 업무 출장',
-      startDate: '2024-12-15T09:00:00',
-      endDate: '2024-12-16T18:00:00',
-      spot: '부산',
-      clubId: 1,
-      checkListId: 2,
-    },
-    checkListItems: [
-      { 
-        id: 11, 
-        content: '노트북', 
-        category: 'PREPARATION', 
-        sequence: 1, 
-        isChecked: false,
-        itemAssigns: [
-          { id: 11, clubMemberName: '김민수', isChecked: false }
-        ]
-      },
-      { 
-        id: 12, 
-        content: '충전기', 
-        category: 'PREPARATION', 
-        sequence: 2, 
-        isChecked: true,
-        itemAssigns: [
-          { id: 12, clubMemberName: '김민수', isChecked: true }
-        ]
-      },
-      { 
-        id: 13, 
-        content: '회의 자료 준비', 
-        category: 'PRE_WORK', 
-        sequence: 3, 
-        isChecked: false,
-        itemAssigns: [
-          { id: 13, clubMemberName: '이영희', isChecked: false },
-          { id: 14, clubMemberName: '박철수', isChecked: false }
-        ]
-      },
-      { 
-        id: 14, 
-        content: '출장비 정산', 
-        category: 'ETC', 
-        sequence: 4, 
-        isChecked: false,
-        itemAssigns: []
-      },
-    ],
-  },
-  '3': {
-    id: 3,
-    isActive: false,
-    schedule: {
-      id: 3,
-      title: '서울 미팅',
-      content: '클라이언트 미팅',
-      startDate: '2024-11-28T14:00:00',
-      endDate: '2024-11-28T16:00:00',
-      spot: '서울 강남구',
-      clubId: 1,
-      checkListId: 3,
-    },
-    checkListItems: [
-      { 
-        id: 15, 
-        content: '프레젠테이션 자료', 
-        category: 'PRE_WORK', 
-        sequence: 1, 
-        isChecked: true,
-        itemAssigns: [
-          { id: 15, clubMemberName: '홍길동', isChecked: true }
-        ]
-      },
-      { 
-        id: 16, 
-        content: '계약서 검토', 
-        category: 'PRE_WORK', 
-        sequence: 2, 
-        isChecked: true,
-        itemAssigns: [
-          { id: 16, clubMemberName: '정수진', isChecked: true }
-        ]
-      },
-      { 
-        id: 17, 
-        content: '명함', 
-        category: 'PREPARATION', 
-        sequence: 3, 
-        isChecked: true,
-        itemAssigns: [
-          { id: 17, clubMemberName: '홍길동', isChecked: true }
-        ]
-      },
-    ],
-  },
-};
-
-// checklistId에 따른 데모 데이터 선택 함수
-const getDemoDataByChecklistId = (checklistId: string): CheckList => {
-  return DEMO_CHECKLISTS[checklistId] || DEMO_CHECKLISTS['1']; // 기본값은 제주도 여행
-};
 
 // 드래그 가능한 체크리스트 아이템 컴포넌트
 interface SortableItemProps {
@@ -645,21 +422,7 @@ export default function ChecklistDetailPage() {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.';
       
-      // 401 에러인 경우 데모 데이터 사용 (checklistId에 따라 다른 데모 데이터 사용)
-      if (errorMessage.startsWith('LOGIN_REQUIRED:')) {
-        // checklistId에 따른 데모 데이터 선택
-        const demoData = getDemoDataByChecklistId(checklistId);
-        const convertedDemoData = convertServerDataToClient(demoData);
-        setChecklist(convertedDemoData);
-        
-        // 데모 데이터의 clubId로 멤버와 사용자 권한 정보 로드
-        if (demoData?.schedule?.clubId) {
-          await Promise.all([
-            loadGroupMembers(demoData.schedule.clubId),
-            loadGroupUserInfo(demoData.schedule.clubId)
-          ]);
-        }
-      } else if (errorMessage.startsWith('ACCESS_DENIED:')) {
+      if (errorMessage.startsWith('ACCESS_DENIED:')) {
         setError('이 체크리스트에 접근할 권한이 없습니다. 그룹 관리자에게 문의하세요.');
       } else {
         setError('체크리스트를 불러오는 중 오류가 발생했습니다.');
@@ -677,18 +440,8 @@ export default function ChecklistDetailPage() {
       setUserInfo(response.data);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.';
-      
-      // 401 에러인 경우 데모 데이터 사용
-      if (errorMessage.startsWith('LOGIN_REQUIRED:')) {
-        // 데모 사용자 정보 (HOST 권한으로 설정)
-        setUserInfo({
-          role: 'HOST',
-          state: 'JOINING'
-        });
-      } else {
-        console.error('사용자 권한 정보를 불러오는 중 오류가 발생했습니다:', errorMessage);
-        setUserInfo(null);
-      }
+      console.error('사용자 권한 정보를 불러오는 중 오류가 발생했습니다:', errorMessage);
+      setUserInfo(null);
     } finally {
       setPermissionLoading(false);
     }
@@ -702,21 +455,8 @@ export default function ChecklistDetailPage() {
       setAvailableMembers(response.data?.members || []);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.';
-      
-      // 401 에러인 경우 데모 데이터 사용
-      if (errorMessage.startsWith('LOGIN_REQUIRED:')) {
-        // 데모 멤버 데이터
-        setAvailableMembers([
-          { id: 1, clubMemberId: 101, name: '김민수', nickname: '민수야', role: 'MEMBER' },
-          { id: 2, clubMemberId: 102, name: '이영희', nickname: '영희님', role: 'MEMBER' },
-          { id: 3, clubMemberId: 103, name: '박철수', nickname: '철수형', role: 'MEMBER' },
-          { id: 4, clubMemberId: 104, name: '정수진', nickname: '수진이', role: 'MEMBER' },
-          { id: 5, clubMemberId: 105, name: '홍길동', nickname: '길동이', role: 'MEMBER' },
-        ] as ClubMember[]);
-      } else {
-        console.error('멤버를 불러오는 중 오류가 발생했습니다:', errorMessage);
-        setAvailableMembers([]);
-      }
+      console.error('멤버를 불러오는 중 오류가 발생했습니다:', errorMessage);
+      setAvailableMembers([]);
     }
   };
 
