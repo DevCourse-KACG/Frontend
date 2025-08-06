@@ -6,7 +6,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { CheckList } from '@/types/checklist';
 import { fetchChecklists, fetchGroupUserInfo, GroupUserInfo } from '@/api/checklistApi';
 import LoadingSpinner from '@/components/global/LoadingSpinner';
-import { canCreateChecklist } from '@/utils/permissions';
 
 // 데모 데이터
 const DEMO_CHECKLISTS: CheckList[] = [
@@ -156,13 +155,6 @@ export default function SchedulesPage() {
   }, [groupId]);
 
 
-  const handleCreateChecklist = () => {
-    if (!groupId) {
-      alert('그룹 ID가 필요합니다. 올바른 그룹 페이지에서 접근해주세요.');
-      return;
-    }
-    router.push(`/checklists/create?groupId=${groupId}`);
-  };
 
   const handleChecklistClick = (checklist: CheckList) => {
     if (checklist.isActive) {
@@ -257,15 +249,6 @@ export default function SchedulesPage() {
               <h1 className="text-3xl font-bold text-gray-900">체크리스트 목록</h1>
             </div>
             
-            {/* 체크리스트 생성 버튼 - 권한이 있는 사용자만 표시 */}
-            {canCreateChecklist(userInfo) && (
-              <button
-                onClick={handleCreateChecklist}
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"
-              >
-                체크리스트 생성
-              </button>
-            )}
           </div>
           <p className="text-gray-600">체크리스트를 관리하고 할 일들을 체크하세요</p>
         </div>
