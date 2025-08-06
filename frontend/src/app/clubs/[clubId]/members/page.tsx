@@ -54,17 +54,24 @@ export default function MembersPage() {
 
 
     return (
-        <div className="max-w-7xl mx-auto p-4">
-            <h1 className="text-3xl font-bold mb-6">멤버 관리</h1>
-            <section className="flex" style={{ height: 'calc(90vh - 64px)' }}>
-                <aside className="w-1/5 pr-4">
-                    <ClubInfoSideMenu isHost={myInfo?.role === 'HOST'} />
-                </aside>
-                <section className="w-4/5">
-                    {/* 클라이언트 컴포넌트에 초기 데이터를 props로 전달 */}
-                    <MemberManagement clubId={clubId} initialMembers={initialMembers} isHost={myInfo?.role === 'HOST'} />
-                </section>
+        <div className="max-w-7xl mx-auto p-4 flex">
+            <aside
+                className="w-1/5 pr-4"
+                style={{
+                    position: 'sticky',
+                    top: '1rem',
+                    alignSelf: 'flex-start',
+                    height: '80vh',
+                    zIndex: 10,
+                }}
+            >
+                <ClubInfoSideMenu isHost={myInfo?.role === 'HOST'} />
+            </aside>
+            <section className="w-4/5">
+                {/* 클라이언트 컴포넌트에 초기 데이터를 props로 전달 */}
+                <MemberManagement clubId={clubId} initialMembers={initialMembers} isHost={myInfo?.role === 'HOST'} />
             </section>
+
         </div>
     );
 }

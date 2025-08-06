@@ -14,7 +14,7 @@ interface ClubInfoProps {
 
 const ClubInfo: React.FC<ClubInfoProps> = ({ club }) => {
     return (
-        <section style={{ padding: 16, borderRadius: 8, backgroundColor: COLORS.beige, boxShadow: `0 2px 4px ${COLORS.brown}14` }}>
+        <section style={{ padding: 16 }}>
             <header>
                 <InfoCard title="모임명" content={club.name} color={COLORS.brown} contentColor="#FFFFFF" />
             </header>
@@ -32,19 +32,19 @@ const ClubInfo: React.FC<ClubInfoProps> = ({ club }) => {
                 </section>
                 {/* Right: Meta Info */}
                 <aside style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8, minWidth: 220 }}>
-                    <InfoCard title="지역" content={club.mainSpot} color={COLORS.yellow} contentColor={COLORS.brown} />
-                    <InfoCard title="최대 인원" content={`${club.maximumCapacity}명`} color={COLORS.yellow} contentColor={COLORS.brown} />
-                    <InfoCard title="카테고리" content={club.category && club.category in ClubCategoryKorean ? ClubCategoryKorean[club.category as ClubCategory] : '미정'} color={COLORS.yellow} contentColor={COLORS.brown} />
+                    <InfoCard title="지역" content={club.mainSpot} color={COLORS.white} contentColor={COLORS.brown} />
+                    <InfoCard title="최대 인원" content={`${club.maximumCapacity}명`} color={COLORS.white} contentColor={COLORS.brown} />
+                    <InfoCard title="카테고리" content={club.category && club.category in ClubCategoryKorean ? ClubCategoryKorean[club.category as ClubCategory] : '미정'} color={COLORS.white} contentColor={COLORS.brown} />
                     <InfoCard
                         title="시작일"
                         content={club.startDate ? club.startDate.replace(/-/g, '.') : '미정'}
-                        color={COLORS.yellow}
+                        color={COLORS.white}
                         contentColor={COLORS.brown}
                     />
                     <InfoCard
                         title="종료일"
                         content={club.endDate ? club.endDate.replace(/-/g, '.') : '미정'}
-                        color={COLORS.yellow}
+                        color={COLORS.white}
                         contentColor={COLORS.brown}
                     />
                     <InfoCard
@@ -54,10 +54,10 @@ const ClubInfo: React.FC<ClubInfoProps> = ({ club }) => {
                                 ? EventTypeKorean[club.eventType as EventType]
                                 : '미정'
                         }
-                        color={COLORS.yellow}
+                        color={COLORS.white}
                         contentColor={COLORS.brown}
                     />
-                    <InfoCard title="공개 여부" content={club.isPublic ? '공개' : '비공개'} color={COLORS.yellow} contentColor={COLORS.brown} />
+                    <InfoCard title="공개 여부" content={club.isPublic ? '공개' : '비공개'} color={COLORS.white} contentColor={COLORS.brown} />
                 </aside>
             </main>
             <div style={{ height: 16 }} />
