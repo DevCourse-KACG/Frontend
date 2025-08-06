@@ -16,17 +16,17 @@ export default function SchedulesPage() {
   const [userInfoLoading, setUserInfoLoading] = useState(true);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const groupId = searchParams.get('groupId');
+  const clubId = searchParams.get('clubId');
 
   const loadUserInfo = async () => {
-    if (!groupId) {
+    if (!clubId) {
       setUserInfoLoading(false);
       return;
     }
     
     try {
       setUserInfoLoading(true);
-      const response = await fetchGroupUserInfo(groupId);
+      const response = await fetchGroupUserInfo(clubId);
       setUserInfo(response.data);
     } catch (err) {
       // 사용자 정보를 불러올 수 없는 경우 null로 설정
@@ -37,9 +37,9 @@ export default function SchedulesPage() {
   };
 
   const loadChecklists = async () => {
-    if (!groupId) {
+    if (!clubId) {
       setLoading(false);
-      setError('그룹 ID가 필요합니다.');
+      setError('클럽 ID가 필요합니다.');
       return;
     }
     
@@ -47,7 +47,7 @@ export default function SchedulesPage() {
       setLoading(true);
       setError(null);
       
-      const response = await fetchChecklists(groupId);
+      const response = await fetchChecklists(clubId);
       const checklistsData = response.data || [];
       
       // 서버 데이터를 클라이언트 형식으로 변환
@@ -81,18 +81,18 @@ export default function SchedulesPage() {
   useEffect(() => {
     loadUserInfo();
     loadChecklists();
-  }, [groupId]);
+  }, [clubId]);
 
 
 
   const handleChecklistClick = (checklist: CheckList) => {
     if (checklist.isActive) {
-      if (!groupId) {
-        alert('그룹 ID가 필요합니다. 올바른 그룹 페이지에서 접근해주세요.');
+      if (!clubId) {
+        alert('클럽 ID가 필요합니다. 올바른 클럽 페이지에서 접근해주세요.');
         return;
       }
       // 활성 체크리스트인 경우 상세보기로 이동
-      router.push(`/checklists/${checklist.id}?groupId=${groupId}`);
+      router.push(`/checklists/${checklist.id}?clubId=${clubId}`);
     }
   };
 
