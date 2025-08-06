@@ -378,13 +378,9 @@ export default function CreateChecklistPage() {
   };
 
   useEffect(() => {
-    // clubId나 scheduleId가 없으면 리다이렉트
-    if (!clubId) {
-      router.replace('/');
-      return;
-    }
+    // scheduleId가 없으면 리다이렉트
     if (!scheduleId) {
-      router.replace(`/checklists?clubId=${clubId}`);
+      router.replace('/');
       return;
     }
     
