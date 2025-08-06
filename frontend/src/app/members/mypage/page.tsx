@@ -2,7 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { fetchMe, fetchMyClubs, fetchMyFriends, fetchMyPresets } from '@/api/members';
+import {
+  fetchMe,
+  fetchMyClubs,
+  fetchMyFriends,
+  fetchMyPresets,
+  Friend, // api/members.ts에서 수정된 Friend 인터페이스를 가져옵니다.
+} from '@/api/members';
 
 interface UserData {
   nickname: string;
@@ -16,11 +22,6 @@ interface Club {
   clubName: string;
   myRole: 'HOST' | 'MANAGER' | 'PARTICIPANT';
   myState: 'JOINING' | 'APPLIED';
-}
-
-interface Friend {
-  id: number;
-  nickname: string;
 }
 
 interface Preset {
@@ -40,16 +41,28 @@ function MyPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [meData, clubsData, friendsData, presetsData] = await Promise.all([
+        const [meData, clubsData, friendsResponse, presetsData] = await Promise.all([
           fetchMe(),
           fetchMyClubs(),
-          fetchMyFriends(),
+          fetchMyFriends(), // API 응답 전체를 받아옵니다.
           fetchMyPresets(),
         ]);
 
         setUserData(meData);
         setClubs(clubsData);
-        setFriends(friendsData);
+        
+        // 친구 목록 데이터 처리 로직 수정
+        // friendsResponse.data가 존재하고 배열인지 확인
+        if (friendsResponse && Array.isArray(friendsResponse.data)) {
+          // 'ACCEPTED' 상태인 친구만 필터링합니다.
+          const acceptedFriends = friendsResponse.data.filter(
+            (friend: Friend) => friend.status === 'ACCEPTED'
+          );
+          setFriends(acceptedFriends);
+        } else {
+          setFriends([]);
+        }
+        
         setPresets(presetsData);
       } catch (err: unknown) {
         if (err instanceof Error) {
@@ -122,7 +135,6 @@ function MyPage() {
             </p>
           </div>
 
-          {/* 프로필 이미지 섹션 */}
           <div className="relative flex items-start space-x-6 p-6 border-t border-gray-200">
             <div className="w-24 h-24 rounded-full flex-shrink-0 overflow-hidden bg-gray-200 flex items-center justify-center">
               {userData.profileImage ? (
@@ -171,11 +183,16 @@ function MyPage() {
               </button>
             </div>
             {friends && friends.length > 0 ? (
-              <ul className="list-disc list-inside space-y-1">
+              <div className="space-y-2">
                 {friends.map(friend => (
-                  <li key={friend.id}>{friend.nickname}</li>
+                  <div
+                    key={friend.friendId}
+                    className="flex items-center bg-gray-50 p-4 rounded-lg shadow-sm"
+                  >
+                    <span className="text-lg font-medium text-gray-800">{friend.friendNickname}</span>
+                  </div>
                 ))}
-              </ul>
+              </div>
             ) : (
               <p className="text-gray-500">현재 친구가 없습니다.</p>
             )}
