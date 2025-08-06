@@ -297,7 +297,6 @@ export default function CreateChecklistPage() {
   const [checkListItems, setCheckListItems] = useState<CheckListItem[]>([]);
   const [availableMembers, setAvailableMembers] = useState<ClubMember[]>([]);
   const [loading, setLoading] = useState(false);
-  const [isAddingItem, setIsAddingItem] = useState(false);
   const [newItemContent, setNewItemContent] = useState('');
   const [newItemCategory, setNewItemCategory] = useState<keyof typeof CATEGORY_DISPLAY_NAMES>('ETC');
   const [userInfo, setUserInfo] = useState<GroupUserInfo | null>(null);
@@ -709,28 +708,16 @@ export default function CreateChecklistPage() {
 
         {/* 아이템 추가 */}
         <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-gray-900">체크리스트 아이템</h2>
-            <button
-              onClick={() => setIsAddingItem(!isAddingItem)}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-              아이템 추가
-            </button>
-          </div>
-          
-          {isAddingItem && (
-            <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="mb-4">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">체크리스트 아이템 추가</h2>
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
               <div className="space-y-3">
                 <div className="flex items-center gap-2 mb-2">
                   <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                   </svg>
-                  <span className="text-sm font-medium text-blue-700">아이템 추가 모드</span>
-                  <span className="text-xs text-blue-600">(Enter로 빠르게 추가하고 완료 버튼으로 종료)</span>
+                  <span className="text-sm font-medium text-blue-700">새 아이템 추가</span>
+                  <span className="text-xs text-blue-600">(Enter로 빠르게 추가)</span>
                 </div>
                 <div className="flex gap-2">
                   <select
@@ -749,7 +736,6 @@ export default function CreateChecklistPage() {
                     onKeyPress={handleKeyPress}
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white placeholder-gray-500"
                     placeholder="새 할 일을 입력하고 Enter를 누르세요"
-                    autoFocus
                   />
                   <button
                     onClick={handleAddItem}
@@ -763,31 +749,9 @@ export default function CreateChecklistPage() {
                     추가
                   </button>
                 </div>
-                <div className="flex gap-2 justify-end">
-                  <button
-                    onClick={() => {
-                      setIsAddingItem(false);
-                      setNewItemContent('');
-                      setNewItemCategory('ETC');
-                    }}
-                    className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-                  >
-                    추가 완료
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsAddingItem(false);
-                      setNewItemContent('');
-                      setNewItemCategory('ETC');
-                    }}
-                    className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
-                  >
-                    취소
-                  </button>
-                </div>
               </div>
             </div>
-          )}
+          </div>
         </div>
 
         {/* 체크리스트 아이템들 (카테고리별로 그룹화) */}
@@ -853,12 +817,7 @@ export default function CreateChecklistPage() {
             </div>
             <h3 className="text-lg font-semibold text-gray-800 mb-2">체크리스트 아이템이 없습니다</h3>
             <p className="text-gray-600 mb-4">아이템 추가 버튼을 클릭하여 할 일을 추가해보세요.</p>
-            <button
-              onClick={() => setIsAddingItem(true)}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-            >
-              첫 번째 아이템 추가
-            </button>
+            <p className="text-gray-500">위의 아이템 추가 폼을 사용해서 할 일을 추가해보세요.</p>
           </div>
         )}
       </div>
