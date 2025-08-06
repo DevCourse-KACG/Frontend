@@ -7,9 +7,10 @@ const AVATAR_COLORS = [
 // 이름에서 이니셜을 추출
 export function getInitials(name: string) {
   if (!name || !name.trim()) return '';
-  const parts = name.split(' ');
-  if (parts.length === 1) return parts[0][0]?.toUpperCase() || '';
-  return (parts[0][0] + parts[1][0])?.toUpperCase() || '';
+  const parts = name.trim().split(' ').filter(part => part.length > 0);
+  if (parts.length === 0) return '';
+  if (parts.length === 1) return parts[0][0].toUpperCase();
+  return (parts[0][0] + parts[1][0]).toUpperCase();
 }
 
 // 인덱스에 따라 아바타 색상을 반환
