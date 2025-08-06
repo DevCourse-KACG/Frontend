@@ -127,7 +127,7 @@ export default function ScheduleListPage() {
       router.push(`checklists/${targetId}?clubId=${clubId}`)
     } else if (action === 'createCheckList') {
       toast.success('체크리스트 생성 페이지로 이동합니다.'); 
-      router.push(`/checklists/create?scheduleId=${targetId}`)
+      router.push(`/checklists/create?clubId=${clubId}&scheduleId=${targetId}`)
     }
 
     // 캘린더 새로 고침
