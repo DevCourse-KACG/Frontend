@@ -19,7 +19,7 @@ import '@/lib/fullcalendar.css';
 export default function ScheduleListPage() {
   // 파라미터 처리 - 모임 아이디
   const parm = useParams();
-  const clubId = parm.clubId;
+  const clubId = Number(parm.clubId);
 
   // 캘린더 처리
   const calendarRef = useRef<FullCalendar>(null);
