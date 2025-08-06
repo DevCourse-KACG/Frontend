@@ -16,10 +16,8 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// ToastType 정의
 type ToastType = 'success' | 'error';
 
-// Header 컴포넌트의 내용을 RootLayout에 직접 통합
 function Header({
   isLoggedIn,
   onLogout,
@@ -130,6 +128,7 @@ export default function RootLayout({
 
   const handleLogout = () => {
     localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken'); // apiKey(refreshToken)도 함께 제거
     setIsLoggedIn(false);
     showToast('로그아웃되었습니다.', 'success');
     router.push('/');
@@ -153,7 +152,7 @@ export default function RootLayout({
           isLoggedIn={isLoggedIn}
           onLogout={handleLogout}
           onLogin={() => router.push('/login')}
-          onSignup={() => router.push('/signup')}
+          onSignup={() => router.push('/members/register')}
           onMypage={() => router.push('/members/mypage')}
           onFriends={() => router.push('/members/friend')}
           showToast={showToast}

@@ -4,6 +4,7 @@ import * as React from "react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signUp } from '@/api/members'; // api.ts에서 함수를 import
+import toast from 'react-hot-toast'; // react-hot-toast import
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -47,34 +48,37 @@ export default function SignUpPage() {
     setLoading(true);
 
     try {
-      // 서버에서 보낸 응답 데이터를 data 변수에 저장
-      const data = await signUp({
+      // signUp 함수가 반환하는 객체에서 accessToken과 refreshToken(apikey)을 받습니다.
+      const { accessToken, refreshToken } = await signUp({
         email: email,
         password: password,
         nickname: nickname,
         bio: bio,
       });
 
-      console.log("회원가입 성공:", data);
+      console.log("회원가입 성공:", { accessToken, refreshToken });
 
-      // TODO: 로그인 페이지와 마찬가지로 회원가입 성공 시 토큰을 로컬 스토리지에 저장
-      // API 응답 형식이 { "data": { "accessToken": "..." } } 라고 가정합니다.
-      if (data && data.data && data.data.accessToken) {
-        localStorage.setItem('accessToken', data.data.accessToken);
-        setSuccess("회원가입에 성공했습니다!");
+      if (accessToken && refreshToken) {
+        // accessToken과 refreshToken(apikey)을 모두 localStorage에 저장합니다.
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('refreshToken', refreshToken);
+        
+        toast.success("회원가입에 성공했습니다!"); // react-hot-toast 사용
         // 토큰 저장 후 메인 페이지로 이동
         router.push("/");
       } else {
         // 토큰이 없으면 오류를 표시하거나 로그인 페이지로 이동
-        setError("회원가입에 성공했으나, 토큰을 받지 못했습니다. 로그인 페이지로 이동합니다.");
+        toast.error("회원가입에 성공했으나, 토큰을 받지 못했습니다. 로그인 페이지로 이동합니다."); // react-hot-toast 사용
         router.push("/login");
       }
 
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
+        toast.error(`회원가입 실패: ${err.message}`); // react-hot-toast 사용
       } else {
         setError("서버와 통신 중 오류가 발생했습니다.");
+        toast.error("서버와 통신 중 오류가 발생했습니다."); // react-hot-toast 사용
       }
     } finally {
       setLoading(false);
@@ -86,8 +90,9 @@ export default function SignUpPage() {
       <div className="w-full max-w-md bg-white rounded-md shadow-md p-6">
         <h1 className="text-2xl font-bold mb-6">회원가입</h1>
 
-        {error && <p className="mb-4 text-red-600">{error}</p>}
-        {success && <p className="mb-4 text-green-600">{success}</p>}
+        {/* react-hot-toast를 사용하므로 이 부분은 주석 처리하거나 제거할 수 있습니다. */}
+        {/* {error && <p className="mb-4 text-red-600">{error}</p>}
+        {success && <p className="mb-4 text-green-600">{success}</p>} */}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

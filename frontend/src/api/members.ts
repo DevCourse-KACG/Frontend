@@ -3,7 +3,7 @@ import { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
 
-// API 호출 시 공통으로 사용할 fetcher 함수 (기존 코드와 동일)
+// API 호출 시 공통으로 사용할 fetcher 함수 (기존 로직 유지)
 export async function fetcher(url: string, options: RequestInit = {}) {
   const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
 
@@ -35,57 +35,76 @@ export async function fetcher(url: string, options: RequestInit = {}) {
   return response.json();
 }
 
-// 회원가입 API (기존 코드와 동일)
-export async function signUp({ email, password, nickname, bio }: { email: string; password: string; nickname: string; bio: string }) {
+// 회원가입 API 수정
+// 서버 응답에서 토큰을 추출하여 반환하도록 변경했습니다.
+export async function signUp({ email, password, nickname, bio }: { email: string; password: string; nickname: string; bio: string }): Promise<{ accessToken: string; refreshToken: string }> {
   const payload = { email, password, nickname, bio };
-  return fetcher('/api/v1/members/auth/register', {
+  const response = await fetcher('/api/v1/members/auth/register', {
     method: 'POST',
     body: JSON.stringify(payload),
   });
+
+  // 서버 응답의 data 객체에서 accessToken과 apikey를 추출하여 반환
+  if (response && response.data && response.data.accessToken && response.data.apikey) {
+    return {
+      accessToken: response.data.accessToken,
+      refreshToken: response.data.apikey,
+    };
+  }
+  throw new Error("회원가입 응답에 토큰 정보가 없습니다.");
 }
 
-// 로그인 API (기존 코드와 동일)
-export async function login({ email, password }: { email: string; password: string }) {
+// 로그인 API 수정
+// 서버 응답에서 토큰을 추출하여 반환하도록 변경했습니다.
+export async function login({ email, password }: { email: string; password: string }): Promise<{ accessToken: string; refreshToken: string }> {
   const payload = { email, password };
-  return fetcher('/api/v1/members/auth/login', {
+  const response = await fetcher('/api/v1/members/auth/login', {
     method: 'POST',
     body: JSON.stringify(payload),
   });
+
+  // 서버 응답의 data 객체에서 accessToken과 apikey를 추출하여 반환
+  if (response && response.data && response.data.accessToken && response.data.apikey) {
+    return {
+      accessToken: response.data.accessToken,
+      refreshToken: response.data.apikey,
+    };
+  }
+  throw new Error("로그인 응답에 토큰 정보가 없습니다.");
 }
 
-// 게스트 계정 등록 API (기존 코드와 동일)
+// 게스트 계정 등록 API (기존 로직 유지)
 export async function registerGuest(dto: any): Promise<any> {
-    return fetcher('/api/v1/members/auth/guest-register', {
-        method: 'POST',
-        body: JSON.stringify(dto),
-    });
+  return fetcher('/api/v1/members/auth/guest-register', {
+    method: 'POST',
+    body: JSON.stringify(dto),
+  });
 }
 
-// 내 정보 불러오기 (기존 코드와 동일)
+// 내 정보 불러오기 (기존 로직 유지)
 export async function fetchMe(): Promise<any> {
   const response = await fetcher('/api/v1/members/me');
   return response.data;
 }
 
-// 내가 가입한 모임 불러오기 (기존 코드와 동일)
+// 내가 가입한 모임 불러오기 (기존 로직 유지)
 export async function fetchMyClubs(): Promise<any> {
   const response = await fetcher('/api/v1/my-clubs');
   return response.data.clubs;
 }
 
-// 내 친구 목록 불러오기 (수정)
-// API 응답 전체를 반환하도록 변경
+// 내 친구 목록 불러오기 (기존 로직 유지)
 export async function fetchMyFriends(): Promise<any> {
   return await fetcher('/api/v1/members/me/friends');
 }
 
-// 내가 만든 프리셋 목록 불러오기 (기존 코드와 동일)
+// 내가 만든 프리셋 목록 불러오기 (기존 로직 유지)
 export async function fetchMyPresets(): Promise<any> {
   const response = await fetcher('/api/v1/presets');
   return response.data;
 }
 
-// 비밀번호 확인 API (기존 코드와 동일)
+// 비밀번호 확인 API (기존 로직 유지)
 export async function verifyPassword({ email, password }: { email: string; password: string }): Promise<any> {
   const payload = { email, password };
   const response = await fetcher('/api/v1/members/auth/verify-password', {
@@ -95,7 +114,7 @@ export async function verifyPassword({ email, password }: { email: string; passw
   return response.data;
 }
 
-// 기존 인터페이스 정의 (일관성을 위해 아래로 이동)
+// 기존 인터페이스 정의 (기존 로직 유지)
 export interface Friend {
   friendId: number;
   friendMemberId: number;

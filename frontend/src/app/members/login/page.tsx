@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { login } from '@/api/members';
+import { login } from '@/api/members'; // members.ts 파일에서 login 함수를 가져옵니다.
 
 export default function LoginPage() {
   const router = useRouter();
@@ -27,18 +27,22 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const data = await login({ email, password });
+      // login 함수가 반환하는 객체는 { accessToken, refreshToken } 형태입니다.
+      // 이전에 members.ts 파일에서 이 구조로 맞춰주었습니다.
+      const { accessToken, refreshToken } = await login({ email, password });
       
-      console.log("로그인 성공:", data);
+      console.log("로그인 성공:", { accessToken, refreshToken });
       
-      if (data && data.data && data.data.accessToken) {
-        localStorage.setItem('accessToken', data.data.accessToken);
+      if (accessToken && refreshToken) {
+        // accessToken과 refreshToken(apikey)을 모두 localStorage에 저장합니다.
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('refreshToken', refreshToken);
         setSuccess("로그인에 성공했습니다!");
         
         // 로그인 성공 시 직전 페이지로 돌아갑니다.
-        // 이 방법은 URL 파라미터에 의존하지 않아 더 안정적입니다.
         router.back();
       } else {
+        // 이 로직은 members.ts에서 이미 처리되지만, 만약의 경우를 대비해 유지합니다.
         setError("로그인에 성공했으나, 토큰을 받지 못했습니다.");
       }
     } catch (err: unknown) {

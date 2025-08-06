@@ -7,24 +7,11 @@ import { getPublicClubs } from '@/api/club';
 import { components } from "@/types/backend/apiV1/schema";
 import Header from '@/components/global/header';
 import Footer from '@/components/global/footer';
+import toast from 'react-hot-toast'; // react-hot-toast import
 
 type SimpleClubInfoResponse = components['schemas']['SimpleClubInfoResponse'];
 
 type ToastType = 'success' | 'error';
-
-const Toast = ({ show, message, type = 'success' }: { show: boolean; message: string; type?: ToastType }) => {
-  const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
-
-  return (
-    <div
-      className={`fixed bottom-5 left-1/2 -translate-x-1/2 p-4 rounded-xl text-white shadow-xl transition-all duration-300 transform z-50
-      ${show ? 'translate-y-0 opacity-100 visible' : 'translate-y-full opacity-0 invisible'}
-      ${bgColor}`}
-    >
-      <span>{message}</span>
-    </div>
-  );
-};
 
 export default function MainPage() {
   const router = useRouter();
@@ -32,38 +19,19 @@ export default function MainPage() {
   const [publicClubs, setPublicClubs] = useState<SimpleClubInfoResponse[]>([]);
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [isLoadingClubs, setIsLoadingClubs] = useState(true);
-  
-  type ToastState = {
-    show: boolean;
-    message: string;
-    type: ToastType;
-  };
-  const [toast, setToast] = useState<ToastState>({ show: false, message: '', type: 'success' });
-  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
 
   const showToast = (message: string, type: ToastType, redirectPath?: string) => {
-    if (timeoutId) {
-      clearTimeout(timeoutId);
+    if (type === 'success') {
+      toast.success(message);
+    } else {
+      toast.error(message);
     }
-    
-    setToast({ show: true, message, type });
-    const id = setTimeout(() => {
-      setToast({ show: false, message: '', type: 'success' });
-      setTimeoutId(null);
-      if (redirectPath) {
+    if (redirectPath) {
+      setTimeout(() => {
         router.push(redirectPath);
-      }
-    }, 2000);
-    setTimeoutId(id);
+      }, 1500); // 토스트 메시지가 보이는 시간을 고려하여 딜레이
+    }
   };
-  
-  useEffect(() => {
-    return () => {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-    };
-  }, [timeoutId]);
 
   useEffect(() => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
@@ -105,23 +73,26 @@ export default function MainPage() {
   const handleLogout = () => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
     }
     setIsLoggedIn(false);
     showToast('로그아웃되었습니다.', 'success');
   };
 
   const handleLogin = () => {
+    // URL을 원래대로 '/members/login'으로 수정했습니다.
     router.push('/members/login');
   };
 
   const handleSignup = () => {
-    router.push('/members/signup');
+    router.push('/members/register');
   };
 
   const handleMypage = () => {
     if (isLoggedIn) {
       router.push('/members/mypage');
     } else {
+      // URL을 원래대로 '/members/login'으로 수정했습니다.
       showToast('마이페이지는 로그인 후 이용 가능합니다.', 'error', '/members/login');
     }
   };
@@ -130,6 +101,7 @@ export default function MainPage() {
     if (isLoggedIn) {
       router.push('/members/friend');
     } else {
+      // URL을 원래대로 '/members/login'으로 수정했습니다.
       showToast('친구 목록은 로그인 후 이용 가능합니다.', 'error', '/members/login');
     }
   };
@@ -138,6 +110,7 @@ export default function MainPage() {
     if (isLoggedIn) {
       router.push('/clubs/new');
     } else {
+      // URL을 원래대로 '/members/login'으로 수정했습니다.
       showToast('새 모임 만들기는 로그인 후 이용 가능합니다.', 'error', '/members/login');
     }
   };
@@ -162,8 +135,6 @@ export default function MainPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 text-gray-800 font-sans">
-      <Toast show={toast.show} message={toast.message} type={toast.type} />
-      
       <Header
         isLoggedIn={isLoggedIn}
         onLogout={handleLogout}
@@ -243,7 +214,6 @@ export default function MainPage() {
                             <h2 className="text-4xl md:text-5xl font-extrabold text-white text-shadow-lg drop-shadow-md">
                               {club.name}
                             </h2>
-                            {/* 변경: bio 속성 제거 */}
                           </div>
                         </div>
                       ))}
