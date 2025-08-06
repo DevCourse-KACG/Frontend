@@ -15,7 +15,7 @@ interface CreateClubLinkResponse {
  * @returns 생성된 초대 링크 URL
  */
 async function generateClubLink(clubId: string, accessToken: string): Promise<string> {
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
   try {
     // 프론트엔드 API 호출 경로를 백엔드 컨트롤러 경로와 일치하도록 수정합니다.
     const response = await fetch(`${API_BASE_URL}/api/v1/clubs/${clubId}/members/invitation-link`, {
@@ -33,7 +33,7 @@ async function generateClubLink(clubId: string, accessToken: string): Promise<st
       const errorData = await response.json().catch(() => ({ message: '서버 응답 파싱 실패' }));
       throw new Error(errorData.message || `초대 링크 생성 실패: ${response.status} ${response.statusText}`);
     }
-    
+
     // RsData 구조에서 data 필드를 추출합니다.
     const { data }: { data: CreateClubLinkResponse } = await response.json();
     return data.invitationLink;
