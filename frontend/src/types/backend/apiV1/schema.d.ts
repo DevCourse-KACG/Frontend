@@ -22,7 +22,10 @@ export interface paths {
          */
         put: operations["modifySchedule"];
         post?: never;
-        /** 일정 삭제 */
+        /**
+         * 일정 삭제
+         * @description 일정 삭제는 호스트 또는 매니저 권한이 있는 사용자만 가능
+         */
         delete: operations["deleteSchedule"];
         options?: never;
         head?: never;
@@ -123,7 +126,7 @@ export interface paths {
         put?: never;
         /**
          * 일정 생성
-         * @description 일정 생성은 호스트 권한이 있는 사용자만 가능
+         * @description 일정 생성은 호스트 또는 매니저 권한이 있는 사용자만 가능
          */
         post: operations["createSchedule"];
         delete?: never;
@@ -944,7 +947,7 @@ export interface components {
             /** @description 친구 요청 대상의 이메일 */
             friend_email: string;
         };
-        FriendWithBioDto: {
+        FriendDto: {
             /**
              * Format: int64
              * @description 친구 ID
@@ -967,11 +970,11 @@ export interface components {
              */
             status?: "PENDING" | "ACCEPTED" | "REJECTED";
         };
-        RsDataFriendWithBioDto: {
+        RsDataFriendDto: {
             /** Format: int32 */
             code?: number;
             message?: string;
-            data?: components["schemas"]["FriendWithBioDto"];
+            data?: components["schemas"]["FriendDto"];
         };
         PasswordCheckRequestDto: {
             password: string;
@@ -1208,27 +1211,6 @@ export interface components {
             message?: string;
             data?: components["schemas"]["MyInfoInClub"];
         };
-        FriendDto: {
-            /**
-             * Format: int64
-             * @description 친구 ID
-             */
-            friendId?: number;
-            /**
-             * Format: int64
-             * @description 친구(회원) ID
-             */
-            friendMemberId?: number;
-            /** @description 친구(회원) 닉네임 */
-            friendNickname?: string;
-            /** @description 친구(회원) 프로필 이미지 URL */
-            friendProfileImageUrl?: string;
-            /**
-             * @description 친구 관계
-             * @enum {string}
-             */
-            status?: "PENDING" | "ACCEPTED" | "REJECTED";
-        };
         RsDataListFriendDto: {
             /** Format: int32 */
             code?: number;
@@ -1286,10 +1268,12 @@ export interface components {
             data?: components["schemas"]["ClubMemberResponse"];
         };
         PageSimpleClubInfoWithoutLeader: {
-            /** Format: int32 */
-            totalPages?: number;
             /** Format: int64 */
             totalElements?: number;
+            /** Format: int32 */
+            totalPages?: number;
+            /** Format: int32 */
+            numberOfElements?: number;
             /** Format: int32 */
             size?: number;
             content?: components["schemas"]["SimpleClubInfoWithoutLeader"][];
@@ -1298,8 +1282,6 @@ export interface components {
             sort?: components["schemas"]["SortObject"];
             first?: boolean;
             last?: boolean;
-            /** Format: int32 */
-            numberOfElements?: number;
             pageable?: components["schemas"]["PageableObject"];
             empty?: boolean;
         };
@@ -1309,9 +1291,9 @@ export interface components {
             sort?: components["schemas"]["SortObject"];
             paged?: boolean;
             /** Format: int32 */
-            pageNumber?: number;
-            /** Format: int32 */
             pageSize?: number;
+            /** Format: int32 */
+            pageNumber?: number;
             unpaged?: boolean;
         };
         RsDataPageSimpleClubInfoWithoutLeader: {
@@ -1991,7 +1973,7 @@ export interface operations {
     getFriends: {
         parameters: {
             query?: {
-                status?: "PENDING" | "ACCEPTED" | "REJECTED";
+                status?: "SENT" | "RECEIVED" | "ACCEPTED" | "REJECTED" | "ALL";
             };
             header?: never;
             path?: never;
@@ -2038,7 +2020,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json;charset=UTF-8": components["schemas"]["RsDataFriendWithBioDto"];
+                    "application/json;charset=UTF-8": components["schemas"]["RsDataFriendDto"];
                 };
             };
             /** @description Bad Request */
@@ -2529,7 +2511,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json;charset=UTF-8": components["schemas"]["RsDataFriendWithBioDto"];
+                    "application/json;charset=UTF-8": components["schemas"]["RsDataFriendDto"];
                 };
             };
             /** @description Bad Request */
@@ -2560,7 +2542,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json;charset=UTF-8": components["schemas"]["RsDataFriendWithBioDto"];
+                    "application/json;charset=UTF-8": components["schemas"]["RsDataFriendDto"];
                 };
             };
             /** @description Bad Request */
