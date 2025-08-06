@@ -3,11 +3,12 @@
 import * as React from "react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { signUp } from '@/api/members'; // api.ts에서 함수를 import
-import toast from 'react-hot-toast'; // react-hot-toast import
+import { signUp } from '@/api/members'; // members.ts에서 함수를 import
+import { useLogin } from '../../layout'; // 전역 상태 훅 가져오기
 
 export default function SignUpPage() {
   const router = useRouter();
+  const { showToast, setIsLoggedIn } = useLogin(); // 전역 상태와 함수 사용
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,22 +27,26 @@ export default function SignUpPage() {
 
     if (password !== passwordConfirm) {
       setError("비밀번호와 비밀번호 확인이 일치하지 않습니다.");
+      showToast("비밀번호와 비밀번호 확인이 일치하지 않습니다.", "error");
       return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       setError("올바른 이메일 형식을 입력해주세요.");
+      showToast("올바른 이메일 형식을 입력해주세요.", "error");
       return;
     }
 
     if (password.length < 8) {
       setError("비밀번호는 최소 8자 이상이어야 합니다.");
+      showToast("비밀번호는 최소 8자 이상이어야 합니다.", "error");
       return;
     }
 
     if (!email || !password || !nickname) {
       setError("이메일, 비밀번호, 닉네임은 필수 입력 항목입니다.");
+      showToast("이메일, 비밀번호, 닉네임은 필수 입력 항목입니다.", "error");
       return;
     }
 
@@ -63,22 +68,22 @@ export default function SignUpPage() {
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('refreshToken', refreshToken);
         
-        toast.success("회원가입에 성공했습니다!"); // react-hot-toast 사용
+        setIsLoggedIn(true); // <---- 회원가입 성공 시 전역 상태 직접 업데이트
+        showToast("회원가입에 성공했습니다!", "success");
         // 토큰 저장 후 메인 페이지로 이동
         router.push("/");
       } else {
         // 토큰이 없으면 오류를 표시하거나 로그인 페이지로 이동
-        toast.error("회원가입에 성공했으나, 토큰을 받지 못했습니다. 로그인 페이지로 이동합니다."); // react-hot-toast 사용
-        router.push("/login");
+        showToast("회원가입에 성공했으나, 토큰을 받지 못했습니다. 로그인 페이지로 이동합니다.", "error", "/members/login");
       }
 
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
-        toast.error(`회원가입 실패: ${err.message}`); // react-hot-toast 사용
+        showToast(`회원가입 실패: ${err.message}`, "error");
       } else {
         setError("서버와 통신 중 오류가 발생했습니다.");
-        toast.error("서버와 통신 중 오류가 발생했습니다."); // react-hot-toast 사용
+        showToast("서버와 통신 중 오류가 발생했습니다.", "error");
       }
     } finally {
       setLoading(false);

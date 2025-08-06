@@ -1,6 +1,7 @@
+// app/layout.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, createContext, useContext } from 'react';
 import { useRouter } from 'next/navigation';
 import { Toaster, toast } from 'react-hot-toast';
 import { Geist, Geist_Mono } from "next/font/google";
@@ -18,24 +19,84 @@ const geistMono = Geist_Mono({
 
 type ToastType = 'success' | 'error';
 
-function Header({
-  isLoggedIn,
-  onLogout,
-  onLogin,
-  onSignup,
-  onMypage,
-  onFriends,
-}: {
+// 전역 로그인 상태를 위한 컨텍스트 생성
+interface LoginContextType {
   isLoggedIn: boolean;
-  onLogout: () => void;
-  onLogin: () => void;
-  onSignup: () => void;
-  onMypage: () => void;
-  onFriends: () => void;
-}) {
+  setIsLoggedIn: (isLoggedIn: boolean) => void;
+  showToast: (message: string, type: ToastType, redirectPath?: string) => void;
+}
+
+const LoginContext = createContext<LoginContextType | undefined>(undefined);
+
+// 로그인 컨텍스트를 제공하는 Provider 컴포넌트
+function LoginProvider({ children }: { children: React.ReactNode }) {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+    setIsLoggedIn(!!token);
+  }, []);
+
+  const showToast = (message: string, type: ToastType, redirectPath?: string) => {
+    if (type === 'success') {
+      toast.success(message);
+    } else {
+      toast.error(message);
+    }
+    if (redirectPath) {
+      setTimeout(() => {
+        router.push(redirectPath);
+      }, 2000);
+    }
+  };
+
+  return (
+    <LoginContext.Provider value={{ isLoggedIn, setIsLoggedIn, showToast }}>
+      {children}
+    </LoginContext.Provider>
+  );
+}
+
+// 컨텍스트를 사용하기 위한 훅
+export const useLogin = () => {
+  const context = useContext(LoginContext);
+  if (context === undefined) {
+    throw new Error('useLogin must be used within a LoginProvider');
+  }
+  return context;
+};
+
+function Header() {
+  const router = useRouter();
+  const { isLoggedIn, setIsLoggedIn, showToast } = useLogin();
+  
   const handleHomeClick = () => {
     router.push('/');
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    setIsLoggedIn(false);
+    showToast('로그아웃되었습니다.', 'success');
+    router.push('/');
+  };
+  
+  const handleMypage = () => {
+    if (isLoggedIn) {
+      router.push('/members/mypage');
+    } else {
+      showToast('마이페이지는 로그인 후 이용 가능합니다.', 'error', '/members/login');
+    }
+  };
+
+  const handleFriends = () => {
+    if (isLoggedIn) {
+      router.push('/members/friend');
+    } else {
+      showToast('친구 목록은 로그인 후 이용 가능합니다.', 'error', '/members/login');
+    }
   };
 
   return (
@@ -48,10 +109,9 @@ function Header({
           </h1>
         </div>
         <nav className="flex items-center space-x-4">
-          {/* 로그인 상태에 따라 로그인/회원가입 또는 로그아웃 버튼 표시 */}
           {isLoggedIn ? (
             <button
-              onClick={onLogout}
+              onClick={handleLogout}
               className="px-4 py-2 bg-red-500 text-white font-semibold rounded-full shadow-md transition-all duration-200 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400"
             >
               로그아웃
@@ -59,29 +119,27 @@ function Header({
           ) : (
             <>
               <button
-                onClick={onSignup}
+                onClick={() => router.push('/members/register')}
                 className="px-4 py-2 bg-green-500 text-white font-semibold rounded-full shadow-md transition-all duration-200 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400"
               >
                 회원가입
               </button>
               <button
-                onClick={onLogin}
+                onClick={() => router.push('/members/login')}
                 className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-full shadow-md transition-all duration-200 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
               >
                 로그인
               </button>
             </>
           )}
-
-          {/* 내 친구 및 마이페이지 버튼은 항상 표시 */}
           <button
-            onClick={onFriends}
+            onClick={handleFriends}
             className="px-4 py-2 text-gray-800 bg-gray-200 font-semibold rounded-full shadow-md transition-all duration-200 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
           >
             내 친구
           </button>
           <button
-            onClick={onMypage}
+            onClick={handleMypage}
             className="px-4 py-2 text-gray-800 bg-gray-200 font-semibold rounded-full shadow-md transition-all duration-200 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
           >
             마이페이지
@@ -105,76 +163,27 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const router = useRouter();
-
-  useEffect(() => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-    setIsLoggedIn(!!token);
-  }, []);
-
-  const showToast = (message: string, type: ToastType, redirectPath?: string) => {
-    if (type === 'success') {
-      toast.success(message);
-    } else {
-      toast.error(message);
-    }
-    if (redirectPath) {
-      setTimeout(() => {
-        router.push(redirectPath);
-      }, 2000);
-    }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    setIsLoggedIn(false);
-    showToast('로그아웃되었습니다.', 'success');
-  };
-
-  const handleMypage = () => {
-    if (isLoggedIn) {
-      router.push('/members/mypage');
-    } else {
-      showToast('마이페이지는 로그인 후 이용 가능합니다.', 'error', '/members/login');
-    }
-  };
-
-  const handleFriends = () => {
-    if (isLoggedIn) {
-      router.push('/members/friend');
-    } else {
-      showToast('친구 목록은 로그인 후 이용 가능합니다.', 'error', '/members/login');
-    }
-  };
-
   return (
     <html lang="ko">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}>
-        <Header
-          isLoggedIn={isLoggedIn}
-          onLogout={handleLogout}
-          onLogin={() => router.push('/members/login')}
-          onSignup={() => router.push('/members/register')}
-          onMypage={handleMypage}
-          onFriends={handleFriends}
-        />
-        <main className="flex-grow pt-24">
-          {children}
-        </main>
-        <Footer />
-        <Toaster 
-          position="bottom-center"
-          toastOptions={{
-            error: {
-              style: {
-                background: '#EF4444', 
-                color: 'white',
+        <LoginProvider>
+          <Header />
+          <main className="flex-grow pt-24">
+            {children}
+          </main>
+          <Footer />
+          <Toaster 
+            position="bottom-center"
+            toastOptions={{
+              error: {
+                style: {
+                  background: '#EF4444', 
+                  color: 'white',
+                },
               },
-            },
-          }}
-        />
+            }}
+          />
+        </LoginProvider>
       </body>
     </html>
   );

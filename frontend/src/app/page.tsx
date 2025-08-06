@@ -1,3 +1,4 @@
+// app/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -5,35 +6,18 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { getPublicClubs } from '@/api/club';
 import { components } from "@/types/backend/apiV1/schema";
-import toast from 'react-hot-toast';
+import { useLogin } from './layout'; // 전역 상태 훅 가져오기
 
 type SimpleClubInfoResponse = components['schemas']['SimpleClubInfoResponse'];
-type ToastType = 'success' | 'error';
 
 export default function MainPage() {
   const router = useRouter();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { isLoggedIn, showToast } = useLogin(); // 전역 상태와 함수 사용
   const [publicClubs, setPublicClubs] = useState<SimpleClubInfoResponse[]>([]);
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [isLoadingClubs, setIsLoadingClubs] = useState(true);
 
-  const showToast = (message: string, type: ToastType, redirectPath?: string) => {
-    if (type === 'success') {
-      toast.success(message);
-    } else {
-      toast.error(message);
-    }
-    if (redirectPath) {
-      setTimeout(() => {
-        router.push(redirectPath);
-      }, 1500);
-    }
-  };
-
   useEffect(() => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-    setIsLoggedIn(!!token);
-
     const fetchPublicClubs = async () => {
       try {
         const response = await getPublicClubs();
@@ -47,9 +31,8 @@ export default function MainPage() {
         setIsLoadingClubs(false);
       }
     };
-
     fetchPublicClubs();
-  }, []);
+  }, [showToast]); // showToast 의존성 추가
 
   useEffect(() => {
     if (publicClubs.length > 0) {
