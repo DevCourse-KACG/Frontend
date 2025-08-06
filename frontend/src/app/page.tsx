@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { getPublicClubs } from '@/api/club';
 import { components } from "@/types/backend/apiV1/schema";
+import Header from '@/components/global/header'; // Header 컴포넌트 임포트
+import Footer from '@/components/global/footer'; // Footer 컴포넌트 임포트
 
 type SimpleClubInfoWithoutLeader = components['schemas']['SimpleClubInfoWithoutLeader'];
 
@@ -166,65 +168,16 @@ export default function MainPage() {
     <div className="flex flex-col min-h-screen bg-gray-50 text-gray-800 font-sans">
       <Toast show={toast.show} message={toast.message} type={toast.type} />
       
-      <header className="bg-white shadow-md w-full p-4 md:p-6 fixed top-0 z-50">
-        <div className="container mx-auto flex items-center justify-between">
-          <h1 className="text-3xl font-extrabold text-blue-600">
-            <span className="text-blue-600">준비물</span>
-            <span className="text-gray-900">.com</span>
-          </h1>
-          <nav className="flex items-center space-x-4">
-            {isLoggedIn ? (
-              <>
-                <button
-                  onClick={handleLogout}
-                  className="px-4 py-2 bg-red-500 text-white font-semibold rounded-full shadow-md transition-all duration-200 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400"
-                >
-                  로그아웃
-                </button>
-                <button
-                  onClick={handleFriends}
-                  className="px-4 py-2 text-gray-800 bg-gray-200 font-semibold rounded-full shadow-md transition-all duration-200 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
-                >
-                  내 친구
-                </button>
-                <button
-                  onClick={handleMypage}
-                  className="px-4 py-2 text-gray-800 bg-gray-200 font-semibold rounded-full shadow-md transition-all duration-200 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
-                >
-                  마이페이지
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  onClick={handleSignup}
-                  className="px-4 py-2 bg-green-500 text-white font-semibold rounded-full shadow-md transition-all duration-200 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400"
-                >
-                  회원가입
-                </button>
-                <button
-                  onClick={handleLogin}
-                  className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-full shadow-md transition-all duration-200 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                >
-                  로그인
-                </button>
-                <button
-                  onClick={handleFriends}
-                  className="px-4 py-2 text-gray-800 bg-gray-200 font-semibold rounded-full shadow-md transition-all duration-200 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
-                >
-                  내 친구
-                </button>
-                <button
-                  onClick={handleMypage}
-                  className="px-4 py-2 text-gray-800 bg-gray-200 font-semibold rounded-full shadow-md transition-all duration-200 hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
-                >
-                  마이페이지
-                </button>
-              </>
-            )}
-          </nav>
-        </div>
-      </header>
+      {/* Header 컴포넌트 사용 */}
+      <Header
+        isLoggedIn={isLoggedIn}
+        onLogout={handleLogout}
+        onLogin={handleLogin}
+        onSignup={handleSignup}
+        onMypage={handleMypage}
+        onFriends={handleFriends}
+        showToast={showToast} // showToast 함수를 Header 컴포넌트로 전달
+      />
 
       <main className="flex-grow pt-24 pb-8">
         {/* 히어로 섹션 */}
@@ -302,7 +255,6 @@ export default function MainPage() {
                             <h2 className="text-4xl md:text-5xl font-extrabold text-white text-shadow-lg drop-shadow-md">
                               {club.name}
                             </h2>
-                            {/* mainSpot 대신 bio 필드 내용으로 변경 */}
                             <p className="mt-2 text-lg md:text-xl text-white opacity-80">
                               {club.bio}
                             </p>
@@ -344,9 +296,8 @@ export default function MainPage() {
         </div>
       </main>
 
-      <footer className="bg-gray-800 text-white text-center p-4">
-        <p>© 2024 준비물 닷컴. 모든 권리 보유.</p>
-      </footer>
+      {/* Footer 컴포넌트 사용 */}
+      <Footer />
     </div>
   );
 }
