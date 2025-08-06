@@ -16,11 +16,11 @@ export interface GroupUserResponse {
   data: GroupUserInfo;
 }
 
-const API_BASE_URL = 'http://localhost:8080/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
 
 export async function fetchChecklists(groupId: string): Promise<CheckListListResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/checklists/group/${groupId}`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/checklists/group/${groupId}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -62,7 +62,7 @@ export async function fetchChecklists(groupId: string): Promise<CheckListListRes
 
 export async function fetchChecklistDetail(checklistId: string): Promise<CheckListResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/checklists/${checklistId}`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/checklists/${checklistId}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -104,7 +104,7 @@ export async function fetchChecklistDetail(checklistId: string): Promise<CheckLi
 
 export async function updateChecklist(checklistId: string, updateData: CheckListUpdateReqDto): Promise<CheckListResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/checklists/${checklistId}`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/checklists/${checklistId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -147,7 +147,7 @@ export async function updateChecklist(checklistId: string, updateData: CheckList
 
 export async function deleteChecklist(checklistId: string): Promise<void> {
   try {
-    const response = await fetch(`${API_BASE_URL}/checklists/${checklistId}`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/checklists/${checklistId}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
@@ -155,7 +155,11 @@ export async function deleteChecklist(checklistId: string): Promise<void> {
       credentials: 'include',
     });
 
-    const data = await response.json();
+    // 204 No Content 처리
+    if (response.status === 204) {
+      return;
+    }
+    const data = response.headers.get('content-length') !== '0' ? await response.json() : {};
 
     // 401 에러인 경우 (로그인 필요)
     if (response.status === 401) {
@@ -187,7 +191,7 @@ export async function deleteChecklist(checklistId: string): Promise<void> {
 
 export async function fetchGroupMembers(clubId: string): Promise<ClubMemberResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/clubs/${clubId}/members?state=JOINING`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/clubs/${clubId}/members?state=JOINING`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -231,7 +235,7 @@ export interface ScheduleResponse {
 
 export async function fetchScheduleDetail(scheduleId: string): Promise<ScheduleResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/schedules/${scheduleId}`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/schedules/${scheduleId}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -273,7 +277,7 @@ export async function fetchScheduleDetail(scheduleId: string): Promise<ScheduleR
 
 export async function fetchGroupUserInfo(clubId: string): Promise<GroupUserResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/my-clubs/${clubId}`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/my-clubs/${clubId}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -315,7 +319,7 @@ export async function fetchGroupUserInfo(clubId: string): Promise<GroupUserRespo
 
 export async function createChecklist(checklistData: CheckListWriteReqDto): Promise<CheckListResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/checklists`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/checklists`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
