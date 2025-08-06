@@ -693,7 +693,7 @@ export default function CreateChecklistPage() {
                 {loading ? '생성 중...' : '완료'}
               </button>
               <Link
-                href={`/checklists?clubId=${clubId}`}
+                href="/clubs-manage"
                 className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
               >
                 취소
