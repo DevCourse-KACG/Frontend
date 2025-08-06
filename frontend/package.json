@@ -19,7 +19,6 @@
     "@fullcalendar/react": "^6.1.18",
     "@fullcalendar/timegrid": "^6.1.18",
     "framer-motion": "^12.23.12",
-
     "next": "15.4.5",
     "react": "^19.1.1",
     "react-do": "^1.1.6",
