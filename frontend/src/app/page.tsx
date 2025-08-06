@@ -5,10 +5,10 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { getPublicClubs } from '@/api/club';
 import { components } from "@/types/backend/apiV1/schema";
-import Header from '@/components/global/header'; // Header 컴포넌트 임포트
-import Footer from '@/components/global/footer'; // Footer 컴포넌트 임포트
+import Header from '@/components/global/header';
+import Footer from '@/components/global/footer';
 
-type SimpleClubInfoWithoutLeader = components['schemas']['SimpleClubInfoWithoutLeader'];
+type SimpleClubInfoResponse = components['schemas']['SimpleClubInfoResponse'];
 
 type ToastType = 'success' | 'error';
 
@@ -29,7 +29,7 @@ const Toast = ({ show, message, type = 'success' }: { show: boolean; message: st
 export default function MainPage() {
   const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [publicClubs, setPublicClubs] = useState<SimpleClubInfoWithoutLeader[]>([]);
+  const [publicClubs, setPublicClubs] = useState<SimpleClubInfoResponse[]>([]);
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   const [isLoadingClubs, setIsLoadingClubs] = useState(true);
   
@@ -42,21 +42,18 @@ export default function MainPage() {
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
 
   const showToast = (message: string, type: ToastType, redirectPath?: string) => {
-    // 기존 타이머가 있다면 정리
     if (timeoutId) {
       clearTimeout(timeoutId);
     }
     
     setToast({ show: true, message, type });
-    // 3초 후에 토스트를 자동으로 숨깁니다.
     const id = setTimeout(() => {
       setToast({ show: false, message: '', type: 'success' });
       setTimeoutId(null);
-      // 메시지 확인 후 리다이렉트
       if (redirectPath) {
         router.push(redirectPath);
       }
-    }, 2000); // 2초 동안 메시지 표시
+    }, 2000);
     setTimeoutId(id);
   };
   
@@ -131,7 +128,7 @@ export default function MainPage() {
 
   const handleFriends = () => {
     if (isLoggedIn) {
-      router.push('/members/friends');
+      router.push('/members/friend');
     } else {
       showToast('친구 목록은 로그인 후 이용 가능합니다.', 'error', '/members/login');
     }
@@ -145,12 +142,11 @@ export default function MainPage() {
     }
   };
 
-  // 무작위 그라데이션을 생성하는 함수
   const getRandomGradient = () => {
     const colors = [
-      '#FF6B6B', '#FFD166', '#06D6A0', '#118AB2', '#073B4C', // Vibrant
-      '#A2D2FF', '#BDE0FE', '#CDB4DB', '#FFC8DD', '#FFAFCC', // Pastel
-      '#8338EC', '#3A86FF', '#FF006E', '#FB5607', '#FFBE0B'  // Bold
+      '#FF6B6B', '#FFD166', '#06D6A0', '#118AB2', '#073B4C',
+      '#A2D2FF', '#BDE0FE', '#CDB4DB', '#FFC8DD', '#FFAFCC',
+      '#8338EC', '#3A86FF', '#FF006E', '#FB5607', '#FFBE0B'
     ];
     const getRandomColor = () => colors[Math.floor(Math.random() * colors.length)];
     
@@ -168,7 +164,6 @@ export default function MainPage() {
     <div className="flex flex-col min-h-screen bg-gray-50 text-gray-800 font-sans">
       <Toast show={toast.show} message={toast.message} type={toast.type} />
       
-      {/* Header 컴포넌트 사용 */}
       <Header
         isLoggedIn={isLoggedIn}
         onLogout={handleLogout}
@@ -176,11 +171,10 @@ export default function MainPage() {
         onSignup={handleSignup}
         onMypage={handleMypage}
         onFriends={handleFriends}
-        showToast={showToast} // showToast 함수를 Header 컴포넌트로 전달
+        showToast={showToast}
       />
 
       <main className="flex-grow pt-24 pb-8">
-        {/* 히어로 섹션 */}
         <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-24 text-center">
           <div className="container mx-auto px-4">
             <h2 className="text-5xl md:text-6xl font-extrabold mb-4 animate-fadeIn">
@@ -192,10 +186,8 @@ export default function MainPage() {
           </div>
         </div>
 
-        {/* 2단 레이아웃 섹션 */}
         <div className="container mx-auto mt-16 px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
-            {/* 왼쪽: 모임 만들기 섹션 */}
             <div className="flex flex-col animate-fadeInLeft">
               <h3 className="text-4xl font-bold text-gray-900 mb-6 text-left md:ml-12">모임을 만들거나</h3>
               <div className="p-8 bg-white rounded-3xl shadow-xl w-full flex-grow flex flex-col justify-between transition-transform duration-300 hover:scale-[1.02] transform-gpu">
@@ -219,7 +211,6 @@ export default function MainPage() {
               </div>
             </div>
 
-            {/* 오른쪽: 공개 모임 참여 섹션 */}
             <div className="flex flex-col animate-fadeInRight">
               <h3 className="text-4xl font-bold text-gray-900 mb-6 text-right md:mr-12">모임에 참여하세요</h3>
               <div className="p-8 bg-white rounded-3xl shadow-xl w-full flex-grow flex flex-col justify-between transition-transform duration-300 hover:scale-[1.02] transform-gpu">
@@ -232,7 +223,6 @@ export default function MainPage() {
                   </div>
                 ) : publicClubs.length > 0 ? (
                   <div className="relative w-full h-64 rounded-2xl shadow-lg overflow-hidden">
-                    {/* 모든 배너를 맵핑하고, translateX로 위치를 조정하여 슬라이드 효과 구현 */}
                     <div
                       className="absolute inset-0 flex transition-transform duration-500 ease-in-out"
                       style={{ transform: `translateX(-${currentBannerIndex * 100}%)` }}
@@ -243,26 +233,21 @@ export default function MainPage() {
                           className="flex-shrink-0 w-full h-full relative group"
                           onClick={() => router.push(`/clubs/${club.clubId}`)}
                         >
-                          {/* 배경 이미지 또는 그라데이션 */}
                           <div
                             className="absolute inset-0 bg-cover bg-center transition-all duration-500 group-hover:scale-105"
                             style={{
                               backgroundImage: club.imageUrl ? `url(${club.imageUrl})` : getRandomGradient(),
                             }}
                           ></div>
-                          {/* 오버레이 및 텍스트 (bg-black/30으로 변경) */}
                           <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/30 transition-all duration-300 group-hover:bg-opacity-60">
                             <h2 className="text-4xl md:text-5xl font-extrabold text-white text-shadow-lg drop-shadow-md">
                               {club.name}
                             </h2>
-                            <p className="mt-2 text-lg md:text-xl text-white opacity-80">
-                              {club.bio}
-                            </p>
+                            {/* 변경: bio 속성 제거 */}
                           </div>
                         </div>
                       ))}
                     </div>
-                    {/* 페이징 버튼 */}
                     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 z-10">
                       {publicClubs.map((_, index) => (
                         <button
@@ -296,7 +281,6 @@ export default function MainPage() {
         </div>
       </main>
 
-      {/* Footer 컴포넌트 사용 */}
       <Footer />
     </div>
   );

@@ -164,7 +164,7 @@ function MyPage() {
             <div className="flex justify-between items-center mb-2">
               <h3 className="text-xl font-semibold">친구 목록</h3>
               <button 
-                onClick={() => router.push('/friends-manage')}
+                onClick={() => router.push('/members/friend')}
                 className="text-sm px-3 py-1.5 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors font-semibold"
               >
                 전체보기

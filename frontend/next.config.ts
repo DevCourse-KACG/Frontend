@@ -12,6 +12,12 @@ const nextConfig = {
         port: '',
         pathname: '/member/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'kacg-2025-images.s3.ap-northeast-2.amazonaws.com',
+        port: '',
+        pathname: '/club/**',
+      },
     ],
   },
 };
