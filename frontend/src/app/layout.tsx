@@ -25,7 +25,6 @@ function Header({
   onSignup,
   onMypage,
   onFriends,
-  showToast,
 }: {
   isLoggedIn: boolean;
   onLogout: () => void;
@@ -33,7 +32,6 @@ function Header({
   onSignup: () => void;
   onMypage: () => void;
   onFriends: () => void;
-  showToast: (message: string, type: ToastType, redirectPath?: string) => void;
 }) {
   const router = useRouter();
   const handleHomeClick = () => {
@@ -122,17 +120,9 @@ export default function RootLayout({
   const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
+    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
     setIsLoggedIn(!!token);
   }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken'); // apiKey(refreshToken)도 함께 제거
-    setIsLoggedIn(false);
-    showToast('로그아웃되었습니다.', 'success');
-    router.push('/');
-  };
 
   const showToast = (message: string, type: ToastType, redirectPath?: string) => {
     if (type === 'success') {
@@ -141,7 +131,32 @@ export default function RootLayout({
       toast.error(message);
     }
     if (redirectPath) {
-      router.push(redirectPath);
+      setTimeout(() => {
+        router.push(redirectPath);
+      }, 2000);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    setIsLoggedIn(false);
+    showToast('로그아웃되었습니다.', 'success');
+  };
+
+  const handleMypage = () => {
+    if (isLoggedIn) {
+      router.push('/members/mypage');
+    } else {
+      showToast('마이페이지는 로그인 후 이용 가능합니다.', 'error', '/members/login');
+    }
+  };
+
+  const handleFriends = () => {
+    if (isLoggedIn) {
+      router.push('/members/friend');
+    } else {
+      showToast('친구 목록은 로그인 후 이용 가능합니다.', 'error', '/members/login');
     }
   };
 
@@ -153,15 +168,24 @@ export default function RootLayout({
           onLogout={handleLogout}
           onLogin={() => router.push('/members/login')}
           onSignup={() => router.push('/members/register')}
-          onMypage={() => router.push('/members/mypage')}
-          onFriends={() => router.push('/members/friend')}
-          showToast={showToast}
+          onMypage={handleMypage}
+          onFriends={handleFriends}
         />
         <main className="flex-grow pt-24">
           {children}
         </main>
         <Footer />
-        <Toaster position="top-right" />
+        <Toaster 
+          position="bottom-center"
+          toastOptions={{
+            error: {
+              style: {
+                background: '#EF4444', // Tailwind CSS 'red-500'
+                color: 'white',
+              },
+            },
+          }}
+        />
       </body>
     </html>
   );
