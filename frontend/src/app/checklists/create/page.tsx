@@ -378,15 +378,19 @@ export default function CreateChecklistPage() {
   };
 
   useEffect(() => {
-    // scheduleId가 없으면 리다이렉트
-    if (!scheduleId) {
+    // clubId나 scheduleId가 없으면 리다이렉트
+    if (!clubId) {
       router.replace('/');
+      return;
+    }
+    if (!scheduleId) {
+      router.replace(`/schedule?clubId=${clubId}`);
       return;
     }
     
     // 일정 정보 로드 (멤버와 권한 정보는 자동으로 로드됨)
     loadScheduleInfo();
-  }, [scheduleId, router]);
+  }, [clubId, scheduleId, router]);
 
   const handleAddItem = () => {
     if (!newItemContent.trim()) return;
@@ -601,8 +605,8 @@ export default function CreateChecklistPage() {
   // 카테고리 순서 정의
   const categoryOrder = ['PREPARATION', 'RESERVATION', 'PRE_WORK', 'ETC'] as const;
 
-  // scheduleId가 없으면 리다이렉트 중이므로 아무것도 렌더링하지 않음
-  if (!scheduleId) {
+  // clubId나 scheduleId가 없으면 리다이렉트 중이므로 아무것도 렌더링하지 않음
+  if (!clubId || !scheduleId) {
     return null;
   }
 
@@ -693,7 +697,7 @@ export default function CreateChecklistPage() {
                 {loading ? '생성 중...' : '완료'}
               </button>
               <Link
-                href="/clubs-manage"
+                href={`/schedule?clubId=${clubId}`}
                 className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
               >
                 취소
