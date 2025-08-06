@@ -7,7 +7,7 @@ import { leaveClub } from '@/api/myClub';
 const menuItems = [
     { label: '정보', path: (clubId: string) => `/clubs/${clubId}` },
     { label: '멤버', path: (clubId: string) => `/clubs/${clubId}/members` },
-    { label: '캘린더', path: (clubId: string) => `/clubs/${clubId}/calendar` },
+    { label: '캘린더', path: (clubId: string) => `/schedule?clubId=${clubId}` }, 
     { label: '체크리스트', path: (clubId: string) => `/checklists?clubId=${clubId}` },
 ];
 

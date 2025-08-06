@@ -1,6 +1,6 @@
 'use client';
 
-import { useParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useState, useCallback, useRef, useEffect } from 'react';
 import toast from 'react-hot-toast';
 
@@ -17,13 +17,15 @@ import ScheduleEditModal from '@/app/schedule/modals/ScheduleEditModal';
 import '@/lib/fullcalendar.css';
 
 export default function ScheduleListPage() {
-  // 파라미터 처리 - 모임 아이디
-  const parm = useParams();
-  const clubId = Number(parm.clubId);
- 
+  // 서치 파라미터 처리 - 모임 아이디
+  const searchParams = useSearchParams();
+  const clubId = Number(searchParams.get('clubId'));
+
   if (isNaN(clubId)) {
     throw new Error('유효하지 않은 모임입니다.');
   }
+
+  const router = useRouter();
 
   // 캘린더 처리
   const calendarRef = useRef<FullCalendar>(null);
@@ -114,7 +116,7 @@ export default function ScheduleListPage() {
     setSelectedDateInfo(null);
     setModalType(null);
     setSelectedScheduleId(null);
-
+    
     if (action === 'modify') {
       // 상세 -> 수정버튼 클릭 -> 수정 모드
       setSelectedScheduleId(targetId || null);
@@ -122,10 +124,10 @@ export default function ScheduleListPage() {
       setShowModal(true);
     } else if (action === 'goToCheckList') {
       toast.success('체크리스트로 이동합니다.'); 
-      //router.push() // checkListId
+      router.push(`checklists/${targetId}?clubId=${clubId}`)
     } else if (action === 'createCheckList') {
       toast.success('체크리스트 생성 페이지로 이동합니다.'); 
-      //router.push() // scheduleId
+      router.push(`/checklists/create?scheduleId=${targetId}`)
     }
 
     // 캘린더 새로 고침
