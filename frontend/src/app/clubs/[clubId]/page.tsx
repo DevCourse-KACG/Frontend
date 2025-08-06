@@ -87,7 +87,7 @@ export default function ClubPage() {
                 <aside className="w-1/5 pr-4">
                     <ClubInfoSideMenu isHost={myInfo?.role === 'HOST'} />
                 </aside>
-                <section className="w-4/5 overflow-y-auto " style={{ maxHeight: '100%', borderRadius: '8px' }}>
+                <section className="w-4/5" style={{ maxHeight: '100%', borderRadius: '8px' }}>
                     {clubInfo ? <ClubInfo club={clubInfo} /> : <div className="text-center">클럽 정보를 불러오는 중입니다...</div>}
                 </section>
             </section>

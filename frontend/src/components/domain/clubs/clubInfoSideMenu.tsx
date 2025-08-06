@@ -42,8 +42,8 @@ const ClubInfoSideMenu: React.FC<ClubInfoSideMenuProps> = ({ isHost }) => {
             style={{
                 height: '100%',
                 borderRadius: '12px',
-                backgroundColor: COLORS.beige,
-                boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                backgroundColor: COLORS.white,
+                boxShadow: '0 8px 12px rgba(0, 0, 0, 0.13)',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
@@ -51,11 +51,12 @@ const ClubInfoSideMenu: React.FC<ClubInfoSideMenuProps> = ({ isHost }) => {
         >
             <ul style={{
                 listStyle: 'none',
-                padding: 10,
+
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '12px',
-                overflowY: 'auto'
+                overflowY: 'auto',
+                paddingTop: '16px',
 
             }}>
                 {menuItems.map((item) => (
@@ -63,15 +64,12 @@ const ClubInfoSideMenu: React.FC<ClubInfoSideMenuProps> = ({ isHost }) => {
                         <button
                             style={{
                                 background: COLORS.white,
-                                border: '1px solid transparent',
-                                borderRadius: '8px',
                                 color: '#222',
                                 cursor: 'pointer',
                                 fontSize: '1rem',
                                 textAlign: 'left',
                                 padding: '12px 16px',
                                 width: '100%',
-                                boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
                                 transition: 'background 0.2s, box-shadow 0.2s, color 0.2s',
                                 fontWeight: '500',
                             }}
