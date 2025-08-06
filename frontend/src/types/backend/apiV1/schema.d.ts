@@ -22,10 +22,7 @@ export interface paths {
          */
         put: operations["modifySchedule"];
         post?: never;
-        /**
-         * 일정 삭제
-         * @description 일정 삭제는 호스트 또는 매니저 권한이 있는 사용자만 가능
-         */
+        /** 일정 삭제 */
         delete: operations["deleteSchedule"];
         options?: never;
         head?: never;
@@ -126,7 +123,7 @@ export interface paths {
         put?: never;
         /**
          * 일정 생성
-         * @description 일정 생성은 호스트 또는 매니저 권한이 있는 사용자만 가능
+         * @description 일정 생성은 호스트 권한이 있는 사용자만 가능
          */
         post: operations["createSchedule"];
         delete?: never;
@@ -869,6 +866,8 @@ export interface components {
         ItemAssignDto: {
             /** Format: int64 */
             id?: number;
+            /** Format: int64 */
+            clubMemberId?: number;
             clubMemberName?: string;
             isChecked?: boolean;
         };
@@ -945,7 +944,7 @@ export interface components {
             /** @description 친구 요청 대상의 이메일 */
             friend_email: string;
         };
-        FriendDto: {
+        FriendWithBioDto: {
             /**
              * Format: int64
              * @description 친구 ID
@@ -968,11 +967,11 @@ export interface components {
              */
             status?: "PENDING" | "ACCEPTED" | "REJECTED";
         };
-        RsDataFriendDto: {
+        RsDataFriendWithBioDto: {
             /** Format: int32 */
             code?: number;
             message?: string;
-            data?: components["schemas"]["FriendDto"];
+            data?: components["schemas"]["FriendWithBioDto"];
         };
         PasswordCheckRequestDto: {
             password: string;
@@ -1209,6 +1208,27 @@ export interface components {
             message?: string;
             data?: components["schemas"]["MyInfoInClub"];
         };
+        FriendDto: {
+            /**
+             * Format: int64
+             * @description 친구 ID
+             */
+            friendId?: number;
+            /**
+             * Format: int64
+             * @description 친구(회원) ID
+             */
+            friendMemberId?: number;
+            /** @description 친구(회원) 닉네임 */
+            friendNickname?: string;
+            /** @description 친구(회원) 프로필 이미지 URL */
+            friendProfileImageUrl?: string;
+            /**
+             * @description 친구 관계
+             * @enum {string}
+             */
+            status?: "PENDING" | "ACCEPTED" | "REJECTED";
+        };
         RsDataListFriendDto: {
             /** Format: int32 */
             code?: number;
@@ -1265,21 +1285,21 @@ export interface components {
             message?: string;
             data?: components["schemas"]["ClubMemberResponse"];
         };
-        PageSimpleClubInfoResponse: {
+        PageSimpleClubInfoWithoutLeader: {
+            /** Format: int32 */
+            totalPages?: number;
             /** Format: int64 */
             totalElements?: number;
             /** Format: int32 */
-            totalPages?: number;
-            /** Format: int32 */
             size?: number;
-            content?: components["schemas"]["SimpleClubInfoResponse"][];
+            content?: components["schemas"]["SimpleClubInfoWithoutLeader"][];
             /** Format: int32 */
             number?: number;
             sort?: components["schemas"]["SortObject"];
-            /** Format: int32 */
-            numberOfElements?: number;
             first?: boolean;
             last?: boolean;
+            /** Format: int32 */
+            numberOfElements?: number;
             pageable?: components["schemas"]["PageableObject"];
             empty?: boolean;
         };
@@ -1287,18 +1307,41 @@ export interface components {
             /** Format: int64 */
             offset?: number;
             sort?: components["schemas"]["SortObject"];
-            unpaged?: boolean;
             paged?: boolean;
             /** Format: int32 */
             pageNumber?: number;
             /** Format: int32 */
             pageSize?: number;
+            unpaged?: boolean;
         };
-        RsDataPageSimpleClubInfoResponse: {
+        RsDataPageSimpleClubInfoWithoutLeader: {
             /** Format: int32 */
             code?: number;
             message?: string;
-            data?: components["schemas"]["PageSimpleClubInfoResponse"];
+            data?: components["schemas"]["PageSimpleClubInfoWithoutLeader"];
+        };
+        SimpleClubInfoWithoutLeader: {
+            /** Format: int64 */
+            clubId?: number;
+            name?: string;
+            category?: string;
+            imageUrl?: string;
+            mainSpot?: string;
+            eventType?: string;
+            startDate?: string;
+            endDate?: string;
+            bio?: string;
+        };
+        SortObject: {
+            empty?: boolean;
+            sorted?: boolean;
+            unsorted?: boolean;
+        };
+        RsDataSimpleClubInfoResponse: {
+            /** Format: int32 */
+            code?: number;
+            message?: string;
+            data?: components["schemas"]["SimpleClubInfoResponse"];
         };
         SimpleClubInfoResponse: {
             /** Format: int64 */
@@ -1313,17 +1356,6 @@ export interface components {
             /** Format: int64 */
             leaderId?: number;
             leaderName?: string;
-        };
-        SortObject: {
-            empty?: boolean;
-            sorted?: boolean;
-            unsorted?: boolean;
-        };
-        RsDataSimpleClubInfoResponse: {
-            /** Format: int32 */
-            code?: number;
-            message?: string;
-            data?: components["schemas"]["SimpleClubInfoResponse"];
         };
         RsDataListCheckListDto: {
             /** Format: int32 */
@@ -1959,7 +1991,7 @@ export interface operations {
     getFriends: {
         parameters: {
             query?: {
-                status?: "SENT" | "RECEIVED" | "ACCEPTED" | "REJECTED" | "ALL";
+                status?: "PENDING" | "ACCEPTED" | "REJECTED";
             };
             header?: never;
             path?: never;
@@ -2006,7 +2038,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json;charset=UTF-8": components["schemas"]["RsDataFriendDto"];
+                    "application/json;charset=UTF-8": components["schemas"]["RsDataFriendWithBioDto"];
                 };
             };
             /** @description Bad Request */
@@ -2497,7 +2529,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json;charset=UTF-8": components["schemas"]["RsDataFriendDto"];
+                    "application/json;charset=UTF-8": components["schemas"]["RsDataFriendWithBioDto"];
                 };
             };
             /** @description Bad Request */
@@ -2528,7 +2560,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json;charset=UTF-8": components["schemas"]["RsDataFriendDto"];
+                    "application/json;charset=UTF-8": components["schemas"]["RsDataFriendWithBioDto"];
                 };
             };
             /** @description Bad Request */
@@ -2873,6 +2905,10 @@ export interface operations {
                 size?: number;
                 /** @description Sorting criteria in the format: property,(asc|desc). Default sort order is ascending. Multiple sort criteria are supported. */
                 sort?: string[];
+                name?: string;
+                mainSpot?: string;
+                category?: "STUDY" | "HOBBY" | "SPORTS" | "TRAVEL" | "CULTURE" | "FOOD" | "PARTY" | "WORK" | "OTHER";
+                eventType?: "ONE_TIME" | "SHORT_TERM" | "LONG_TERM";
             };
             header?: never;
             path?: never;
@@ -2886,7 +2922,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json;charset=UTF-8": components["schemas"]["RsDataPageSimpleClubInfoResponse"];
+                    "application/json;charset=UTF-8": components["schemas"]["RsDataPageSimpleClubInfoWithoutLeader"];
                 };
             };
             /** @description Bad Request */
