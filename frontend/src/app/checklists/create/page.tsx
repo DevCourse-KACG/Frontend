@@ -6,6 +6,8 @@ import Link from 'next/link';
 import toast from 'react-hot-toast';
 import { CheckListItem, CheckListWriteReqDto } from '@/types/checklist';
 import { createChecklist, fetchGroupMembers, ClubMember, fetchGroupUserInfo, GroupUserInfo, fetchScheduleDetail, ScheduleInfo } from '@/api/checklistApi';
+import { Preset } from '@/types/preset';
+import { fetchPresets } from '@/api/presetApi';
 import LoadingSpinner from '@/components/global/LoadingSpinner';
 import { canCreateChecklist, getPermissionDeniedMessage } from '@/utils/permissions';
 import {
@@ -302,6 +304,8 @@ export default function CreateChecklistPage() {
   const [userInfo, setUserInfo] = useState<GroupUserInfo | null>(null);
   const [permissionLoading, setPermissionLoading] = useState(true);
   const [scheduleInfo, setScheduleInfo] = useState<ScheduleInfo | null>(null);
+  const [presets, setPresets] = useState<Preset[]>([]);
+  const [showPresetModal, setShowPresetModal] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -376,6 +380,58 @@ export default function CreateChecklistPage() {
     }
   };
 
+  const loadPresets = async () => {
+    try {
+      const response = await fetchPresets();
+      setPresets(response.data || []);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.';
+      if (errorMessage.startsWith('LOGIN_REQUIRED:')) {
+        // 데모 데이터
+        const DEMO_PRESETS: Preset[] = [
+          {
+            id: 1,
+            name: '준비물 - 펜션ver',
+            presetItems: [
+              { id: 1, content: '삼겹살, 간식', category: 'PREPARATION', sequence: 1 },
+              { id: 2, content: '세면 용품', category: 'PREPARATION', sequence: 2 },
+              { id: 3, content: '잠옷', category: 'PREPARATION', sequence: 3 },
+              { id: 4, content: '펜션 예약 확인', category: 'RESERVATION', sequence: 4 },
+              { id: 5, content: '주차장 예약', category: 'RESERVATION', sequence: 5 },
+            ],
+          },
+          {
+            id: 2,
+            name: '준비물 - 등산ver',
+            presetItems: [
+              { id: 6, content: '등산스틱', category: 'PREPARATION', sequence: 1 },
+              { id: 7, content: '체인', category: 'PREPARATION', sequence: 2 },
+              { id: 8, content: '물', category: 'PREPARATION', sequence: 3 },
+              { id: 9, content: '등산로 확인', category: 'PRE_WORK', sequence: 4 },
+              { id: 10, content: '날씨 체크', category: 'PRE_WORK', sequence: 5 },
+              { id: 11, content: '보험 가입', category: 'ETC', sequence: 6 },
+            ],
+          },
+          {
+            id: 3,
+            name: '예약 - 국내 ver',
+            presetItems: [
+              { id: 12, content: '펜션 예약하기', category: 'RESERVATION', sequence: 1 },
+              { id: 13, content: '쏘카 빌리기', category: 'RESERVATION', sequence: 2 },
+              { id: 14, content: '레스토랑 예약', category: 'RESERVATION', sequence: 3 },
+              { id: 15, content: '여행 계획 세우기', category: 'PRE_WORK', sequence: 4 },
+              { id: 16, content: '경로 확인', category: 'PRE_WORK', sequence: 5 },
+            ],
+          },
+        ];
+        setPresets(DEMO_PRESETS);
+      } else {
+        console.error('프리셋을 불러오는 중 오류가 발생했습니다:', errorMessage);
+        setPresets([]);
+      }
+    }
+  };
+
   useEffect(() => {
     // clubId나 scheduleId가 없으면 리다이렉트
     if (!clubId) {
@@ -389,6 +445,8 @@ export default function CreateChecklistPage() {
     
     // 일정 정보 로드 (멤버와 권한 정보는 자동으로 로드됨)
     loadScheduleInfo();
+    // 프리셋 목록 로드
+    loadPresets();
   }, [clubId, scheduleId, router]);
 
   const handleAddItem = () => {
@@ -532,6 +590,23 @@ export default function CreateChecklistPage() {
     }));
 
     setCheckListItems(updatedItems);
+  };
+
+  const handleApplyPreset = (preset: Preset) => {
+    if (!preset.presetItems) return;
+
+    const newItems: CheckListItem[] = preset.presetItems.map((item, index) => ({
+      id: Date.now() + index,
+      content: item.content || '',
+      category: item.category || 'ETC',
+      sequence: index + 1,
+      isChecked: false,
+      itemAssigns: []
+    }));
+
+    setCheckListItems(newItems);
+    setShowPresetModal(false);
+    toast.success(`${preset.name} 프리셋으로 교체되었습니다.`);
   };
 
   const handleSubmit = async () => {
@@ -709,7 +784,18 @@ export default function CreateChecklistPage() {
         {/* 아이템 추가 */}
         <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm mb-6">
           <div className="mb-4">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">체크리스트 아이템 추가</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold text-gray-900">체크리스트 아이템 추가</h2>
+              <button
+                onClick={() => setShowPresetModal(true)}
+                className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors flex items-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                </svg>
+                프리셋 사용하기
+              </button>
+            </div>
             <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
               <div className="space-y-3">
                 <div className="flex items-center gap-2 mb-2">
@@ -818,6 +904,84 @@ export default function CreateChecklistPage() {
             <h3 className="text-lg font-semibold text-gray-800 mb-2">체크리스트 아이템이 없습니다</h3>
             <p className="text-gray-600 mb-4">아이템 추가 버튼을 클릭하여 할 일을 추가해보세요.</p>
             <p className="text-gray-500">위의 아이템 추가 폼을 사용해서 할 일을 추가해보세요.</p>
+          </div>
+        )}
+
+        {/* 프리셋 선택 모달 */}
+        {showPresetModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] flex flex-col">
+              {/* 모달 헤더 */}
+              <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                <h3 className="text-xl font-semibold text-gray-900">프리셋 선택</h3>
+                <button
+                  onClick={() => setShowPresetModal(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              {/* 모달 내용 */}
+              <div className="flex-1 overflow-y-auto p-6">
+                {presets.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="text-gray-400 mb-4">
+                      <svg className="w-24 h-24 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                      </svg>
+                    </div>
+                    <h4 className="text-lg font-semibold text-gray-800 mb-2">사용 가능한 프리셋이 없습니다</h4>
+                    <p className="text-gray-600">먼저 프리셋을 생성해보세요!</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {presets.map((preset) => (
+                      <div
+                        key={preset.id}
+                        className="border border-gray-200 rounded-lg p-4 hover:border-purple-300 hover:shadow-md transition-all cursor-pointer"
+                        onClick={() => handleApplyPreset(preset)}
+                      >
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="font-semibold text-gray-900">{preset.name}</h4>
+                          <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                            {preset.presetItems?.length || 0}개 항목
+                          </span>
+                        </div>
+                        
+                        {/* 프리셋 아이템 미리보기 */}
+                        <div className="space-y-2">
+                          {preset.presetItems?.slice(0, 3).map((item, index) => (
+                            <div key={item.id || index} className="flex items-center gap-2 text-sm text-gray-600">
+                              <span className="w-2 h-2 bg-gray-300 rounded-full"></span>
+                              <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded">
+                                {CATEGORY_DISPLAY_NAMES[item.category as keyof typeof CATEGORY_DISPLAY_NAMES] || '기타'}
+                              </span>
+                              <span className="truncate">{item.content}</span>
+                            </div>
+                          ))}
+                          
+                          {preset.presetItems && preset.presetItems.length > 3 && (
+                            <div className="text-xs text-gray-400 text-center">
+                              +{preset.presetItems.length - 3}개 더 보기
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* 선택 버튼 */}
+                        <div className="mt-4 pt-3 border-t border-gray-100">
+                          <button className="w-full px-3 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors text-sm font-medium">
+                            이 프리셋 사용하기
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
       </div>
